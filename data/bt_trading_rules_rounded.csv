@@ -1,0 +1,15 @@
+hub,rule,hours,usd_per_MWh,win_rate,total_usd_1MW,worst_hour,worst_day,days_traded,days_positive
+TORONTO,sell every hour,2176,4.8,0.62,10446.77,-594.55,-1360.33,91,0.58
+TORONTO,sell HE14-21 only,723,11.29,0.68,8159.48,-594.55,-1271.54,91,0.63
+TORONTO,"sell when tight (headroom < 8,500)",776,14.73,0.68,11430.76,-594.55,-1015.06,73,0.62
+TORONTO,sell when tight AND HE14-21,505,15.94,0.71,8047.27,-594.55,-1271.54,73,0.67
+TORONTO,sell when Tesla >=600 MW below IESO,640,13.24,0.68,8472.05,-440.72,-573.73,69,0.58
+TORONTO,buy when Tesla >=600 MW above IESO,50,5.52,0.64,276.22,-92.85,-81.32,15,0.6
+TORONTO,"model: sell tight|Tesla-low, buy Tesla-high & loose",1011,11.7,0.67,11828.88,-594.55,-1344.49,88,0.66
+SOUTHWEST,sell every hour,2176,4.32,0.61,9402.71,-606.34,-1345.5,91,0.58
+SOUTHWEST,sell HE14-21 only,723,10.53,0.68,7612.11,-606.34,-1280.28,91,0.63
+SOUTHWEST,"sell when tight (headroom < 8,500)",776,13.25,0.67,10284.43,-606.34,-1148.43,73,0.59
+SOUTHWEST,sell when tight AND HE14-21,505,14.87,0.7,7507.73,-606.34,-1280.28,73,0.67
+SOUTHWEST,sell when Tesla >=600 MW below IESO,640,12.42,0.66,7949.37,-445.25,-583.13,69,0.57
+SOUTHWEST,buy when Tesla >=600 MW above IESO,50,5.73,0.66,286.43,-93.75,-80.44,15,0.6
+SOUTHWEST,"model: sell tight|Tesla-low, buy Tesla-high & loose",1011,10.88,0.66,10997.01,-606.34,-1353.84,88,0.65
