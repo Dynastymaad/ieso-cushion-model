@@ -1,0 +1,381 @@
+<title>Ontario Virtuals Desk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Source+Sans+3:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --ground:#F1F4F3; --surface:#FFFFFF; --sunk:#E6EBE9; --ink:#15201C; --ink2:#4E5C57; --ink3:#7C8984;
+  --line:#D3DBD8; --accent:#1D5E86; --accent-soft:#D5E4EE; --band1:#C9DCEA; --band2:#98BCD6;
+  --sell:#B8412E; --sell-soft:#F6DDD7; --buy:#2F7A4B; --buy-soft:#D8EEDF; --warn:#A86A12; --warn-soft:#F5E6CC;
+  --grid:#E1E7E5; --rt:#6B4FA0;
+  --f-disp:"Barlow Semi Condensed","Arial Narrow",Arial,sans-serif; --f-body:"Source Sans 3","Segoe UI",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  color-scheme:dark; --ground:#0E1412; --surface:#151D1A; --sunk:#1C2622; --ink:#E4EBE8; --ink2:#A7B4AF; --ink3:#7D8A85;
+  --line:#2A3632; --accent:#7FB7DC; --accent-soft:#1B3445; --band1:#1F3A4D; --band2:#2F5A78;
+  --sell:#EE8A76; --sell-soft:#3E2520; --buy:#79C796; --buy-soft:#1D3526; --warn:#E3AE5A; --warn-soft:#3A2D17; --grid:#212C28; --rt:#B7A0E6;}}
+:root[data-theme="dark"]{
+  color-scheme:dark; --ground:#0E1412; --surface:#151D1A; --sunk:#1C2622; --ink:#E4EBE8; --ink2:#A7B4AF; --ink3:#7D8A85;
+  --line:#2A3632; --accent:#7FB7DC; --accent-soft:#1B3445; --band1:#1F3A4D; --band2:#2F5A78;
+  --sell:#EE8A76; --sell-soft:#3E2520; --buy:#79C796; --buy-soft:#1D3526; --warn:#E3AE5A; --warn-soft:#3A2D17; --grid:#212C28; --rt:#B7A0E6;}
+*{box-sizing:border-box}
+body{background:var(--ground);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45;margin:0}
+.wrap{max-width:1240px;margin:0 auto;padding-inline:20px;padding-block:22px 60px;display:flex;flex-direction:column;gap:26px}
+h1,h2,h3{font-family:var(--f-disp);font-weight:600;letter-spacing:.01em;margin:0;text-wrap:balance}
+h1{font-size:30px;line-height:1.1} h2{font-size:21px} h3{font-size:16px}
+.muted{color:var(--ink2)} .small{font-size:13px} .mono,.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.eyebrow{font-family:var(--f-disp);text-transform:uppercase;letter-spacing:.09em;font-size:12px;color:var(--ink3);font-weight:600}
+header.top{display:flex;flex-wrap:wrap;gap:14px 28px;align-items:flex-end;justify-content:space-between;border-bottom:1px solid var(--line);padding-bottom:16px}
+.controls{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden;background:var(--surface)}
+.seg button{font:600 14px var(--f-disp);letter-spacing:.04em;padding:7px 14px;border:0;background:transparent;color:var(--ink2);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--surface)}
+.seg button:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+label.field{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--ink2)}
+label.field input{width:70px;font:14px var(--f-mono);padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.stat{background:var(--surface);padding:12px 14px;display:flex;flex-direction:column;gap:3px}
+.stat .v{font:500 22px var(--f-mono);font-variant-numeric:tabular-nums}
+.stat .s{font-size:12.5px;color:var(--ink2)}
+section{display:flex;flex-direction:column;gap:12px}
+.sechead{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:baseline;justify-content:space-between}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px}
+.chart svg{width:100%;height:auto;display:block}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12.5px;color:var(--ink2)}
+.legend i{display:inline-block;width:14px;height:9px;border-radius:2px;margin-right:6px;vertical-align:middle}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{padding:6px 9px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--grid)}
+th{font:600 12px var(--f-disp);letter-spacing:.05em;text-transform:uppercase;color:var(--ink2);background:var(--sunk);position:sticky;top:0}
+td{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+td.l,th.l{text-align:left}
+tr.eve td{background:color-mix(in srgb,var(--accent-soft) 35%,transparent)}
+.chip{display:inline-block;font:600 11.5px var(--f-disp);letter-spacing:.06em;padding:2px 8px;border-radius:999px}
+.chip.SELL{background:var(--sell);color:var(--surface)} .chip.SELL-L{background:var(--sell-soft);color:var(--sell)} .chip.NONE{background:var(--sunk);color:var(--ink3)}
+.why{font:12px var(--f-body);color:var(--ink2)}
+details.guide{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 14px}
+details.guide summary{cursor:pointer;font:600 15px var(--f-disp);letter-spacing:.02em}
+dl.cols{display:grid;grid-template-columns:minmax(130px,190px) 1fr;gap:8px 16px;margin:12px 0 4px;font-size:14px}
+dl.cols dt{font-weight:600} dl.cols dd{margin:0;max-width:78ch}
+@media (max-width:560px){dl.cols{grid-template-columns:1fr} dl.cols dd{margin-bottom:6px}}
+.scrollbox{max-height:520px;overflow:auto}
+.stackleg i{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+:root{--nuc:#6D5BA8;--wnd:#2E8A8A;--sol:#D9A21B;--hyd:#3F7FC1;--gas:#C2643C}
+:root[data-theme="dark"]{--nuc:#A897E6;--wnd:#5FC4C4;--sol:#EBC45A;--hyd:#7FB2EA;--gas:#E8936C}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--nuc:#A897E6;--wnd:#5FC4C4;--sol:#EBC45A;--hyd:#7FB2EA;--gas:#E8936C}}
+.pl{display:inline-block;min-width:44px}
+.lx{color:var(--warn);font-weight:500}
+.best{font-weight:600;color:var(--accent)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:18px}
+.note{border-left:3px solid var(--warn);background:var(--warn-soft);padding:9px 12px;border-radius:4px;font-size:13.5px}
+button.copy{font:600 13px var(--f-disp);letter-spacing:.04em;padding:7px 12px;border:1px solid var(--accent);color:var(--accent);background:transparent;border-radius:6px;cursor:pointer}
+textarea#ladder{width:100%;height:120px;font:12px var(--f-mono);border:1px solid var(--line);border-radius:6px;background:var(--sunk);color:var(--ink);padding:8px}
+ul.tight{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:5px;max-width:78ch}
+.pos{color:var(--buy)} .neg{color:var(--sell)}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="eyebrow">IESO day-ahead virtuals · model v1</div>
+      <h1 id="title">Ontario Virtuals Desk</h1>
+      <div class="muted small" id="asof"></div>
+    </div>
+    <div class="controls">
+      <div class="seg" role="group" aria-label="Hub">
+        <button id="hub-TORONTO" aria-pressed="true">Toronto</button>
+        <button id="hub-SOUTHWEST" aria-pressed="false">Southwest</button>
+      </div>
+      <label class="field" for="basemw">Base size MW <input id="basemw" type="number" min="1" max="580" step="1" value="25"></label>
+    </div>
+  </header>
+
+  <div class="stats" id="stats"></div>
+
+  <section>
+    <div class="sechead"><h2>Tomorrow, hour by hour</h2>
+      <div class="legend"><span><i style="background:var(--band1)"></i>DA P10–P90</span><span><i style="background:var(--band2)"></i>DA P25–P75</span>
+        <span><i style="background:var(--accent)"></i>DA P50</span><span><i style="background:var(--rt)"></i>RT P50</span><span><i style="background:var(--ink)"></i>Published DA</span></div></div>
+    <div class="panel chart" id="fan"></div>
+  </section>
+
+  <section>
+    <div class="sechead"><h2>Bids and offers</h2><span class="muted small">SELL = full size, SELL-L = half size. Both are virtual offers (you earn DA − RT). There is no buy signal: no buy rule made money in the walk-forward test.</span></div>
+    <div class="tablewrap"><table id="hours"></table></div>
+    <div class="panel" style="display:flex;flex-direction:column;gap:8px">
+      <div class="sechead"><h3>Ladder for the IESO grid</h3><button class="copy" id="copybtn">Copy ladder</button></div>
+      <div class="muted small">One row per signal hour: HE, then MW and price for each tier. Tab-separated. SELL offers 50% at DA P10, 30% at P25, 20% at P50. SELL-L offers 60% at P25 and 40% at P50. In the backtest, offering at P10 still cleared 92% of signal hours for the same $/MWh, while offering at P50 cleared only half of them.</div>
+      <textarea id="ladder" readonly aria-label="Ladder text"></textarea>
+      <div class="small muted" id="copymsg"></div>
+    </div>
+    <details class="guide"><summary>What each column means</summary>
+      <dl class="cols">
+        <dt>Signal / why</dt><dd><b>tight</b>: spare gas + hydro below the learned headroom threshold (7,000 MW so far), so DA commits peakers and Lennox that RT often does not need. <b>surplus</b>: the bid-time gas need (next column) is below the learned threshold, so Ontario is long on nuclear, hydro and wind and RT tends to settle under DA. <b>ext</b> means the looser surplus threshold, traded at half size.</dd>
+        <dt>Spare MW (headroom)</dt><dd>Gas + hydro available minus what IESO's pre-deadline Adequacy forecast says they must cover. It is the Ontario version of the Alberta cushion. Below ~7,000 MW, prices spike and Lennox runs.</dd>
+        <dt>Gas need</dt><dd>IESO demand forecast − nuclear available − wind forecast − solar forecast − expected hydro + expected net exports (hydro and exports are the last 14 days' median DA schedule for that hour). It tracks the DA gas schedule (corr 0.82, about 1,000 MW error). Under ~3,000 MW, sells won about 72–95% of hours.</dd>
+        <dt>Lennox</dt><dd>How often Lennox (the oil/gas steam plant, the most expensive unit) actually ran in RT at this level of spare MW this summer: 82% below 6,000 MW, 62% at 6–7k, 35% at 7–8k, 13% at 8–9k, 2% above 9k. Hours when Lennox ran averaged DA − RT of +$22; hours without it averaged +$0.3.</dd>
+        <dt>Lean</dt><dd>A small regression's estimate of DA − RT in $/MWh from the bid-time inputs. The ranking holds up (the top fifth of hours averaged +$5.70, the bottom fifth −$2.99), but it is too weak to trade on alone. Information only.</dd>
+        <dt>Tesla − IESO</dt><dd>Tesla's load forecast minus IESO's pre-deadline demand forecast, in MW. IESO runs high: actual load came in below IESO's forecast in 73% of hours, by 377 MW on average, while Tesla's bias was only +26 MW. When Tesla is 600+ MW below IESO, DA − RT averaged +$13 (68% sell wins), but walk-forward that was only +$1.86 and not reliable, so it is not a trigger.</dd>
+        <dt>ON→NY sched</dt><dd>NYISO's day-ahead scheduled flow from Ontario into New York (MW). It is posted about 09:40 ET, before IESO closes, and matches IESO's actual NY flow closely (corr 0.81, same direction 91% of the time), so it is an early read of the NY intertie. It adds nothing to the price forecast beyond the NY price itself. Information only.</dd>
+        <dt>RT − DA if load 200–600 low / high</dt><dd>Sensitivity, not a forecast: the median RT − DA this summer in hours with similar spare MW when actual load came in 200–600 MW below (left) or above (right) IESO's forecast. Overall: load 600+ MW low → RT about $15 under DA; 200–600 low → $5 under; 200–600 high → $5 over; 600+ high → $13 over.</dd>
+      </dl>
+    </details>
+  </section>
+
+  <section>
+    <div class="sechead"><h2>Tomorrow's supply stack</h2><span class="muted small">Bid-time view, MW. What gas has to cover after nuclear, wind, solar and hydro, and after exports are served.</span></div>
+    <div class="panel chart" id="stack"></div>
+    <div class="legend stackleg"><span><i style="background:var(--nuc)"></i>Nuclear available</span><span><i style="background:var(--hyd)"></i>Hydro (expected)</span><span><i style="background:var(--wnd)"></i>Wind forecast</span><span><i style="background:var(--sol)"></i>Solar forecast</span><span><i style="background:var(--gas)"></i>Gas need</span><span><i style="background:var(--ink)"></i>Demand + net exports</span></div>
+    <div class="grid2">
+      <div class="panel"><h3>How to read Ontario's mix (vs Alberta)</h3>
+        <ul class="tight small">
+          <li><b>Nuclear (~9 GW)</b> runs flat around the clock and never sets price on the way up. What matters is how much is <i>out</i>: every MW of outage is a MW gas must cover.</li>
+          <li><b>Gas is the price-setter.</b> The DA gas schedule explains price better than anything (corr 0.64). Under 4 GW of gas, the system is in surplus and DA overshoots RT. Between 4 and 7 GW, efficient gas plants set price in both markets and there is no edge. Above 7 GW, DA commits peakers and Lennox and again overshoots. It is U-shaped, unlike Alberta's one-sided cushion.</li>
+          <li><b>Hydro (~3–4 GW scheduled)</b> is the flexible buffer. It moves with gas, so treat it as a response, not a cause.</li>
+          <li><b>Wind (up to ~4.9 GW)</b> is the main supply surprise. 1,000 MW more wind in RT than DA scheduled moved DA − RT by about +$22.</li>
+          <li><b>Demand miss</b> is the biggest single driver of DA − RT (corr −0.45). 1,000 MW less load than IESO forecast moved DA − RT by about +$18.</li>
+          <li><b>Exports</b>: 1,000 MW more export in RT than DA scheduled moved DA − RT by about −$19.</li>
+          <li><b>Solar (478 MW on the grid)</b> barely matters.</li>
+        </ul></div>
+      <div class="panel"><h3>DA − RT by DA gas schedule, Jun 28 – Sep 25</h3><div class="tablewrap" style="border:0"><table id="gasband"></table></div><div class="small muted">This uses the DA result, so it explains after the fact. The gas-need column is the bid-time estimate of it.</div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sechead"><h2>Next two weeks</h2>
+      <div class="legend"><span><i style="background:var(--accent)"></i>On-peak model (P10–P90)</span><span><i style="background:var(--buy)"></i>Off-peak model</span><span><i style="background:var(--ink3)"></i>Ontario Hub forward</span></div></div>
+    <div class="panel chart" id="outlook"></div>
+    <div class="tablewrap"><table id="outtbl"></table></div>
+    <div class="note" id="outnote" hidden></div>
+  </section>
+
+  <section>
+    <div class="sechead"><h2>How accurate it has been</h2><span class="muted small">Walk-forward: each forecast used only data published before that morning's 08:00 MT deadline.</span></div>
+    <div class="grid2">
+      <div class="panel"><h3>Next-day DA, hourly</h3><div class="tablewrap" style="border:0"><table id="acc1"></table></div><div class="small muted" id="acc1n"></div></div>
+      <div class="panel"><h3>Are the ranges honest?</h3><div class="tablewrap" style="border:0"><table id="acccov"></table></div><div class="small muted">Share of hours that settled below each forecast quantile. Perfect = 10 / 25 / 50 / 75 / 90.</div></div>
+    </div>
+    <div class="panel"><h3>On-peak DA by lead time, all seasons (Dec 2025 – Sep 2026)</h3><div class="tablewrap" style="border:0"><table id="acc2"></table></div><div class="small muted">MAE, $/MWh. Weekday on-peak = IESO HE7–22. Last settled DA and the traded Ontario Hub forward are the benchmarks.</div></div>
+    <div class="panel"><h3>Hourly DA, 2 to 14 days out (Toronto / Southwest)</h3><div class="tablewrap" style="border:0"><table id="acch"></table></div><div class="small muted">MAE, $/MWh, every hour. The model's daily level times its recent hourly shape, against the forward times the same shape and the last known price for that hour.</div></div>
+    <div class="panel"><h3>Does the signal make money? Walk-forward, 1 MW per signal hour, Jul 20 – Sep 27</h3><div class="tablewrap" style="border:0"><table id="acc3"></table></div>
+      <div class="small muted">Every threshold was learned only from spreads known at each morning's deadline. "90% range" resamples whole days. If it stays above zero, the result is unlikely to be luck. Virtual uplift on offers is not deducted, so compare the $/MWh to your uplift.</div></div>
+    <div class="panel"><h3>The desk's own trades, split by the signal</h3><div class="tablewrap" style="border:0"><table id="desk"></table></div><div class="small muted" id="deskn"></div></div>
+    <div class="grid2">
+      <div class="panel"><h3>Which way the DA forecast misses, by price level</h3><div class="tablewrap" style="border:0"><table id="biaslvl"></table></div><div class="small muted">Error = model − published DA. Positive means the model was too high. It overshoots calm hours a little and undershoots spikes, badly above $120.</div></div>
+      <div class="panel"><h3>By weekday</h3><div class="tablewrap" style="border:0"><table id="biasdow"></table></div><div class="small muted">Saturdays run about $4 too low. A walk-forward weekday correction fixed that bias but raised the overall MAE, so it is not applied.</div></div>
+    </div>
+    <div class="panel"><h3>Every hour's error, as a distribution</h3><div class="tablewrap" style="border:0"><table id="errhist"></table></div><div class="small muted" id="errq"></div></div>
+    <details class="guide" open><summary>Day by day record</summary>
+      <div class="small muted" style="margin:8px 0">DA columns are daily means (model vs published, and the error). The spread and P&amp;L columns use RT: "sell all" sells 1 MW every hour, "signal P&amp;L" sells only the signal hours. Hours are in IESO time. Every hour is also saved in data/es_da_errors_hourly_*.csv and data/bt_signals_v2_*.csv.</div>
+      <div class="tablewrap scrollbox"><table id="daily"></table></div>
+    </details>
+  </section>
+
+  <section>
+    <h2>What is in the forecast</h2>
+    <ul class="tight small">
+      <li><b>DA:</b> IESO's pre-deadline Adequacy forecast (spare gas + hydro after demand, nuclear, wind, solar), NYISO Zone A day-ahead price and NYISO's scheduled NY–Ontario flow (both posted 09:33–09:55 ET), yesterday's DA, and the Ontario Hub forward with Dawn gas and PJM West for the daily level.</li>
+      <li><b>RT:</b> the DA forecast plus the spread distribution for that time block and tightness. The range is reliable; the single RT number is not (hourly RT noise is about $18).</li>
+      <li><b>Signals (v2):</b> SELL when spare MW is under the learned threshold (tight) or the bid-time gas need is under its learned threshold (surplus). SELL-L uses the looser surplus threshold at half size. Both thresholds are re-learned each morning from spreads settled by then. There is no buy rule: none made money in the walk-forward test. The old v1 rules (8,500 MW in HE14–21, Tesla ±600) were retired because walk-forward they earned +$3.45/MWh with a 90% range that went below zero.</li>
+      <li><b>Lennox:</b> how often Lennox ran in RT at each level of spare MW this summer (82% under 6,000 MW, 2% above 9,000). Lennox hours averaged DA − RT of +$22.</li>
+      <li><b>Not modelled:</b> forced outages after the deadline, virtual uplift, and winter hourly shapes (hourly prices only exist since 28 Jun 2026).</li>
+    </ul>
+  </section>
+</div>
+
+<script>
+const B = /*__BUNDLE__*/null;
+const $ = s => document.querySelector(s);
+const fmt = (v, d=2) => v==null || isNaN(v) ? '–' : Number(v).toFixed(d);
+const money = v => v==null||isNaN(v) ? '–' : (v<0?'−$':'$')+Math.abs(Math.round(v)).toLocaleString('en-CA');
+const fmt0 = v => v==null || isNaN(v) ? '–' : Math.round(v).toLocaleString('en-CA');
+const DOW = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const dlabel = s => { const d = new Date(s+'T12:00:00Z'); return `${DOW[d.getUTCDay()]} ${d.getUTCDate()} ${MON[d.getUTCMonth()]}`; };
+let HUB = 'TORONTO';
+try { const h = localStorage.getItem('ovd-hub'); if (h && B.hubs[h]) HUB = h; } catch(e){}
+function baseMW(){ const v = parseFloat($('#basemw').value); return isFinite(v) && v > 0 ? v : 25; }
+
+function ladderFor(h, cap){
+  const b = baseMW();
+  if (h.signal === 'SELL'){ const size = Math.min(cap, b); return [[0.5, h.da[0]], [0.3, h.da[1]], [0.2, h.da[2]]].map(([w,p]) => [Math.max(1, Math.round(size*w)), Math.round(p*100)/100]); }
+  if (h.signal === 'SELL-L'){ const size = Math.min(cap, b*0.5); return [[0.6, h.da[1]], [0.4, h.da[2]]].map(([w,p]) => [Math.max(1, Math.round(size*w)), Math.round(p*100)/100]); }
+  return [];
+}
+
+function stats(){
+  const H = B.hubs[HUB], hrs = H.hours, act = (B.actual||{})[HUB] || {};
+  const on = hrs.filter(h => h.he >= 7 && h.he <= 22), off = hrs.filter(h => h.he < 7 || h.he > 22);
+  const avg = (a, f) => a.reduce((s, h) => s + f(h), 0) / a.length;
+  const sells = hrs.filter(h => h.signal==='SELL').length, buys = hrs.filter(h => h.signal==='SELL-L').length; const th = H.thr || {};
+  const lx = Math.max(...hrs.map(h => h.p_lennox));
+  const pub = hrs.filter(h => act[h.he] && act[h.he].da != null);
+  let check = '';
+  if (pub.length === 24){ const mae = avg(pub, h => Math.abs(h.da[2] - act[h.he].da)); const ins = pub.filter(h => act[h.he].da >= h.da[0] && act[h.he].da <= h.da[4]).length;
+    check = `<div class="stat"><span class="eyebrow">Published DA check</span><span class="v">$${fmt(mae)}</span><span class="s">MAE vs published DA · ${ins}/24 inside P10–P90</span></div>`; }
+  $('#stats').innerHTML = `
+   <div class="stat"><span class="eyebrow">On-peak DA HE7–22</span><span class="v">$${fmt(avg(on,h=>h.da[2]))}</span><span class="s">P10–P90 $${fmt(avg(on,h=>h.da[0]),0)}–${fmt(avg(on,h=>h.da[4]),0)}</span></div>
+   <div class="stat"><span class="eyebrow">Off-peak DA</span><span class="v">$${fmt(avg(off,h=>h.da[2]))}</span><span class="s">P10–P90 $${fmt(avg(off,h=>h.da[0]),0)}–${fmt(avg(off,h=>h.da[4]),0)}</span></div>
+   <div class="stat"><span class="eyebrow">On-peak RT P50</span><span class="v">$${fmt(avg(on,h=>h.rt[2]))}</span><span class="s">RT P10–P90 $${fmt(avg(on,h=>h.rt[0]),0)}–${fmt(avg(on,h=>h.rt[4]),0)}</span></div>
+   <div class="stat"><span class="eyebrow">Signal hours</span><span class="v"><span class="neg">${sells}</span> + <span class="neg" style="opacity:.7">${buys}</span></span><span class="s">SELL + SELL-L · thresholds ${fmt0(th.head)} MW spare / ${fmt0(th.gas)}–${fmt0(th.gas_ext)} MW gas</span></div>
+   <div class="stat"><span class="eyebrow">Tightest hour</span><span class="v">${fmt0(Math.min(...hrs.map(h=>h.head)))} MW</span><span class="s">spare gas + hydro · Lennox chance ${Math.round(lx*100)}%</span></div>
+   ${check}`;
+}
+
+function fan(){
+  const hrs = B.hubs[HUB].hours, act = (B.actual||{})[HUB] || {};
+  const W = 1000, H = 300, L = 46, R = 12, T = 12, Bm = 30;
+  const vals = hrs.flatMap(h => [h.da[0], h.da[4], h.rt[2]]).concat(Object.values(act).map(a => a.da).filter(v => v != null));
+  let lo = Math.floor(Math.min(...vals) / 10) * 10, hi = Math.ceil(Math.max(...vals) / 10) * 10; if (hi - lo < 20) hi = lo + 20;
+  const x = he => L + (he - 1) * (W - L - R) / 23, y = v => T + (hi - v) * (H - T - Bm) / (hi - lo);
+  const area = (a, b) => hrs.map(h => `${x(h.he)},${y(h.da[a])}`).join(' ') + ' ' + hrs.slice().reverse().map(h => `${x(h.he)},${y(h.da[b])}`).join(' ');
+  let g = '';
+  const step = (hi - lo) > 80 ? 20 : 10;
+  for (let v = lo; v <= hi; v += step) g += `<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--grid)"/><text x="${L-8}" y="${y(v)+4}" text-anchor="end" font-size="11" fill="var(--ink3)" font-family="JetBrains Mono,monospace">$${v}</text>`;
+  for (const he of [1,4,7,10,13,16,19,22,24]) g += `<text x="${x(he)}" y="${H-10}" text-anchor="middle" font-size="11" fill="var(--ink3)" font-family="JetBrains Mono,monospace">HE${he}</text>`;
+  g += `<rect x="${x(14)}" y="${T}" width="${x(21)-x(14)}" height="${H-T-Bm}" fill="var(--accent-soft)" opacity=".45"/>`;
+  g += `<polygon points="${area(0,4)}" fill="var(--band1)"/><polygon points="${area(1,3)}" fill="var(--band2)"/>`;
+  g += `<polyline points="${hrs.map(h => `${x(h.he)},${y(h.da[2])}`).join(' ')}" fill="none" stroke="var(--accent)" stroke-width="2.5"/>`;
+  g += `<polyline points="${hrs.map(h => `${x(h.he)},${y(h.rt[2])}`).join(' ')}" fill="none" stroke="var(--rt)" stroke-width="1.8" stroke-dasharray="5 4"/>`;
+  for (const h of hrs){ const a = act[h.he]; if (a && a.da != null) g += `<circle cx="${x(h.he)}" cy="${y(a.da)}" r="3.4" fill="var(--ink)"/>`; }
+  g += `<text x="${(x(14)+x(21))/2}" y="${T+14}" text-anchor="middle" font-size="11" fill="var(--ink2)" font-family="Source Sans 3,sans-serif">HE14–21</text>`;
+  $('#fan').innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Hourly DA forecast range for ${HUB}">${g}</svg>`;
+}
+
+function table(){
+  const H = B.hubs[HUB];
+  let rows = `<tr><th>HE</th><th class="l">Signal</th><th>Tier 1</th><th>Tier 2</th><th>Tier 3</th><th>DA P50</th><th>DA P10–P90</th><th>RT P50</th><th>RT P10–P90</th><th>Spare MW</th><th>Gas need</th><th>Lennox</th><th>Lean</th><th>Tesla − IESO</th><th>ON→NY sched</th><th>RT−DA if load 200–600 low / high</th></tr>`;
+  const lines = [];
+  for (const h of H.hours){
+    const lad = ladderFor(h, H.cap_mw);
+    const t = i => lad[i] ? `${lad[i][0]} @ ${fmt(lad[i][1])}` : '–';
+    if (lad.length) lines.push([h.he, ...lad.flat()].join('\t'));
+    const lxc = h.p_lennox >= 0.25 ? 'lx' : '';
+    const lab = h.signal==='NONE' ? 'NO TRADE' : h.signal;
+    rows += `<tr class="${h.he>=14&&h.he<=21?'eve':''}"><td>${h.he}</td><td class="l"><span class="chip ${h.signal}">${lab}</span> <span class="why">${h.why||''}</span></td>
+      <td>${t(0)}</td><td>${t(1)}</td><td>${t(2)}</td><td><b>${fmt(h.da[2])}</b></td><td>${fmt(h.da[0],0)}–${fmt(h.da[4],0)}</td>
+      <td>${fmt(h.rt[2])}</td><td>${fmt(h.rt[0],0)}–${fmt(h.rt[4],0)}</td><td>${fmt0(h.head)}</td><td>${fmt0(h.gas_hat)}</td><td class="${lxc}">${Math.round(h.p_lennox*100)}%</td>
+      <td class="${h.lean>3?'neg':h.lean<-2?'pos':''}">${h.lean==null?'–':(h.lean>0?'+':'')+fmt(h.lean,1)}</td>
+      <td>${h.gapT==null?'–':(h.gapT>0?'+':'')+fmt0(h.gapT)}</td><td>${h.ny_oh == null ? '–' : fmt0(h.ny_oh)}</td>
+      <td><span class="neg">${h.miss_row[1]>0?'+':''}${h.miss_row[1]}</span> / <span class="pos">${h.miss_row[3]>0?'+':''}${h.miss_row[3]}</span></td></tr>`;
+  }
+  $('#hours').innerHTML = rows;
+  $('#ladder').value = lines.length ? lines.join('\n') : 'No signal hours for this hub tomorrow.';
+}
+
+function stack(){
+  const hrs = B.hubs[HUB].hours.filter(h => h.stack && h.stack.hydro != null);
+  const W = 1000, H = 300, L = 54, R = 12, T = 12, Bm = 30;
+  const need = hrs.map(h => h.stack.dem + h.stack.exp);
+  const hi = Math.ceil(Math.max(...need, ...hrs.map(h => h.stack.nuc+h.stack.hydro+h.stack.wind+h.stack.solar)) / 2000) * 2000;
+  const bw = (W - L - R) / 24, x = he => L + (he - 1) * bw, y = v => T + (hi - v) * (H - T - Bm) / hi;
+  let g = '';
+  for (let v = 0; v <= hi; v += 4000) g += `<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--grid)"/><text x="${L-8}" y="${y(v)+4}" text-anchor="end" font-size="11" fill="var(--ink3)" font-family="JetBrains Mono,monospace">${(v/1000).toFixed(0)} GW</text>`;
+  for (const he of [1,4,7,10,13,16,19,22,24]) g += `<text x="${x(he)+bw/2}" y="${H-10}" text-anchor="middle" font-size="11" fill="var(--ink3)" font-family="JetBrains Mono,monospace">HE${he}</text>`;
+  for (const h of hrs){
+    const s = h.stack; let base = 0; const x0 = x(h.he) + 2, w = bw - 4;
+    for (const [k, c] of [['nuc','--nuc'],['hydro','--hyd'],['wind','--wnd'],['solar','--sol']]){ const v = Math.max(0, s[k]); g += `<rect x="${x0}" y="${y(base+v)}" width="${w}" height="${y(base)-y(base+v)}" fill="var(${c})"/>`; base += v; }
+    const gn = Math.max(0, s.dem + s.exp - base);
+    if (gn > 0) g += `<rect x="${x0}" y="${y(base+gn)}" width="${w}" height="${y(base)-y(base+gn)}" fill="var(--gas)" opacity=".85"/>`;
+  }
+  g += `<polyline points="${hrs.map(h => `${x(h.he)+bw/2},${y(h.stack.dem+h.stack.exp)}`).join(' ')}" fill="none" stroke="var(--ink)" stroke-width="2"/>`;
+  $('#stack').innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Supply stack by hour">${g}</svg>`;
+  const gb = B.accuracy.gasband;
+  let tb = `<tr><th class="l">DA gas MW</th><th>Hours</th><th>DA</th><th>RT</th><th>DA − RT</th><th>Sell won</th></tr>`;
+  for (const r of gb) tb += `<tr><td class="l">${r.gas_band.replace(/[\(\]]/g,'').replace(', ','–')}</td><td>${fmt0(r.n)}</td><td>${fmt(r.da,1)}</td><td>${fmt(r.rt,1)}</td><td class="${r.spread>0?'neg':'pos'}">${r.spread>0?'+':''}${fmt(r.spread,1)}</td><td>${fmt(r.sell_win,0)}%</td></tr>`;
+  $('#gasband').innerHTML = tb;
+}
+
+function outlook(){
+  const O = B.outlook, W = 1000, H = 280, L = 46, R = 12, T = 14, Bm = 34;
+  const vals = O.flatMap(o => [o.on_p10, o.on_p90, o.off_p10, o.off_p90, o.on_fwd, o.off_fwd]).filter(v => v != null);
+  let lo = Math.floor(Math.min(...vals) / 10) * 10, hi = Math.ceil(Math.max(...vals) / 10) * 10;
+  const n = O.length, x = i => L + (i + 0.5) * (W - L - R) / n, y = v => T + (hi - v) * (H - T - Bm) / (hi - lo);
+  let g = ''; const step = (hi - lo) > 100 ? 25 : 10;
+  for (let v = lo; v <= hi; v += step) g += `<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--grid)"/><text x="${L-8}" y="${y(v)+4}" text-anchor="end" font-size="11" fill="var(--ink3)" font-family="JetBrains Mono,monospace">$${v}</text>`;
+  O.forEach((o, i) => {
+    const wk = o.dow >= 5; const on50 = wk ? o.flat_p50 : o.on_p50, on10 = wk ? o.flat_p10 : o.on_p10, on90 = wk ? o.flat_p90 : o.on_p90;
+    g += `<line x1="${x(i)-7}" x2="${x(i)-7}" y1="${y(on10)}" y2="${y(on90)}" stroke="var(--accent)" stroke-width="2" opacity=".5"/><circle cx="${x(i)-7}" cy="${y(on50)}" r="4.5" fill="var(--accent)"/>`;
+    g += `<line x1="${x(i)+7}" x2="${x(i)+7}" y1="${y(o.off_p10)}" y2="${y(o.off_p90)}" stroke="var(--buy)" stroke-width="2" opacity=".5"/><circle cx="${x(i)+7}" cy="${y(o.off_p50)}" r="4" fill="var(--buy)"/>`;
+    const fw = wk ? o.flat_fwd : o.on_fwd;
+    if (fw != null) g += `<line x1="${x(i)-14}" x2="${x(i)}" y1="${y(fw)}" y2="${y(fw)}" stroke="var(--ink3)" stroke-width="2"/>`;
+    const d = new Date(o.date+'T12:00:00Z');
+    g += `<text x="${x(i)}" y="${H-18}" text-anchor="middle" font-size="10.5" fill="var(--ink3)" font-family="Source Sans 3,sans-serif">${DOW[d.getUTCDay()]}</text><text x="${x(i)}" y="${H-5}" text-anchor="middle" font-size="10.5" fill="var(--ink3)" font-family="JetBrains Mono,monospace">${d.getUTCDate()}</text>`;
+  });
+  $('#outlook').innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Two-week DA outlook">${g}</svg>`;
+  let t = `<tr><th class="l">Day</th><th>Lead</th><th>On-peak P50</th><th>P10–P90</th><th>Forward</th><th>Off-peak P50</th><th>P10–P90</th><th>Forward</th><th>Spare MW on-peak</th></tr>`;
+  let big = [];
+  for (const o of O){
+    const wk = o.dow >= 5; const k = wk ? 'flat' : 'on';
+    const gap = o[`${k}_fwd`] ? o[`${k}_delta`] / o[`${k}_fwd`] - 1 : 0; if (Math.abs(gap) > 0.3) big.push(dlabel(o.date));
+    t += `<tr><td class="l">${dlabel(o.date)}${wk?' <span class="muted">(flat)</span>':''}</td><td>${o.lead}</td><td><b>${fmt(o[`${k}_p50`])}</b></td><td>${fmt(o[`${k}_p10`],0)}–${fmt(o[`${k}_p90`],0)}</td><td>${fmt(o[`${k}_fwd`])}</td>
+      <td><b>${fmt(o.off_p50)}</b></td><td>${fmt(o.off_p10,0)}–${fmt(o.off_p90,0)}</td><td>${fmt(o.off_fwd)}</td><td>${fmt0(o.on_head)}</td></tr>`;
+  }
+  $('#outtbl').innerHTML = t;
+  const note = $('#outnote');
+  if (big.length){ note.hidden = false; note.textContent = `On ${big.join(', ')} IESO's fundamentals point more than 30% away from the traded forward (planned nuclear and gas outages cut spare capacity). The P50 shown is the 50/50 blend. In past cases where fundamentals sat far above the forward, prices settled only about 9% above the forward on average, so lean toward the forward on those days.`; }
+}
+
+function accuracy(){
+  const A = B.accuracy;
+  let t = `<tr><th class="l">Hub</th><th class="l">Model</th><th>Hours</th><th>MAE</th><th>HE17–21</th><th>MAPE</th></tr>`;
+  for (const r of A.next_day) t += `<tr><td class="l">${r.hub==='TORONTO'?'Toronto':'Southwest'}</td><td class="l ${r.model==='Model v1'?'best':''}">${r.model}</td><td>${fmt0(r.hours)}</td><td class="${r.model==='Model v1'?'best':''}">$${fmt(r.mae)}</td><td>$${fmt(r.eve)}</td><td>${fmt(r.mape,1)}%</td></tr>`;
+  $('#acc1').innerHTML = t; const c = A[`cov_${HUB}`];
+  $('#acc1n').textContent = `Jul 19 – Sep 27 2026. Real-time P50 error $${fmt(c.rt_mae)} vs $${fmt(c.rt_naive)} for "RT = DA forecast" (${c.rt_days} days).`;
+  let cv = `<tr><th class="l">${HUB==='TORONTO'?'Toronto':'Southwest'}</th><th>P10</th><th>P25</th><th>P50</th><th>P75</th><th>P90</th></tr>`;
+  cv += `<tr><td class="l">DA (${c.da_days} d)</td>${c.da.map(v=>`<td>${fmt(v,1)}%</td>`).join('')}</tr><tr><td class="l">RT (${c.rt_days} d)</td>${c.rt.map(v=>`<td>${fmt(v,1)}%</td>`).join('')}</tr>`;
+  $('#acccov').innerHTML = cv;
+  const on = A.blocks.filter(r => r.block === 'on');
+  let b2 = `<tr><th class="l">Lead</th>${on.map(r=>`<th>${r.lead} d</th>`).join('')}</tr>`;
+  b2 += `<tr><td class="l">Last settled DA</td>${on.map(r=>`<td>${fmt(r.persist)}</td>`).join('')}</tr>`;
+  b2 += `<tr><td class="l">Ontario Hub forward</td>${on.map(r=>`<td>${fmt(r.forward)}</td>`).join('')}</tr>`;
+  b2 += `<tr><td class="l best">Model</td>${on.map(r=>`<td class="best">${fmt(r.model)}</td>`).join('')}</tr>`;
+  $('#acc2').innerHTML = b2;
+  const hz = A.horizon.filter(r => r.hub === HUB);
+  let bh = `<tr><th class="l">Lead</th>${hz.map(r=>`<th>${r.lead} d</th>`).join('')}</tr>`;
+  bh += `<tr><td class="l">Last known same hour</td>${hz.map(r=>`<td>${fmt(r.last_known_same_hour)}</td>`).join('')}</tr>`;
+  bh += `<tr><td class="l">Forward × shape</td>${hz.map(r=>`<td>${fmt(r.forward_x_shape)}</td>`).join('')}</tr>`;
+  bh += `<tr><td class="l best">Model</td>${hz.map(r=>`<td class="best">${fmt(r.model)}</td>`).join('')}</tr>`;
+  $('#acch').innerHTML = bh;
+  const v2 = A[`v2_${HUB}`];
+  let b3 = `<tr><th class="l">Rule</th><th>Hours</th><th>$/MWh</th><th>90% range</th><th>Win</th><th>Total</th><th>Days up</th><th>Worst day</th><th>Best day</th></tr>`;
+  for (const r of v2){ const main = /core|extended hours|core \+ ext/.test(r.rule); b3 += `<tr><td class="l ${main?'best':''}">${r.rule.trim()}</td><td>${fmt0(r.hours)}</td><td class="${r.usd_mwh>0?'':'neg'}">${fmt(r.usd_mwh)}</td><td>${r.ci90}</td><td>${fmt(r.win,0)}%</td><td>${money(r.total)}</td><td>${fmt(r.days_up,0)}%</td><td class="neg">${money(r.worst_day)}</td><td>${money(r.best_day)}</td></tr>`; }
+  $('#acc3').innerHTML = b3;
+  const dk = A[`desk_${HUB}`];
+  let dt = `<tr><th class="l">Desk trades</th><th class="l">Hour type</th><th>Hours</th><th>MWh</th><th>$/MWh</th><th>P&amp;L</th></tr>`;
+  for (const r of dk) dt += `<tr><td class="l">${r.buysell}</td><td class="l">${r.state}</td><td>${fmt0(r.hours)}</td><td>${fmt0(r.mwh)}</td><td class="${r.usd_mwh>=0?'':'neg'}">${fmt(r.usd_mwh)}</td><td class="${r.pnl>=0?'':'neg'}">${money(r.pnl)}</td></tr>`;
+  $('#desk').innerHTML = dt; $('#deskn').textContent = dk.length ? `${HUB==='TORONTO'?'Toronto':'Southwest'} trades from Dynasty's virtuals table, ${dk[0].from} to ${dk[0].to} (${dk[0].days} days that overlap the test). A signal hour is one v2 would have sold (SELL or SELL-L).` : '';
+  const bl = A[`bias_level_${HUB}`];
+  let t1 = `<tr><th class="l">Published DA</th><th>Hours</th><th>Mean</th><th>Median</th><th>Model high</th><th>MAE</th></tr>`;
+  for (const r of bl) t1 += `<tr><td class="l">$${r.band}</td><td>${fmt0(r.n)}</td><td>${r.mean>0?'+':''}${fmt(r.mean)}</td><td>${r.median>0?'+':''}${fmt(r.median)}</td><td>${fmt(r.hi,0)}%</td><td>${fmt(r.mae)}</td></tr>`;
+  $('#biaslvl').innerHTML = t1;
+  const bd = A[`bias_dow_${HUB}`]; const DN = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  let t2 = `<tr><th class="l">Day</th><th>Hours</th><th>Mean</th><th>Median</th><th>Model high</th><th>MAE</th></tr>`;
+  for (const r of bd) t2 += `<tr><td class="l">${DN[r.dow]}</td><td>${fmt0(r.n)}</td><td>${r.mean>0?'+':''}${fmt(r.mean)}</td><td>${r.median>0?'+':''}${fmt(r.median)}</td><td>${fmt(r.hi,0)}%</td><td>${fmt(r.mae)}</td></tr>`;
+  $('#biasdow').innerHTML = t2;
+  const eh = A[`err_hist_${HUB}`]; const tot = eh.reduce((s,r)=>s+r.n,0);
+  const lab = s => s.replace('(-999, ','< ').replace(', 999]',' +').replace(/[\(\]]/g,'').replace(', ',' to ');
+  $('#errhist').innerHTML = `<tr><th class="l">Error $</th>${eh.map(r=>`<th>${lab(r.bin).replace('< -30','≤ −30').replace('30 +','> 30')}</th>`).join('')}</tr><tr><td class="l">Hours</td>${eh.map(r=>`<td>${r.n}</td>`).join('')}</tr><tr><td class="l">Share</td>${eh.map(r=>`<td>${fmt(r.n/tot*100,1)}%</td>`).join('')}</tr>`;
+  const q = A[`err_q_${HUB}`];
+  $('#errq').textContent = `Percentiles of (model − DA): 5% ${q['0.05']}, 10% ${q['0.1']}, 25% ${q['0.25']}, median ${q['0.5']}, 75% ${q['0.75']}, 90% ${q['0.9']}, 95% ${q['0.95']}. Half of all hours land within about ±$4, and the long tail is on the low side (spikes the model missed).`;
+  const dl = A[`daily_${HUB}`];
+  let t3 = `<tr><th class="l">Date</th><th class="l">Day</th><th>DA avg</th><th>Model avg</th><th>Error</th><th>On-peak error</th><th>Worst hour</th><th>DA − RT avg</th><th>Sell all $</th><th>Signal hours</th><th>Signal P&amp;L $</th></tr>`;
+  for (const r of dl.slice().reverse()){ const sc = (r.core||0) + (r.light||0);
+    t3 += `<tr><td class="l">${r.date}</td><td class="l">${r.dow==null?'':DN[r.dow]}</td><td>${fmt(r.da)}</td><td>${fmt(r.fc)}</td><td class="${r.err>0?'':'neg'}">${r.err==null?'–':(r.err>0?'+':'')+fmt(r.err)}</td><td>${r.err_on==null?'–':(r.err_on>0?'+':'')+fmt(r.err_on)}</td><td>${r.worst==null?'–':fmt(r.worst,1)}</td>
+      <td class="${r.spread>0?'':'neg'}">${r.spread==null?'–':(r.spread>0?'+':'')+fmt(r.spread)}</td><td class="${r.sell_all>=0?'':'neg'}">${fmt0(r.sell_all)}</td><td>${r.core==null?'–':`${r.core} + ${r.light}`}</td><td class="${(r.v2||0)>=0?'':'neg'}">${sc?fmt0(r.v2):'–'}</td></tr>`; }
+  $('#daily').innerHTML = t3;
+}
+
+function render(){
+  document.querySelectorAll('.seg button').forEach(b => b.setAttribute('aria-pressed', b.id === 'hub-'+HUB ? 'true' : 'false'));
+  $('#asof').textContent = `${HUB==='TORONTO'?'Toronto':'Southwest'} hub · DA for ${dlabel(B.target)} ${B.target.slice(0,4)} · inputs as of ${dlabel(B.origin)} 08:00 MT · hub limit ${B.hubs[HUB].cap_mw} MW`;
+  stats(); fan(); table(); stack(); outlook(); accuracy();
+}
+for (const z of ['TORONTO','SOUTHWEST']) $('#hub-'+z).addEventListener('click', () => { HUB = z; try{localStorage.setItem('ovd-hub', z)}catch(e){} render(); });
+$('#basemw').addEventListener('input', table);
+$('#copybtn').addEventListener('click', () => {
+  const t = $('#ladder').value;
+  navigator.clipboard.writeText(t).then(() => { $('#copymsg').textContent = 'Copied.'; }).catch(() => { $('#ladder').select(); $('#copymsg').textContent = 'Selected. Press Ctrl+C to copy.'; });
+});
+render();
+</script>

@@ -1,0 +1,646 @@
+<title>Ontario Virtuals Desk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Source+Sans+3:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --ground:#F1F4F3; --surface:#FFFFFF; --sunk:#E6EBE9; --ink:#15201C; --ink2:#4E5C57; --ink3:#7C8984;
+  --line:#D3DBD8; --accent:#1D5E86; --accent-soft:#D5E4EE; --band1:#C9DCEA; --band2:#98BCD6;
+  --sell:#B8412E; --sell-soft:#F6DDD7; --buy:#2F7A4B; --buy-soft:#D8EEDF; --warn:#A86A12; --warn-soft:#F5E6CC;
+  --grid:#E1E7E5; --rt:#6B4FA0;
+  --f-disp:"Barlow Semi Condensed","Arial Narrow",Arial,sans-serif; --f-body:"Source Sans 3","Segoe UI",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  color-scheme:dark; --ground:#0E1412; --surface:#151D1A; --sunk:#1C2622; --ink:#E4EBE8; --ink2:#A7B4AF; --ink3:#7D8A85;
+  --line:#2A3632; --accent:#7FB7DC; --accent-soft:#1B3445; --band1:#1F3A4D; --band2:#2F5A78;
+  --sell:#EE8A76; --sell-soft:#3E2520; --buy:#79C796; --buy-soft:#1D3526; --warn:#E3AE5A; --warn-soft:#3A2D17; --grid:#212C28; --rt:#B7A0E6;}}
+:root[data-theme="dark"]{
+  color-scheme:dark; --ground:#0E1412; --surface:#151D1A; --sunk:#1C2622; --ink:#E4EBE8; --ink2:#A7B4AF; --ink3:#7D8A85;
+  --line:#2A3632; --accent:#7FB7DC; --accent-soft:#1B3445; --band1:#1F3A4D; --band2:#2F5A78;
+  --sell:#EE8A76; --sell-soft:#3E2520; --buy:#79C796; --buy-soft:#1D3526; --warn:#E3AE5A; --warn-soft:#3A2D17; --grid:#212C28; --rt:#B7A0E6;}
+*{box-sizing:border-box}
+body{background:var(--ground);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45;margin:0}
+.wrap{max-width:1240px;margin:0 auto;padding-inline:20px;padding-block:22px 60px;display:flex;flex-direction:column;gap:26px}
+h1,h2,h3{font-family:var(--f-disp);font-weight:600;letter-spacing:.01em;margin:0;text-wrap:balance}
+h1{font-size:30px;line-height:1.1} h2{font-size:21px} h3{font-size:16px}
+.muted{color:var(--ink2)} .small{font-size:13px} .mono,.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.eyebrow{font-family:var(--f-disp);text-transform:uppercase;letter-spacing:.09em;font-size:12px;color:var(--ink3);font-weight:600}
+header.top{display:flex;flex-wrap:wrap;gap:14px 28px;align-items:flex-end;justify-content:space-between;border-bottom:1px solid var(--line);padding-bottom:16px}
+.controls{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden;background:var(--surface)}
+.seg button{font:600 14px var(--f-disp);letter-spacing:.04em;padding:7px 14px;border:0;background:transparent;color:var(--ink2);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--surface)}
+.seg button:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+label.field{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--ink2)}
+label.field input{width:70px;font:14px var(--f-mono);padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.stat{background:var(--surface);padding:12px 14px;display:flex;flex-direction:column;gap:3px}
+.stat .v{font:500 22px var(--f-mono);font-variant-numeric:tabular-nums}
+.stat .s{font-size:12.5px;color:var(--ink2)}
+section{display:flex;flex-direction:column;gap:12px}
+.sechead{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:baseline;justify-content:space-between}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px}
+.chart svg{width:100%;height:auto;display:block}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12.5px;color:var(--ink2)}
+.legend i{display:inline-block;width:14px;height:9px;border-radius:2px;margin-right:6px;vertical-align:middle}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{padding:6px 9px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--grid)}
+th{font:600 12px var(--f-disp);letter-spacing:.05em;text-transform:uppercase;color:var(--ink2);background:var(--sunk);position:sticky;top:0}
+td{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+td.l,th.l{text-align:left}
+tr.eve td{background:color-mix(in srgb,var(--accent-soft) 35%,transparent)}
+.chip{display:inline-block;font:600 11.5px var(--f-disp);letter-spacing:.06em;padding:2px 8px;border-radius:999px}
+.chip.SELL{background:var(--sell);color:var(--surface)} .chip.SELL-L{background:var(--sell-soft);color:var(--sell)} .chip.NONE{background:var(--sunk);color:var(--ink3)}
+.why{font:12px var(--f-body);color:var(--ink2)}
+details.guide{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 14px}
+details.guide summary{cursor:pointer;font:600 15px var(--f-disp);letter-spacing:.02em}
+dl.cols{display:grid;grid-template-columns:minmax(130px,190px) 1fr;gap:8px 16px;margin:12px 0 4px;font-size:14px}
+dl.cols dt{font-weight:600} dl.cols dd{margin:0;max-width:78ch}
+@media (max-width:560px){dl.cols{grid-template-columns:1fr} dl.cols dd{margin-bottom:6px}}
+.scrollbox{max-height:520px;overflow:auto}
+.stackleg i{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+:root{--nuc:#6D5BA8;--wnd:#2E8A8A;--sol:#D9A21B;--hyd:#3F7FC1;--gas:#C2643C}
+:root[data-theme="dark"]{--nuc:#A897E6;--wnd:#5FC4C4;--sol:#EBC45A;--hyd:#7FB2EA;--gas:#E8936C}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--nuc:#A897E6;--wnd:#5FC4C4;--sol:#EBC45A;--hyd:#7FB2EA;--gas:#E8936C}}
+.pl{display:inline-block;min-width:44px}
+.lx{color:var(--warn);font-weight:500}
+.best{font-weight:600;color:var(--accent)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:18px}
+.note{border-left:3px solid var(--warn);background:var(--warn-soft);padding:9px 12px;border-radius:4px;font-size:13.5px}
+button.copy{font:600 13px var(--f-disp);letter-spacing:.04em;padding:7px 12px;border:1px solid var(--accent);color:var(--accent);background:transparent;border-radius:6px;cursor:pointer}
+textarea#ladder{width:100%;height:120px;font:12px var(--f-mono);border:1px solid var(--line);border-radius:6px;background:var(--sunk);color:var(--ink);padding:8px}
+ul.tight{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:5px;max-width:78ch}
+.pos{color:var(--buy)} .neg{color:var(--sell)}
+nav.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-top:-10px}
+nav.tabs button{font:600 15px var(--f-disp);letter-spacing:.03em;padding:9px 16px;border:1px solid transparent;border-bottom:0;border-radius:7px 7px 0 0;background:transparent;color:var(--ink2);cursor:pointer;margin-bottom:-1px}
+nav.tabs button[aria-selected="true"]{background:var(--surface);border-color:var(--line);color:var(--ink)}
+.dvbar{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center}
+.btn{font:600 13px var(--f-disp);letter-spacing:.04em;padding:6px 11px;border:1px solid var(--line);color:var(--ink2);background:var(--surface);border-radius:6px;cursor:pointer}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.sc{display:inline-flex;gap:2px}
+.sc button{font:600 12px var(--f-mono);width:22px;height:22px;padding:0;border:1px solid var(--line);border-radius:4px;background:var(--surface);color:var(--ink3);cursor:pointer}
+.sc button.sug{border-color:var(--ink2);color:var(--ink)}
+.sc button[aria-pressed="true"].s1,.sc button[aria-pressed="true"].s2{background:var(--buy);border-color:var(--buy);color:var(--surface)}
+.sc button[aria-pressed="true"].s3{background:var(--ink2);border-color:var(--ink2);color:var(--surface)}
+.sc button[aria-pressed="true"].s4,.sc button[aria-pressed="true"].s5{background:var(--sell);border-color:var(--sell);color:var(--surface)}
+.chip.s1,.chip.s2{background:var(--buy-soft);color:var(--buy)} .chip.s3{background:var(--sunk);color:var(--ink3)} .chip.s4,.chip.s5{background:var(--sell-soft);color:var(--sell)}
+.chip.s1b{background:var(--buy);color:var(--surface)} .chip.s5b{background:var(--sell);color:var(--surface)}
+td.zone{font:600 12px var(--f-disp);letter-spacing:.04em}
+.z-spike{color:var(--sell)} .z-buy{color:var(--buy)} .z-flat{color:var(--ink3)}
+table.dv td,table.dv th{padding:5px 7px;font-size:13px}
+table.dv td.l{font-family:var(--f-body)}
+table.dv td.grp,table.dv th.grp{border-left:1px solid var(--line)}
+tr.inband td{background:color-mix(in srgb,var(--buy-soft) 45%,transparent)}
+tr.sellrow td{background:color-mix(in srgb,var(--sell-soft) 45%,transparent)}
+button.rowcopy{font:12px var(--f-mono);border:1px solid var(--line);background:var(--surface);color:var(--ink2);border-radius:4px;cursor:pointer;padding:1px 6px}
+.cols2{display:grid;grid-template-columns:repeat(auto-fit,minmax(420px,1fr));gap:18px}
+@media (max-width:560px){.cols2{grid-template-columns:1fr}}
+.wigrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px 22px;margin-top:10px}
+.ctl{display:flex;flex-direction:column;gap:4px}.clab{display:flex;justify-content:space-between;font-size:13px;color:var(--ink2)}
+.ctl input[type=range]{width:100%;accent-color:var(--accent)}
+td.chg{color:var(--warn);font-weight:600}
+.ochart svg{width:100%;height:auto;display:block}
+.callout{border-left:3px solid var(--accent);background:var(--accent-soft);padding:10px 14px;border-radius:4px;font-size:14px;max-width:95ch}
+[hidden]{display:none!important}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="eyebrow">IESO day-ahead virtuals · model v1</div>
+      <h1 id="title">Ontario Virtuals Desk</h1>
+      <div class="muted small" id="asof"></div>
+    </div>
+    <div class="controls">
+      <div class="seg" role="group" aria-label="Hub">
+        <button id="hub-EAST" aria-pressed="true">East</button>
+        <button id="hub-OTTAWA" aria-pressed="false">Ottawa</button>
+      </div>
+      <label class="field" for="basemw">Base size MW <input id="basemw" type="number" min="1" max="100" step="1" value="25"></label>
+    </div>
+  </header>
+
+  <nav class="tabs" role="tablist" aria-label="Views"><button id="t-next" role="tab" aria-selected="true">Next day</button><button id="t-dv" role="tab" aria-selected="false">DA Virtual</button><button id="t-out" role="tab" aria-selected="false">Outages</button></nav>
+
+  <div id="tab-next" style="display:flex;flex-direction:column;gap:26px">
+  <div class="stats" id="stats"></div>
+
+  <section>
+    <div class="sechead"><h2>Tomorrow, hour by hour</h2>
+      <div class="legend"><span><i style="background:var(--band1)"></i>DA P10–P90</span><span><i style="background:var(--band2)"></i>DA P25–P75</span>
+        <span><i style="background:var(--accent)"></i>DA P50</span><span><i style="background:var(--rt)"></i>RT P50</span><span><i style="background:var(--ink)"></i>Published DA</span></div></div>
+    <div class="panel chart" id="fan"></div>
+  </section>
+
+  <section>
+    <div class="sechead"><h2>Bids and offers</h2><span class="muted small">SELL = full size · SELL-L = half size · long side: see the buy band on the DA Virtual tab</span></div>
+    <div class="tablewrap"><table id="hours"></table></div>
+    <div class="panel" style="display:flex;flex-direction:column;gap:8px">
+      <div class="sechead"><h3>Ladder for the IESO grid</h3><button class="copy" id="copybtn">Copy ladder</button></div>
+      <div class="muted small">HE, then MW and price per tier. Tab-separated.</div>
+      <textarea id="ladder" readonly aria-label="Ladder text"></textarea>
+      <div class="small muted" id="copymsg"></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sechead"><h2>Tomorrow's supply stack</h2><span class="muted small">MW, as of the 08:00 MT deadline</span></div>
+    <div class="panel chart" id="stack"></div>
+    <div class="legend stackleg"><span><i style="background:var(--nuc)"></i>Nuclear available</span><span><i style="background:var(--hyd)"></i>Hydro (model)</span><span><i style="background:var(--wnd)"></i>Wind (Meteologica, else IESO)</span><span><i style="background:var(--sol)"></i>Solar forecast</span><span><i style="background:var(--gas)"></i>Gas need</span><span><i style="background:var(--ink)"></i>IESO demand + net exports (model)</span></div>
+    <div class="tablewrap"><table id="stacktbl"></table></div>
+  </section>
+
+
+  <section>
+    <div class="sechead"><h2>How accurate it has been</h2><span class="muted small">Walk-forward, bid-time inputs only</span></div>
+    <div class="grid2">
+      <div class="panel"><h3>Next-day DA, hourly</h3><div class="tablewrap" style="border:0"><table id="acc1"></table></div><div class="small muted" id="acc1n"></div></div>
+      <div class="panel"><h3>Range coverage</h3><div class="tablewrap" style="border:0"><table id="acccov"></table></div><div class="small muted">Share of hours below each quantile (ideal 10 / 25 / 50 / 75 / 90)</div></div>
+    </div>
+    <div class="panel"><h3>Signal P&amp;L, Jul 20 – Sep 27</h3><div class="tablewrap" style="border:0"><table id="acc3"></table></div><div class="small muted">1 MW per signal hour · 90% range resamples days · uplift not deducted</div></div>
+    <div class="panel"><h3>Desk trades split by signal</h3><div class="tablewrap" style="border:0"><table id="desk"></table></div><div class="small muted" id="deskn"></div></div>
+    <div class="grid2">
+      <div class="panel"><h3>DA error by price level</h3><div class="tablewrap" style="border:0"><table id="biaslvl"></table></div><div class="small muted">Error = model − published DA (+ = model high)</div></div>
+      <div class="panel"><h3>DA error by weekday</h3><div class="tablewrap" style="border:0"><table id="biasdow"></table></div></div>
+    </div>
+    <div class="panel"><h3>DA error distribution</h3><div class="tablewrap" style="border:0"><table id="errhist"></table></div><div class="small muted" id="errq"></div></div>
+    <details class="guide" open><summary>Day by day record</summary>
+      
+      <div class="tablewrap scrollbox"><table id="daily"></table></div>
+    </details>
+  </section>
+
+  </div>
+  <div id="tab-dv" hidden style="display:flex;flex-direction:column;gap:26px">
+    <div class="stats" id="dvstats"></div>
+
+    <section>
+      <div class="sechead"><h2>Final matrix</h2><span class="muted small">Everything for the 1–5 decision, per hour. Click a score to change that hour's ladder.</span></div>
+      <details class="guide" id="wibox" open><summary>What-if sliders <span class="chip s3" id="wiflag" hidden>WHAT-IF ACTIVE</span></summary>
+        <div class="wigrid">
+          <div class="ctl"><div class="clab"><span>Ontario demand</span><span class="num" id="wv_load">0 MW</span></div><input type="range" id="ws_load" min="-2000" max="2000" step="50" value="0" aria-label="Demand shift"></div>
+          <div class="ctl"><div class="clab"><span>Wind</span><span class="num" id="wv_wind">0%</span></div><input type="range" id="ws_wind" min="-100" max="100" step="5" value="0" aria-label="Wind shift"></div>
+          <div class="ctl"><div class="clab"><span>Solar</span><span class="num" id="wv_solar">0%</span></div><input type="range" id="ws_solar" min="-100" max="100" step="5" value="0" aria-label="Solar shift"></div>
+          <div class="ctl"><div class="clab"><span>Gas available (− = outage)</span><span class="num" id="wv_gas">0 MW</span></div><input type="range" id="ws_gas" min="-3000" max="1000" step="50" value="0" aria-label="Gas availability shift"></div>
+          <div class="ctl"><div class="clab"><span>Nuclear available</span><span class="num" id="wv_nuc">0 MW</span></div><input type="range" id="ws_nuc" min="-3500" max="1000" step="50" value="0" aria-label="Nuclear availability shift"></div>
+          <div class="ctl"><div class="clab"><span>Hydro available</span><span class="num" id="wv_hyd">0 MW</span></div><input type="range" id="ws_hyd" min="-1500" max="1000" step="50" value="0" aria-label="Hydro availability shift"></div>
+          <div class="ctl"><div class="clab"><span>Net exports</span><span class="num" id="wv_exp">0 MW</span></div><input type="range" id="ws_exp" min="-1500" max="1500" step="50" value="0" aria-label="Net export shift"></div>
+        </div>
+        <div class="dvbar" style="margin-top:8px">
+          <button class="btn" data-wi="reset">Reset</button>
+          <button class="btn" data-wi="gastrip">Gas unit trip (−500)</button>
+          <button class="btn" data-wi="nuctrip">Nuclear unit out (−880)</button>
+          <button class="btn" data-wi="heat">Heat (+1,000 load)</button>
+          <button class="btn" data-wi="calm">Calm (−80% wind)</button>
+          <button class="btn" data-wi="exports">Export pull (+800)</button>
+        </div>
+        <div class="small muted" style="margin-top:6px">Moves every hour of tomorrow by the same amount. Headroom and gas need are recomputed; DA moves through our DA model's own headroom and NY-flow coefficients (per time block); RT keeps its forecast ratio to DA; the signal, suggested score and ladders are re-run with today's learned thresholds. A slider is a scenario, not a forecast.</div>
+      </details>
+      <div class="dvbar">
+        <button class="btn" id="dv-apply">Apply suggested scores</button>
+        <button class="btn" id="dv-neutral">Set all to 3</button>
+        <button class="btn" id="dv-clear">Clear all (no orders)</button>
+        <label class="field" for="dvsize">Size × <input id="dvsize" type="number" min="0.1" max="10" step="0.1" value="1"></label>
+        <span class="small muted" id="dvcap"></span>
+      </div>
+      <div class="tablewrap"><table class="dv" id="dvmatrix"></table></div>
+      <div class="small muted">Scores: 1 strong buy · 2 buy · 3 neutral straddle · 4 sell · 5 strong sell. Suggested = our tested rule (outlined). VA = what the VA Hub auto-score would say from the same prices.
+        Zone odds are measured over 17 months at this hub. Lean counts only the three VA Hub signals that held up in the re-test.</div>
+    </section>
+
+    <section>
+      <div class="sechead"><h2>Copy-paste ladder — IESO bid/offer tool</h2><span class="muted small">3 tiers per HE · MW rounded to 5 · prices to whole $ · row = HE, then MW / price × 3, then 3 empty tiers</span></div>
+      <div class="cols2">
+        <div class="panel" style="display:flex;flex-direction:column;gap:8px">
+          <div class="sechead"><h3>Buy ladder — bids (buy DA)</h3><button class="copy" id="copybuy">Copy all buy rows</button></div>
+          <div class="tablewrap" style="border:0"><table class="dv" id="dvbuy"></table></div>
+        </div>
+        <div class="panel" style="display:flex;flex-direction:column;gap:8px">
+          <div class="sechead"><h3>Sell ladder — offers (sell DA)</h3><button class="copy" id="copysell">Copy all sell rows</button></div>
+          <div class="tablewrap" style="border:0"><table class="dv" id="dvsell"></table></div>
+        </div>
+      </div>
+      <textarea id="dvclip" readonly aria-label="Copied ladder text" style="width:100%;height:90px;font:12px var(--f-mono);border:1px solid var(--line);border-radius:6px;background:var(--sunk);color:var(--ink);padding:8px"></textarea>
+      <div class="small muted" id="dvmsg">A bid clears when DA settles at or below its price; an offer clears when DA settles at or above its price.</div>
+    </section>
+
+  </div>
+
+  <div id="tab-out" hidden style="display:flex;flex-direction:column;gap:26px">
+    <div class="stats" id="otstats"></div>
+    <div class="callout" id="otbake"></div>
+    <section>
+      <div class="sechead"><h2>Watch list</h2><span class="muted small" id="otwatchsub"></span></div>
+      <div class="panel"><ul class="tight" id="otwatch"></ul></div>
+    </section>
+    <section>
+      <div class="sechead"><h2>Next 35 days — IESO's outage schedule</h2><span class="muted small" id="ot35sub"></span></div>
+      <div class="panel ochart" id="ot35chart"></div>
+      <div class="legend"><span><i style="background:var(--gas)"></i>Gas outage, scheduled</span><span><i style="background:var(--gas);opacity:.45"></i>Gas outage, expected (schedule + typical unscheduled at that lead)</span><span><i style="background:var(--band1)"></i>Normal gas range for the month (P25–P75, 2019–25)</span><span><i style="background:var(--nuc)"></i>Nuclear outage, scheduled</span></div>
+      <div class="tablewrap scrollbox"><table class="dv" id="ot35"></table></div>
+    </section>
+    <section>
+      <div class="sechead"><h2>18-month Reliability Outlook</h2><span class="muted small" id="otrosub"></span></div>
+      <div class="panel ochart" id="otrochart"></div>
+      <div class="legend"><span><i style="background:var(--gas)"></i>Gas &amp; oil reductions, latest edition</span><span><i style="background:var(--gas);opacity:.4"></i>previous edition</span><span><i style="background:var(--nuc)"></i>Nuclear reductions, latest</span><span><i style="background:var(--nuc);opacity:.4"></i>previous</span></div>
+      <div class="small muted" id="otroacc"></div>
+    </section>
+    <div class="grid2">
+      <section><div class="sechead"><h2>Units out now</h2><span class="muted small" id="otunitsub"></span></div>
+        <div class="tablewrap scrollbox"><table class="dv" id="otunits"></table></div></section>
+      <section><div class="sechead"><h2>Intertie transmission outages</h2><span class="muted small">next 60 days, from the latest Outlook</span></div>
+        <div class="tablewrap scrollbox"><table class="dv" id="otties"></table></div></section>
+    </div>
+    <section>
+      <div class="sechead"><h2>Normal outage levels by month</h2><span class="muted small">share of capacity out, peak hours, IESO unit capability data May 2019 – Dec 2025</span></div>
+      <div class="tablewrap"><table class="dv" id="otseas"></table></div>
+      <div class="small muted">Gas outage includes summer ambient derates (as IESO's own Adequacy figure does). Nuclear shares are distorted by multi-year refurbishments (a unit in refurbishment drops out of the rating), so for nuclear read the MW, not the share. Gas trips = unit drops below half its rating for a day or less.</div>
+    </section>
+  </div>
+
+</div>
+
+<script>
+const B = /*__BUNDLE__*/null;
+const $ = s => document.querySelector(s);
+const fmt = (v, d=2) => v==null || isNaN(v) ? '–' : Number(v).toFixed(d);
+const money = v => v==null||isNaN(v) ? '–' : (v<0?'−$':'$')+Math.abs(Math.round(v)).toLocaleString('en-CA');
+const fmt0 = v => v==null || isNaN(v) ? '–' : Math.round(v).toLocaleString('en-CA');
+const DOW = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const dlabel = s => { const d = new Date(s+'T12:00:00Z'); return `${DOW[d.getUTCDay()]} ${d.getUTCDate()} ${MON[d.getUTCMonth()]}`; };
+let HUB = 'EAST';
+const ZN = {EAST:'East', OTTAWA:'Ottawa', TORONTO:'Toronto', SOUTHWEST:'Southwest'};
+try { const h = localStorage.getItem('ovd-hub'); if (h && B.hubs[h]) HUB = h; } catch(e){}
+function baseMW(){ const v = parseFloat($('#basemw').value); return isFinite(v) && v > 0 ? v : 25; }
+
+function ladderFor(h, cap){
+  const b = baseMW();
+  if (h.signal === 'SELL'){ const size = Math.min(cap, b); return [[0.5, h.da[0]], [0.3, h.da[1]], [0.2, h.da[2]]].map(([w,p]) => [Math.max(1, Math.round(size*w)), Math.round(p*100)/100]); }
+  if (h.signal === 'SELL-L'){ const size = Math.min(cap, b*0.5); return [[0.6, h.da[1]], [0.4, h.da[2]]].map(([w,p]) => [Math.max(1, Math.round(size*w)), Math.round(p*100)/100]); }
+  return [];
+}
+
+function stats(){
+  const H = B.hubs[HUB], hrs = H.hours, act = (B.actual||{})[HUB] || {};
+  const on = hrs.filter(h => h.he >= 7 && h.he <= 22), off = hrs.filter(h => h.he < 7 || h.he > 22);
+  const avg = (a, f) => a.reduce((s, h) => s + f(h), 0) / a.length;
+  const sells = hrs.filter(h => h.signal==='SELL').length, buys = hrs.filter(h => h.signal==='SELL-L').length; const th = H.thr || {};
+  const lx = Math.max(...hrs.map(h => h.p_lennox));
+  const pub = hrs.filter(h => act[h.he] && act[h.he].da != null);
+  let check = '';
+  if (pub.length === 24){ const mae = avg(pub, h => Math.abs(h.da[2] - act[h.he].da)); const ins = pub.filter(h => act[h.he].da >= h.da[0] && act[h.he].da <= h.da[4]).length;
+    check = `<div class="stat"><span class="eyebrow">Published DA check</span><span class="v">$${fmt(mae)}</span><span class="s">MAE vs published DA · ${ins}/24 inside P10–P90</span></div>`; }
+  $('#stats').innerHTML = `
+   <div class="stat"><span class="eyebrow">On-peak DA HE7–22</span><span class="v">$${fmt(avg(on,h=>h.da[2]))}</span><span class="s">P10–P90 $${fmt(avg(on,h=>h.da[0]),0)}–${fmt(avg(on,h=>h.da[4]),0)}</span></div>
+   <div class="stat"><span class="eyebrow">Off-peak DA</span><span class="v">$${fmt(avg(off,h=>h.da[2]))}</span><span class="s">P10–P90 $${fmt(avg(off,h=>h.da[0]),0)}–${fmt(avg(off,h=>h.da[4]),0)}</span></div>
+   <div class="stat"><span class="eyebrow">On-peak RT P50</span><span class="v">$${fmt(avg(on,h=>h.rt[2]))}</span><span class="s">RT P10–P90 $${fmt(avg(on,h=>h.rt[0]),0)}–${fmt(avg(on,h=>h.rt[4]),0)}</span></div>
+   <div class="stat"><span class="eyebrow">Signal hours</span><span class="v"><span class="neg">${sells}</span> + <span class="neg" style="opacity:.7">${buys}</span></span><span class="s">SELL + SELL-L · thresholds ${fmt0(th.head)} MW spare / ${fmt0(th.gas)}–${fmt0(th.gas_ext)} MW gas</span></div>
+   <div class="stat"><span class="eyebrow">Tightest hour</span><span class="v">${fmt0(Math.min(...hrs.map(h=>h.head)))} MW</span><span class="s">spare gas + hydro · Lennox chance ${Math.round(lx*100)}%</span></div>
+   ${check}`;
+}
+
+function fan(){
+  const hrs = B.hubs[HUB].hours, act = (B.actual||{})[HUB] || {};
+  const W = 1000, H = 300, L = 46, R = 12, T = 12, Bm = 30;
+  const vals = hrs.flatMap(h => [h.da[0], h.da[4], h.rt[2]]).concat(Object.values(act).map(a => a.da).filter(v => v != null));
+  let lo = Math.floor(Math.min(...vals) / 10) * 10, hi = Math.ceil(Math.max(...vals) / 10) * 10; if (hi - lo < 20) hi = lo + 20;
+  const x = he => L + (he - 1) * (W - L - R) / 23, y = v => T + (hi - v) * (H - T - Bm) / (hi - lo);
+  const area = (a, b) => hrs.map(h => `${x(h.he)},${y(h.da[a])}`).join(' ') + ' ' + hrs.slice().reverse().map(h => `${x(h.he)},${y(h.da[b])}`).join(' ');
+  let g = '';
+  const step = (hi - lo) > 80 ? 20 : 10;
+  for (let v = lo; v <= hi; v += step) g += `<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--grid)"/><text x="${L-8}" y="${y(v)+4}" text-anchor="end" font-size="11" fill="var(--ink3)" font-family="JetBrains Mono,monospace">$${v}</text>`;
+  for (const he of [1,4,7,10,13,16,19,22,24]) g += `<text x="${x(he)}" y="${H-10}" text-anchor="middle" font-size="11" fill="var(--ink3)" font-family="JetBrains Mono,monospace">HE${he}</text>`;
+  g += `<rect x="${x(14)}" y="${T}" width="${x(21)-x(14)}" height="${H-T-Bm}" fill="var(--accent-soft)" opacity=".45"/>`;
+  g += `<polygon points="${area(0,4)}" fill="var(--band1)"/><polygon points="${area(1,3)}" fill="var(--band2)"/>`;
+  g += `<polyline points="${hrs.map(h => `${x(h.he)},${y(h.da[2])}`).join(' ')}" fill="none" stroke="var(--accent)" stroke-width="2.5"/>`;
+  g += `<polyline points="${hrs.map(h => `${x(h.he)},${y(h.rt[2])}`).join(' ')}" fill="none" stroke="var(--rt)" stroke-width="1.8" stroke-dasharray="5 4"/>`;
+  for (const h of hrs){ const a = act[h.he]; if (a && a.da != null) g += `<circle cx="${x(h.he)}" cy="${y(a.da)}" r="3.4" fill="var(--ink)"/>`; }
+  g += `<text x="${(x(14)+x(21))/2}" y="${T+14}" text-anchor="middle" font-size="11" fill="var(--ink2)" font-family="Source Sans 3,sans-serif">HE14–21</text>`;
+  $('#fan').innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Hourly DA forecast range for ${HUB}">${g}</svg>`;
+}
+
+function table(){
+  const H = B.hubs[HUB];
+  let rows = `<tr><th>HE</th><th class="l">Signal</th><th>Tier 1</th><th>Tier 2</th><th>Tier 3</th><th>DA P50</th><th>DA P10–P90</th><th>RT P50</th><th>RT P10–P90</th><th>Spare MW</th><th>Gas need</th><th>Lennox</th><th>Lean</th><th>Tesla − IESO</th><th>ON→NY sched</th><th>RT−DA if load 200–600 low / high</th></tr>`;
+  const lines = [];
+  for (const h of H.hours){
+    const lad = ladderFor(h, H.cap_mw);
+    const t = i => lad[i] ? `${lad[i][0]} @ ${fmt(lad[i][1])}` : '–';
+    if (lad.length) lines.push([h.he, ...lad.flat()].join('\t'));
+    const lxc = h.p_lennox >= 0.25 ? 'lx' : '';
+    const lab = h.signal==='NONE' ? 'NO TRADE' : h.signal;
+    rows += `<tr class="${h.he>=14&&h.he<=21?'eve':''}"><td>${h.he}</td><td class="l"><span class="chip ${h.signal}">${lab}</span> <span class="why">${h.why||''}</span></td>
+      <td>${t(0)}</td><td>${t(1)}</td><td>${t(2)}</td><td><b>${fmt(h.da[2])}</b></td><td>${fmt(h.da[0],0)}–${fmt(h.da[4],0)}</td>
+      <td>${fmt(h.rt[2])}</td><td>${fmt(h.rt[0],0)}–${fmt(h.rt[4],0)}</td><td>${fmt0(h.head)}</td><td>${fmt0(h.gas_hat)}</td><td class="${lxc}">${Math.round(h.p_lennox*100)}%</td>
+      <td class="${h.lean>3?'neg':h.lean<-2?'pos':''}">${h.lean==null?'–':(h.lean>0?'+':'')+fmt(h.lean,1)}</td>
+      <td>${h.gapT==null?'–':(h.gapT>0?'+':'')+fmt0(h.gapT)}</td><td>${h.ny_oh == null ? '–' : fmt0(h.ny_oh)}</td>
+      <td><span class="neg">${h.miss_row[1]>0?'+':''}${h.miss_row[1]}</span> / <span class="pos">${h.miss_row[3]>0?'+':''}${h.miss_row[3]}</span></td></tr>`;
+  }
+  $('#hours').innerHTML = rows;
+  $('#ladder').value = lines.length ? lines.join('\n') : 'No signal hours for this hub tomorrow.';
+}
+
+function stack(){
+  const hrs = B.hubs[HUB].hours.filter(h => h.stack && h.stack.hydro != null).map(h => ({...h, s2: {nuc: h.stack.nuc, hydro: h.stack.hydro, wind: (h.stack.wind_meteo ?? h.stack.wind_ieso), solar: h.stack.solar||0, dem: h.stack.dem_ieso, exp: h.stack.exp||0}}));
+  const W = 1000, H = 300, L = 54, R = 12, T = 12, Bm = 30;
+  const need = hrs.map(h => h.s2.dem + h.s2.exp);
+  const hi = Math.ceil(Math.max(...need, ...hrs.map(h => h.s2.nuc+h.s2.hydro+h.s2.wind+h.s2.solar)) / 2000) * 2000;
+  const bw = (W - L - R) / 24, x = he => L + (he - 1) * bw, y = v => T + (hi - v) * (H - T - Bm) / hi;
+  let g = '';
+  for (let v = 0; v <= hi; v += 4000) g += `<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--grid)"/><text x="${L-8}" y="${y(v)+4}" text-anchor="end" font-size="11" fill="var(--ink3)" font-family="JetBrains Mono,monospace">${(v/1000).toFixed(0)} GW</text>`;
+  for (const he of [1,4,7,10,13,16,19,22,24]) g += `<text x="${x(he)+bw/2}" y="${H-10}" text-anchor="middle" font-size="11" fill="var(--ink3)" font-family="JetBrains Mono,monospace">HE${he}</text>`;
+  for (const h of hrs){
+    const s = h.s2; let base = 0; const x0 = x(h.he) + 2, w = bw - 4;
+    for (const [k, c] of [['nuc','--nuc'],['hydro','--hyd'],['wind','--wnd'],['solar','--sol']]){ const v = Math.max(0, s[k]); g += `<rect x="${x0}" y="${y(base+v)}" width="${w}" height="${y(base)-y(base+v)}" fill="var(${c})"/>`; base += v; }
+    const gn = Math.max(0, s.dem + s.exp - base);
+    if (gn > 0) g += `<rect x="${x0}" y="${y(base+gn)}" width="${w}" height="${y(base)-y(base+gn)}" fill="var(--gas)" opacity=".85"/>`;
+  }
+  g += `<polyline points="${hrs.map(h => `${x(h.he)+bw/2},${y(h.s2.dem+h.s2.exp)}`).join(' ')}" fill="none" stroke="var(--ink)" stroke-width="2"/>`;
+  $('#stack').innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Supply stack by hour">${g}</svg>`;
+  const cols = [['dem_ieso','Demand IESO'],['dem_tesla','Demand Tesla'],['nuc','Nuclear avail'],['wind_ieso','Wind IESO'],['wind_meteo','Wind Meteologica'],['solar','Solar'],['hydro','Hydro (model)'],['hyd_ieso','Hydro IESO'],['exp','Net exports (model)'],['exp_ny','of which NY (NYISO)'],['lim_exp_cap','Export limit, all ties'],['lim_imp_cap','Import limit, all ties'],['lim_exp_ny','  NY export / import'],['lim_exp_mi','  MI export / import'],['lim_exp_pq','  PQ export / import'],['lim_exp_cut','Export limit cut vs 28d'],['lim_imp_cut','Import limit cut vs 28d'],['gas_need','Gas need'],['gas_need_tesla','Gas need (Tesla load)'],['gas_av','Gas avail'],['spare','Spare MW']];
+  const H2 = B.hubs[HUB].hours;
+  let st = `<tr><th class="l">MW</th>${H2.map(h=>`<th>HE${h.he}</th>`).join('')}</tr>`;
+  for (const [k, n] of cols){ const b = k==='gas_need'||k==='spare'; const pair = /^lim_exp_(ny|mi|pq)$/.test(k); const cell = h => pair ? `${fmt0(h.stack?.[k])} / ${fmt0(h.stack?.[k.replace('exp','imp')])}` : fmt0(h.stack?.[k]); st += `<tr><td class="l ${b?'best':''}">${n}</td>${H2.map(h=>`<td class="${b?'best':''}">${cell(h)}</td>`).join('')}</tr>`; }
+  $('#stacktbl').innerHTML = st;
+}
+
+function accuracy(){
+  const A = B.accuracy;
+  let t = `<tr><th class="l">Hub</th><th class="l">Model</th><th>Hours</th><th>MAE</th><th>HE17–21</th><th>MAPE</th></tr>`;
+  for (const r of A.next_day) t += `<tr><td class="l">${ZN[r.hub]||r.hub}</td><td class="l ${r.model==='Model v1'?'best':''}">${r.model}</td><td>${fmt0(r.hours)}</td><td class="${r.model==='Model v1'?'best':''}">$${fmt(r.mae)}</td><td>$${fmt(r.eve)}</td><td>${fmt(r.mape,1)}%</td></tr>`;
+  $('#acc1').innerHTML = t; const c = A[`cov_${HUB}`];
+  $('#acc1n').textContent = `Jul 19 – Sep 27 2026. Real-time P50 error $${fmt(c.rt_mae)} vs $${fmt(c.rt_naive)} for "RT = DA forecast" (${c.rt_days} days).`;
+  let cv = `<tr><th class="l">${ZN[HUB]}</th><th>P10</th><th>P25</th><th>P50</th><th>P75</th><th>P90</th></tr>`;
+  cv += `<tr><td class="l">DA (${c.da_days} d)</td>${c.da.map(v=>`<td>${fmt(v,1)}%</td>`).join('')}</tr><tr><td class="l">RT (${c.rt_days} d)</td>${c.rt.map(v=>`<td>${fmt(v,1)}%</td>`).join('')}</tr>`;
+  $('#acccov').innerHTML = cv;
+
+  const v2 = A[`v2_${HUB}`];
+  let b3 = `<tr><th class="l">Rule</th><th>Hours</th><th>$/MWh</th><th>90% range</th><th>Win</th><th>Total</th><th>Days up</th><th>Worst day</th><th>Best day</th></tr>`;
+  for (const r of v2){ const main = /core|extended hours|core \+ ext/.test(r.rule); b3 += `<tr><td class="l ${main?'best':''}">${r.rule.trim()}</td><td>${fmt0(r.hours)}</td><td class="${r.usd_mwh>0?'':'neg'}">${fmt(r.usd_mwh)}</td><td>${r.ci90}</td><td>${fmt(r.win,0)}%</td><td>${money(r.total)}</td><td>${fmt(r.days_up,0)}%</td><td class="neg">${money(r.worst_day)}</td><td>${money(r.best_day)}</td></tr>`; }
+  $('#acc3').innerHTML = b3;
+  const dk = A[`desk_${HUB}`];
+  let dt = `<tr><th class="l">Desk trades</th><th class="l">Hour type</th><th>Hours</th><th>MWh</th><th>$/MWh</th><th>P&amp;L</th></tr>`;
+  for (const r of dk) dt += `<tr><td class="l">${r.buysell}</td><td class="l">${r.state}</td><td>${fmt0(r.hours)}</td><td>${fmt0(r.mwh)}</td><td class="${r.usd_mwh>=0?'':'neg'}">${fmt(r.usd_mwh)}</td><td class="${r.pnl>=0?'':'neg'}">${money(r.pnl)}</td></tr>`;
+  $('#desk').innerHTML = dt; $('#deskn').textContent = dk.length ? `${ZN[HUB]} trades from Dynasty's virtuals table, ${dk[0].from} to ${dk[0].to} (${dk[0].days} days that overlap the test). A signal hour is one v2 would have sold (SELL or SELL-L).` : '';
+  const bl = A[`bias_level_${HUB}`];
+  let t1 = `<tr><th class="l">Published DA</th><th>Hours</th><th>Mean</th><th>Median</th><th>Model high</th><th>MAE</th></tr>`;
+  for (const r of bl) t1 += `<tr><td class="l">$${r.band}</td><td>${fmt0(r.n)}</td><td>${r.mean>0?'+':''}${fmt(r.mean)}</td><td>${r.median>0?'+':''}${fmt(r.median)}</td><td>${fmt(r.hi,0)}%</td><td>${fmt(r.mae)}</td></tr>`;
+  $('#biaslvl').innerHTML = t1;
+  const bd = A[`bias_dow_${HUB}`]; const DN = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  let t2 = `<tr><th class="l">Day</th><th>Hours</th><th>Mean</th><th>Median</th><th>Model high</th><th>MAE</th></tr>`;
+  for (const r of bd) t2 += `<tr><td class="l">${DN[r.dow]}</td><td>${fmt0(r.n)}</td><td>${r.mean>0?'+':''}${fmt(r.mean)}</td><td>${r.median>0?'+':''}${fmt(r.median)}</td><td>${fmt(r.hi,0)}%</td><td>${fmt(r.mae)}</td></tr>`;
+  $('#biasdow').innerHTML = t2;
+  const eh = A[`err_hist_${HUB}`]; const tot = eh.reduce((s,r)=>s+r.n,0);
+  const lab = s => s.replace('(-999, ','< ').replace(', 999]',' +').replace(/[\(\]]/g,'').replace(', ',' to ');
+  $('#errhist').innerHTML = `<tr><th class="l">Error $</th>${eh.map(r=>`<th>${lab(r.bin).replace('< -30','≤ −30').replace('30 +','> 30')}</th>`).join('')}</tr><tr><td class="l">Hours</td>${eh.map(r=>`<td>${r.n}</td>`).join('')}</tr><tr><td class="l">Share</td>${eh.map(r=>`<td>${fmt(r.n/tot*100,1)}%</td>`).join('')}</tr>`;
+  const q = A[`err_q_${HUB}`];
+  $('#errq').textContent = `Percentiles of (model − DA): 5% ${q['0.05']}, 10% ${q['0.1']}, 25% ${q['0.25']}, median ${q['0.5']}, 75% ${q['0.75']}, 90% ${q['0.9']}, 95% ${q['0.95']}. Half of all hours land within about ±$4, and the long tail is on the low side (spikes the model missed).`;
+  const dl = A[`daily_${HUB}`];
+  let t3 = `<tr><th class="l">Date</th><th class="l">Day</th><th>DA avg</th><th>Model avg</th><th>Error</th><th>On-peak error</th><th>Worst hour</th><th>DA − RT avg</th><th>Sell all $</th><th>Signal hours</th><th>Signal P&amp;L $</th></tr>`;
+  for (const r of dl.slice().reverse()){ const sc = (r.core||0) + (r.light||0);
+    t3 += `<tr><td class="l">${r.date}</td><td class="l">${r.dow==null?'':DN[r.dow]}</td><td>${fmt(r.da)}</td><td>${fmt(r.fc)}</td><td class="${r.err>0?'':'neg'}">${r.err==null?'–':(r.err>0?'+':'')+fmt(r.err)}</td><td>${r.err_on==null?'–':(r.err_on>0?'+':'')+fmt(r.err_on)}</td><td>${r.worst==null?'–':fmt(r.worst,1)}</td>
+      <td class="${r.spread>0?'':'neg'}">${r.spread==null?'–':(r.spread>0?'+':'')+fmt(r.spread)}</td><td class="${r.sell_all>=0?'':'neg'}">${fmt0(r.sell_all)}</td><td>${r.core==null?'–':`${r.core} + ${r.light}`}</td><td class="${(r.v2||0)>=0?'':'neg'}">${sc?fmt0(r.v2):'–'}</td></tr>`; }
+  $('#daily').innerHTML = t3;
+}
+
+// ================= DA Virtual tab =================
+const SCN = {1:'STRONG BUY',2:'Buy',3:'Neutral',4:'Sell',5:'STRONG SELL'};
+const SCORES = {};                       // manual overrides only: {he: score}; 0 = no orders. Missing = follow the suggested score
+const WI = {load:0, wind:0, solar:0, gas:0, nuc:0, hyd:0, exp:0};
+const wiActive = () => Object.values(WI).some(v => v !== 0);
+function dvKey(){ return 'ovd-dv2-'+B.target+'-'+HUB; }
+function dvLoad(){ if (SCORES[HUB]) return; let s=null; try{ s = JSON.parse(localStorage.getItem(dvKey())||'null'); }catch(e){} SCORES[HUB] = s || {}; }
+function dvSave(){ try{ localStorage.setItem(dvKey(), JSON.stringify(SCORES[HUB])); }catch(e){} }
+function dvSize(){ const v = parseFloat($('#dvsize').value); return isFinite(v) && v > 0 ? v : 1; }
+const rhe = x => { const f = Math.floor(x), d = x - f; return Math.abs(d - 0.5) < 1e-9 ? (f % 2 === 0 ? f : f + 1) : Math.round(x); };   // Python's round()
+const r5 = q => q<=0 ? 0 : Math.max(5, rhe(q/5)*5);
+const BASE_MW = {1:[40,30,20],2:[30,25,20],3:[15,12,10],4:[10,12,15],5:[20,30,40]};
+function jsLadder(s, da, rt){           // VA Hub _ladder() (server.py 7107), same as model/da_virtual_bt.ladder
+  const b = BASE_MW[s], half = b.map(x => Math.max(1, Math.floor(x/2))); let bp, bq, sp, sq;
+  if (s===1){ bp=[Math.min(da*1.20, rt*1.10), rt*.95, rt*.85]; bq=b; sp=[null,null,null]; sq=[0,0,0]; }
+  else if (s===2){ bp=[rt*.90, rt*.85, rt*.80]; bq=b; sp=[rt*1.4, rt*1.6, rt*1.8]; sq=half; }
+  else if (s===3){ bp=[rt*.793, rt*.741, rt*.690]; bq=b; sp=[rt*1.207, rt*1.311, rt*1.414]; sq=b; }
+  else if (s===4){ bp=[rt*.65, rt*.62, rt*.60]; bq=half; sp=[rt*1.10, rt*1.15, rt*1.20]; sq=b; }
+  else { bp=[null,null,null]; bq=[0,0,0]; sp=[Math.max(da*.98, rt), rt, rt+5]; sq=b; }
+  const fp = p => p==null ? null : Math.max(-100, Math.min(2000, rhe(p)));
+  return {buy: bq.map((q,i)=>[r5(q), fp(bp[i])]), sell: sq.map((q,i)=>[r5(q), fp(sp[i])])};
+}
+function bandLabel(v){ const B_=[[-1e9,5000,'<5k'],[5000,6000,'5-6k'],[6000,7000,'6-7k'],[7000,8000,'7-8k'],[8000,9000,'8-9k'],[9000,10000,'9-10k'],[10000,12000,'10-12k'],[12000,1e9,'12k+']];
+  const r = B_.find(x => v>=x[0] && v<x[1]); return r ? r[2] : null; }
+function S(h){                          // the hour under the current what-if (identical to the model when all sliders are 0)
+  if (!wiActive()) return Object.assign({}, h, {chg:false, ladders_s:h.ladders});
+  const H = B.hubs[HUB], th = H.thr || {}, bb = H.buy_band;
+  const dW = (h.wind_fc||0)*WI.wind/100, dS = (h.solar_fc||0)*WI.solar/100;
+  const dHead = -WI.load + dW + dS + WI.gas + WI.nuc + WI.hyd;
+  const head = h.head + dHead, gas_hat = (h.gas_hat==null ? null : h.gas_hat + WI.load - dW - dS - WI.nuc + WI.exp);
+  const m = Math.exp((h.b_h==null ? -0.1 : h.b_h) * dHead/1000 + (h.b_dni||0) * WI.exp/1000);
+  const p_da = h.p_da*m, p_rt = h.p_rt*m;
+  const tight = th.head!=null && head < th.head, surplus = th.gas!=null && gas_hat!=null && gas_hat < th.gas;
+  const ext = !(tight||surplus) && th.gas_ext!=null && gas_hat!=null && gas_hat < th.gas_ext;
+  const signal = (tight||surplus) ? 'SELL' : ext ? 'SELL-L' : 'NONE';
+  const in_band = !!(bb && head >= bb.lo && head < bb.hi);
+  const score = signal==='SELL' ? 5 : signal==='SELL-L' ? 4 : in_band ? 1 : 3;
+  const score_why = signal==='SELL' ? (tight?'v2 SELL (tight, what-if)':'v2 SELL (surplus, what-if)') : signal==='SELL-L' ? 'v2 SELL-L (what-if)' : in_band ? `headroom in buy band ${fmt0(bb.lo)}-${fmt0(bb.hi)} (what-if)` : 'no tested edge (what-if)';
+  const L = {}; for (const s of [1,2,3,4,5]) L[String(s)] = jsLadder(s, p_da, p_rt);
+  return Object.assign({}, h, {chg:true, head, gas_hat, p_da, p_rt, da:h.da.map(x=>x*m), rt:h.rt.map(x=>x*m), signal, in_band, score, score_why,
+    band:bandLabel(head), scarcity: head < 2000, ladders_s:L, d_head:dHead, mult:m});
+}
+const isTight = h => { const th = (B.hubs[HUB].thr||{}).head; return th!=null && S(h).head < th; };   // v2's own tight branch
+const boosted = (h, s) => s===5 && (h.trips24||0) >= 500 && isTight(h);                              // x1.5 only on TIGHT sells (boost_test.py)
+const eff = h => { const o = SCORES[HUB][h.he]; return o===undefined ? S(h).score : o; };
+function dvLadder(h){
+  const x = S(h), s = eff(h); if (!s || !x.ladders_s) return {buy:[], sell:[]};
+  const L = x.ladders_s[String(s)], k = dvSize() * (boosted(h, s) ? 1.5 : 1), cap = B.hubs[HUB].cap_mw;
+  const side = arr => { let t = arr.filter(y => y[1]!=null && y[0]>0).map(([q,p]) => [r5(q*k), p]);
+    const tot = t.reduce((a,y)=>a+y[0],0); if (tot > cap) t = t.map(([q,p]) => [r5(q*cap/tot), p]); return t; };
+  return {buy: side(L.buy), sell: side(L.sell)};
+}
+function zoneOf(label){ const z = (B.hubs[HUB].band_table||[]).find(r => r.band === label); return z; }
+function dvStats(){
+  const H = B.hubs[HUB], hrs = H.hours, bb = H.buy_band;
+  const n = s => hrs.filter(h => eff(h)===s).length;
+  const lad = (H.dv_results||{}).ladders || []; const va = lad[0]||{}, us = lad[1]||{};
+  const mwB = hrs.reduce((a,h)=>a+dvLadder(h).buy.reduce((x,t)=>x+t[0],0),0), mwS = hrs.reduce((a,h)=>a+dvLadder(h).sell.reduce((x,t)=>x+t[0],0),0);
+  const on = hrs.filter(h => h.he>=7 && h.he<=22), avg = f => on.reduce((a,h)=>a+f(h),0)/on.length;
+  const pk0 = avg(h => h.p_da), pk1 = avg(h => S(h).p_da);
+  $('#dvstats').innerHTML = `
+   <div class="stat"><span class="eyebrow">Scores tomorrow</span><span class="v"><span class="pos">${n(1)+n(2)}</span> · ${n(3)} · <span class="neg">${n(4)+n(5)}</span></span><span class="s">buy · neutral · sell hours (as set)</span></div>
+   <div class="stat"><span class="eyebrow">On-peak DA forecast</span><span class="v">${money(pk1)}${wiActive()?` <span class="muted small">was ${money(pk0)}</span>`:''}</span><span class="s">HE7–22 average${wiActive()?' under the what-if':''}</span></div>
+   <div class="stat"><span class="eyebrow">Buy band (learned)</span><span class="v">${bb?`${fmt0(bb.lo)}–${fmt0(bb.hi)}`:'none'}</span><span class="s">${bb?`headroom MW · last 120 d mean DA−RT ${fmt(bb.mean)} over ${bb.hours} h`:'no band met the test in the last 120 days'}</span></div>
+   <div class="stat"><span class="eyebrow">Ladder MW tomorrow</span><span class="v"><span class="pos">${fmt0(mwB)}</span> / <span class="neg">${fmt0(mwS)}</span></span><span class="s">bid / offer MWh across 24 h, if all clear</span></div>
+   <div class="stat"><span class="eyebrow">Re-test, ours vs VA score</span><span class="v">${money(us.usd_per_day)} <span class="muted small">vs ${money(va.usd_per_day)}</span></span><span class="s">per day, same ladders, Sep 2025 – Sep 2026 · ${fmt(us.usd_per_mwh)} vs ${fmt(va.usd_per_mwh)} $/MWh</span></div>`;
+  $('#dvcap').textContent = `Hub limit ${H.cap_mw} MW per side per hour; tiers scale down if the sum goes over.`;
+  $('#wiflag').hidden = !wiActive();
+}
+function dvMatrix(){
+  const hrs = B.hubs[HUB].hours;
+  let t = `<tr><th>HE</th><th class="grp">DA fc</th><th>P10–P90</th><th>RT fc</th><th>RT−DA</th>
+    <th class="grp">Headroom</th><th class="l">Zone</th><th title="Share of past hours in this zone where RT settled above DA">RT&gt;DA</th><th title="Share of past hours in this zone with RT above $100">RT&gt;$100</th>
+    <th class="grp">Signal</th><th title="Tested VA Hub signals: load vs IESO, wind 3h ramp, gas-need ramp. + = bullish RT">Lean</th><th title="Tesla / Dynasty load forecast minus IESO, MW">Tesla Δ</th><th>Dyn Δ</th>
+    <th class="grp" title="Outage MW added to yesterday's hours after yesterday's bid (units that tripped in the last 24 h). 500+ on a TIGHT score-5 hour = 1.5x size (tested)">Trips 24h</th>
+    <th class="grp" title="Trailing mean DA−RT at this HE, through D-2 (+ = DA settled above RT)">DA−RT 7d</th><th>14d</th>
+    <th class="grp">VA</th><th class="l">Score</th><th class="l">Recommendation</th></tr>`;
+  for (const h0 of hrs){
+    const h = S(h0), z = zoneOf(h.band) || {}, s = eff(h0), sig = h.signal, c = (a,b) => (h.chg && Math.abs(a-b) > 0.005) ? 'chg' : '';
+    const zc = (h.head < 7000) ? 'z-spike' : (h.in_band ? 'z-buy' : 'z-flat');
+    const d = h.p_rt - h.p_da, lean = h0.lean2 || {score:null, signals:[]};
+    const lt = lean.signals.map(x => `${x.label}: ${x.value>0?'+':''}${fmt0(x.value)} (${x.pts>0?'+':''}${x.pts})`).join('\n');
+    const L = dvLadder(h0), mwb = L.buy.reduce((a,x)=>a+x[0],0), mws = L.sell.reduce((a,x)=>a+x[0],0);
+    const man = SCORES[HUB][h0.he] !== undefined;
+    const why = (man ? 'set by hand' : h.score_why) + (h.scarcity ? ' · SCARCITY: headroom under 2,000 MW — RT beat DA by $43 on average on the 13 such days (2025), not enough days to make a rule' : '');
+    const reco = s ? `<span class="chip s${s}${s===1?'b':s===5?'b':''}" title="${why}">${SCN[s]}</span> <span class="why" title="${why}">${mwb?`bid ${mwb}`:''}${mwb&&mws?' / ':''}${mws?`offer ${mws}`:''} MW${man?' · manual':''}</span>` : '<span class="why">no orders</span>';
+    const btn = [1,2,3,4,5].map(k => `<button class="s${k} ${k===h.score?'sug':''}" data-he="${h0.he}" data-s="${k}" aria-pressed="${s===k}" title="${SCN[k]}${k===h.score?' (suggested)':''}">${k}</button>`).join('');
+    const tD = h0.tesla==null ? null : h0.tesla - h0.dem_fc, dD = h0.dyn==null ? null : h0.dyn - h0.dem_fc;
+    const sg = v => v==null ? '–' : `<span class="${v>0?'':'neg'}">${v>0?'+':''}${fmt(v,1)}</span>`;
+    t += `<tr class="${h.in_band&&sig==='NONE'?'inband':''} ${sig!=='NONE'?'sellrow':''}"><td>${h0.he}</td>
+      <td class="grp ${c(h.p_da,h0.p_da)}">${fmt(h.p_da)}</td><td class="muted">${fmt0(h.da[0])}–${fmt0(h.da[4])}</td><td class="${c(h.p_rt,h0.p_rt)}">${fmt(h.p_rt)}</td><td class="${d>=0?'pos':'neg'}">${d>=0?'+':''}${fmt(d,1)}</td>
+      <td class="grp ${c(h.head,h0.head)}">${fmt0(h.head)}</td><td class="l zone ${zc}">${h.band||'–'}${h.in_band?' · buy band':''}</td><td>${z.rt_gt_da==null?'–':fmt0(z.rt_gt_da)+'%'}</td><td>${z.rt100==null?'–':fmt0(z.rt100)+'%'}</td>
+      <td class="grp"><span class="chip ${sig}">${sig==='NONE'?'—':sig}</span>${h.chg&&sig!==h0.signal?' <span class="small" title="changed by the what-if">*</span>':''}</td><td title="${lt}">${lean.score==null?'–':(lean.score>0?'+':'')+lean.score}</td>
+      <td>${tD==null?'–':(tD>0?'+':'')+fmt0(tD)}</td><td>${dD==null?'–':(dD>0?'+':'')+fmt0(dD)}</td>
+      <td class="grp ${h0.trips24>=500?'neg':''}">${h0.trips24==null?'–':fmt0(h0.trips24)}</td>
+      <td class="grp">${sg(h0.bias7&&h0.bias7.m)}</td><td>${sg(h0.bias14&&h0.bias14.m)}</td>
+      <td class="grp muted">${h0.va_auto}</td><td class="l"><span class="sc">${btn}</span></td><td class="l">${reco}${h.scarcity?' <span class="chip SELL" title="headroom under 2,000 MW">SCARCITY</span>':''}${boosted(h0, s)?' <span class="chip s5b" title="Tight sell after 500+ MW of units tripped in the last 24 h: tested +$22 to +$32/MWh (both halves) vs no edge on surplus sells">×1.5</span>':''}</td></tr>`;
+  }
+  $('#dvmatrix').innerHTML = t;
+  $('#dvmatrix').querySelectorAll('.sc button').forEach(b => b.addEventListener('click', () => {
+    const h = B.hubs[HUB].hours.find(x => x.he === +b.dataset.he), k = +b.dataset.s;
+    SCORES[HUB][h.he] = eff(h) === k ? 0 : k; dvSave(); dvRender(); }));
+}
+const px = p => Number(p).toFixed(2);
+function rowText(he, tiers){ const f = [String(he)]; for (let i=0;i<3;i++){ const x = tiers[i]; f.push(x?String(x[0]):'', x?px(x[1]):''); } return f.join('\t') + '\t\t\t\t\t\t'; }
+function dvLadders(){
+  const hrs = B.hubs[HUB].hours;
+  const mk = (side) => { let t = `<tr><th>HE</th><th>Q1</th><th>P1</th><th>Q2</th><th>P2</th><th>Q3</th><th>P3</th><th></th></tr>`, rows = [];
+    for (const h of hrs){ const T = dvLadder(h)[side]; if (!T.length) continue;
+      rows.push(rowText(h.he, T));
+      t += `<tr><td>${h.he}</td>${[0,1,2].map(i => T[i]?`<td>${T[i][0]}</td><td>${px(T[i][1])}</td>`:'<td>–</td><td>–</td>').join('')}<td><button class="rowcopy" data-t="${encodeURIComponent(rowText(h.he,T))}" title="Copy this row">⎘</button></td></tr>`; }
+    if (!rows.length) t += `<tr><td class="l" colspan="8"><span class="muted">No ${side==='buy'?'bids':'offers'} at the current scores.</span></td></tr>`;
+    return [t, rows]; };
+  const [tb, rb] = mk('buy'), [ts, rs] = mk('sell');
+  $('#dvbuy').innerHTML = tb; $('#dvsell').innerHTML = ts; dvLadders.rows = {buy: rb, sell: rs};
+  document.querySelectorAll('button.rowcopy').forEach(b => b.addEventListener('click', () => dvCopy(decodeURIComponent(b.dataset.t), 'Row copied.')));
+}
+function dvCopy(text, msg){ $('#dvclip').value = text;
+  const fb = () => { $('#dvclip').select(); $('#dvmsg').textContent = 'Selected in the box above. Press Ctrl+C to copy.'; };
+  try { navigator.clipboard.writeText(text).then(() => { $('#dvmsg').textContent = msg; }).catch(fb); } catch(e){ fb(); } }
+function dvRules(){
+  const R = [
+    [1,'STRONG BUY','min(DA×1.20, RT×1.10) · RT×0.95 · RT×0.85','— none —','40 · 30 · 20','Stack long; top tier clears DA. No offers (never cross yourself).'],
+    [2,'Buy','RT×0.90 · RT×0.85 · RT×0.80','RT×1.40 · RT×1.60 · RT×1.80','30 · 25 · 20 (offers half)','Value bids under RT, insurance offers far above.'],
+    [3,'Neutral','RT×0.793 · RT×0.741 · RT×0.690','RT×1.207 · RT×1.311 · RT×1.414','15 · 12 · 10','Wide straddle: only fills if DA prints far from RT.'],
+    [4,'Sell','RT×0.65 · RT×0.62 · RT×0.60','RT×1.10 · RT×1.15 · RT×1.20','10 · 12 · 15 (bids half)','Value offers over RT, low-ball insurance bids.'],
+    [5,'STRONG SELL','— none —','max(DA×0.98, RT) · RT · RT+$5','20 · 30 · 40','Stack short; bottom tier clears DA. No bids.']];
+  $('#dvrules').innerHTML = `<tr><th>Score</th><th class="l">Direction</th><th class="l">Bid tiers T1 · T2 · T3</th><th class="l">Offer tiers T1 · T2 · T3</th><th class="l">Base MW</th><th class="l">Intent</th></tr>` +
+    R.map(r => `<tr><td><span class="chip s${r[0]}">${r[0]}</span></td><td class="l">${r[1]}</td><td class="l">${r[2]}</td><td class="l">${r[3]}</td><td class="l">${r[4]}</td><td class="l why">${r[5]}</td></tr>`).join('');
+  const bb = B.hubs[HUB].buy_band;
+  $('#dvscoring').innerHTML = `<tr><th>Score</th><th class="l">When</th><th class="l">Test result (this hub, walk-forward)</th></tr>` +
+    [[5,'v2 SELL: spare below the learned tight threshold, or gas need below the learned surplus threshold. <b>×1.5 MW</b> when 500+ MW tripped in the last 24 h', ruleRes('OURS v2 SELL') + ' · with 500+ MW trips: +12.33 $/MWh (90%: +6.96..+18.00), else +3.66'],
+     [4,'v2 SELL-L: extended surplus tier (more hours, lower $/MWh)', 'shown on the Next day tab'],
+     [1,`Headroom inside the buy band (${bb?fmt0(bb.lo)+'–'+fmt0(bb.hi)+' MW today':'none today'}), re-learned daily on the last 120 days`, ruleRes('OURS buy band')],
+     [3,'Everything else: small wide straddle','ladder-only; see table below']].map(r => `<tr><td><span class="chip s${r[0]}">${r[0]}</span></td><td class="l">${r[1]}</td><td class="l">${r[2]}</td></tr>`).join('');
+}
+function ruleRes(prefix){ const r = ((B.hubs[HUB].dv_results||{}).rules||[]).find(x => String(x.rule).startsWith(prefix)); return r ? `${r.usd_mwh>0?'+':''}${fmt(r.usd_mwh)} $/MWh (90%: ${r.ci90}) over ${fmt0(r.hours)} h, win ${fmt(r.win,1)}%` : '–'; }
+function dvTests(){
+  const D = B.hubs[HUB].dv_results || {};
+  $('#dvperiod').textContent = 'Toronto/Southwest hub prices May 2025 – Sep 2026 · tests from Jul/Sep 2025';
+  $('#dvlad').innerHTML = `<tr><th class="l">Score picked by</th><th>Days</th><th>MWh cleared</th><th>Bid / offer MWh</th><th>$/MWh</th><th>$/day</th><th>90% range $/day</th><th>Days up</th><th>Worst day</th><th>$/MWh Feb–Sep 26</th></tr>` +
+    (D.ladders||[]).map(r => `<tr><td class="l">${r.ladder}</td><td>${r.days}</td><td>${fmt0(r.mwh_cleared)}</td><td>${fmt0(r.buy_mwh)} / ${fmt0(r.sell_mwh)}</td><td>${fmt(r.usd_per_mwh)}</td><td>${money(r.usd_per_day)}</td><td>${r.ci90_day}</td><td>${r.days_up}%</td><td class="neg">${money(r.worst_day)}</td><td>${fmt(r.h2_usd_mwh)}</td></tr>`).join('');
+  $('#dvsig').innerHTML = `<tr><th class="l">Rule</th><th>Hours</th><th>Sell / buy h</th><th>$/MWh</th><th>90% range</th><th>Win %</th><th class="l">Verdict</th></tr>` +
+    (D.rules||[]).filter(r => !/every hour/.test(r.rule)).map(r => { const [lo,hi] = String(r.ci90).split('..').map(parseFloat); const v = isNaN(lo) ? 'too few hours' : lo>0 ? 'keeps' : hi<0 ? 'wrong way' : 'no edge';
+      return `<tr><td class="l">${r.rule}</td><td>${fmt0(r.hours)}</td><td>${fmt0(r.sells)} / ${fmt0(r.buys)}</td><td class="${r.usd_mwh>0?'pos':'neg'}">${fmt(r.usd_mwh)}</td><td>${r.ci90}</td><td>${fmt(r.win,1)}</td><td class="l ${v==='keeps'?'pos':v==='wrong way'?'neg':'muted'}">${v}</td></tr>`; }).join('');
+  $('#dvzones').innerHTML = `<tr><th class="l">Headroom</th><th>Hours</th><th>Mean DA−RT</th><th>RT &gt; DA</th><th>RT &gt; $100</th><th>RT &lt; $25</th></tr>` +
+    (B.hubs[HUB].band_table||[]).map(r => `<tr><td class="l">${r.band}</td><td>${fmt0(r.hours)}</td><td class="${r.da_rt>=0?'':'neg'}">${fmt(r.da_rt,1)}</td><td>${fmt0(r.rt_gt_da)}%</td><td>${fmt0(r.rt100)}%</td><td>${fmt0(r.rt25)}%</td></tr>`).join('');
+}
+function dvRender(){ dvLoad(); dvStats(); dvMatrix(); dvLadders(); }
+function dvInit(){ dvLoad(); dvRender(); }
+$('#dv-apply').addEventListener('click', () => { SCORES[HUB] = {}; dvSave(); dvRender(); });
+$('#dv-neutral').addEventListener('click', () => { SCORES[HUB] = Object.fromEntries(B.hubs[HUB].hours.map(h => [h.he, 3])); dvSave(); dvRender(); });
+$('#dv-clear').addEventListener('click', () => { SCORES[HUB] = Object.fromEntries(B.hubs[HUB].hours.map(h => [h.he, 0])); dvSave(); dvRender(); });
+$('#dvsize').addEventListener('input', dvRender);
+const WIS = {load:[' MW',true], wind:['%',false], solar:['%',false], gas:[' MW',true], nuc:[' MW',true], hyd:[' MW',true], exp:[' MW',true]};
+function wiLabels(){ for (const [k,[u]] of Object.entries(WIS)){ const v = WI[k]; $('#wv_'+k).textContent = (v>0?'+':v<0?'−':'')+Math.abs(v).toLocaleString('en-CA')+u; $('#ws_'+k).value = v; } }
+for (const k of Object.keys(WIS)) $('#ws_'+k).addEventListener('input', e => { WI[k] = +e.target.value; wiLabels(); dvRender(); });
+const WPRE = {reset:{}, gastrip:{gas:-500}, nuctrip:{nuc:-880}, heat:{load:1000}, calm:{wind:-80}, exports:{exp:800}};
+document.querySelectorAll('[data-wi]').forEach(b => b.addEventListener('click', () => { for (const k of Object.keys(WI)) WI[k] = 0; Object.assign(WI, WPRE[b.dataset.wi]); wiLabels(); dvRender(); }));
+$('#copybuy').addEventListener('click', () => dvCopy((dvLadders.rows||{}).buy.join('\n'), `Copied ${(dvLadders.rows||{}).buy.length} buy rows.`));
+$('#copysell').addEventListener('click', () => dvCopy((dvLadders.rows||{}).sell.join('\n'), `Copied ${(dvLadders.rows||{}).sell.length} sell rows.`));
+let TAB = 'next';
+try { const t = localStorage.getItem('ovd-tab'); if (t) TAB = t; } catch(e){}
+if (location.hash === '#dv') TAB = 'dv'; if (location.hash === '#next') TAB = 'next';
+function showTab(){ for (const k of ['next','dv','out']){ $('#tab-'+k).hidden = TAB !== k; $('#t-'+k).setAttribute('aria-selected', TAB===k); } }
+if (location.hash === '#outages') TAB = 'out';
+for (const [id, k] of [['#t-next','next'],['#t-dv','dv'],['#t-out','out']]) $(id).addEventListener('click', () => { TAB = k; try{localStorage.setItem('ovd-tab', k)}catch(e){} showTab(); });
+
+// ================= Outages tab =================
+function otRender(){
+  const O = B.outages; if (!O){ $('#tab-out').innerHTML = '<div class="note">Outage data not in this bundle.</div>'; return; }
+  const n = O.now || {}, g = n.gas || {}, nu = n.nuclear || {}, hy = n.hydro || {};
+  const band = x => x.ratio==null ? '' : x.ratio > x.p75 ? 'above normal' : x.ratio < x.p25 ? 'below normal' : 'normal';
+  const trips = Math.max(...B.hubs[HUB].hours.map(h => h.trips24||0));
+  $('#otstats').innerHTML = `
+   <div class="stat"><span class="eyebrow">Gas out tomorrow</span><span class="v">${fmt0(g.out)} MW</span><span class="s">${g.ratio==null?'':fmt(g.ratio*100,0)+'% of capacity · '}${band(g)} (${fmt(g.p25*100,0)}–${fmt(g.p75*100,0)}% for the month)</span></div>
+   <div class="stat"><span class="eyebrow">Nuclear out tomorrow</span><span class="v">${fmt0(nu.out)} MW</span><span class="s">of ${fmt0(nu.cap)} MW · peak hours, at the bid</span></div>
+   <div class="stat"><span class="eyebrow">Hydro out tomorrow</span><span class="v">${fmt0(hy.out)} MW</span><span class="s">${band(hy)} for the month</span></div>
+   <div class="stat"><span class="eyebrow">Trips, last 24 h</span><span class="v ${trips>=500?'neg':''}">${fmt0(trips)} MW</span><span class="s">${trips>=500?'≥ 500: tight score-5 sells sized ×1.5 (tested)':'below the 500 MW boost level'}</span></div>
+   <div class="stat"><span class="eyebrow">IESO assumes back</span><span class="v">${fmt0(O.ret_assumed)} MW</span><span class="s">returns vs today's fleet · they slip, but DA prices it</span></div>`;
+  $('#otbake').innerHTML = `<b>Do I add outage MW to load?</b> No. Outages are on the supply side and are already inside the model: tomorrow's headroom and gas need are built from IESO's own outage figures at the bid, and the signal thresholds were learned on those same numbers. Adding them to load would count them twice. The only time to adjust is a <i>new</i> outage you hear about after the IESO report — use the <b>Gas / Nuclear available</b> sliders on the DA Virtual tab for that, not the load. For the 35-day view below, the "expected" line adds the typical unscheduled outages IESO's schedule leaves out.`;
+  $('#otwatchsub').textContent = `generated from the numbers below`;
+  $('#otwatch').innerHTML = (O.watch||[]).map(w => `<li>${w}</li>`).join('') || '<li>Nothing unusual.</li>';
+  // 35-day chart
+  const F = O.fwd35 || [];
+  $('#ot35sub').textContent = O.fwd35_snapshot ? `IESO Adequacy files as published ${O.fwd35_snapshot} · peak hours HE8–21` : 'run python ieso_fwd35.py';
+  if (F.length){
+    const W=1040,H=260,L=56,R=12,T=14,Bm=30,iw=W-L-R,ih=H-T-Bm, mx=Math.max(...F.map(r=>Math.max(r.gas_exp||0,r.nuc||0,r.gas_norm_p75||0)))*1.08;
+    const X=i=>L+i*iw/(F.length-1), Y=v=>T+ih-v/mx*ih;
+    let g='';
+    for (const t of [0, mx/4, mx/2, 3*mx/4]){ g+=`<line x1="${L}" x2="${W-R}" y1="${Y(t)}" y2="${Y(t)}" stroke="var(--grid)"/><text x="${L-6}" y="${Y(t)+4}" font-size="11" text-anchor="end" fill="var(--ink3)" font-family="var(--f-mono)">${fmt0(t)}</text>`; }
+    const up=F.map((r,i)=>`${i?'L':'M'}${X(i)} ${Y(r.gas_norm_p75)}`).join(' '), dn=F.slice().reverse().map((r,j)=>`L${X(F.length-1-j)} ${Y(r.gas_norm_p25)}`).join(' ');
+    g+=`<path d="${up} ${dn} Z" fill="var(--band1)" opacity=".7"/>`;
+    const ln=(k,col,dash,w)=>`<path d="${F.map((r,i)=>`${i?'L':'M'}${X(i)} ${Y(r[k]||0)}`).join(' ')}" fill="none" stroke="${col}" stroke-width="${w}" ${dash?`stroke-dasharray="${dash}"`:''}/>`;
+    g+=ln('nuc','var(--nuc)','',2)+ln('gas_exp','var(--gas)','5 4',2)+ln('gas','var(--gas)','',2.4);
+    F.forEach((r,i)=>{ if (i%3===0) g+=`<text x="${X(i)}" y="${H-10}" font-size="11" text-anchor="middle" fill="var(--ink3)" font-family="var(--f-mono)">${r.date.slice(5)}</text>`; });
+    $('#ot35chart').innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Scheduled outages next 35 days">${g}</svg>`;
+    $('#ot35').innerHTML = `<tr><th class="l">Date</th><th>Lead</th><th>Gas sched</th><th>Gas expected</th><th>Normal (P25–P75)</th><th>Nuclear sched</th><th>Hydro sched</th><th>Tightest headroom</th><th>Peak demand</th></tr>` +
+      F.map(r => { const hi = r.gas > r.gas_norm_p75; return `<tr><td class="l">${dlabel(r.date)}</td><td>${r.lead}d</td><td class="${hi?'neg':''}">${fmt0(r.gas)}</td><td>${fmt0(r.gas_exp)}${r.add_measured?'':'*'}</td><td class="muted">${fmt0(r.gas_norm_p25)}–${fmt0(r.gas_norm_p75)}</td><td>${fmt0(r.nuc)}</td><td>${fmt0(r.hyd)}</td><td class="${r.head_min<6000?'neg':''}">${fmt0(r.head_min)}</td><td>${fmt0(r.dem_peak)}</td></tr>`; }).join('') +
+      `<tr><td class="l small muted" colspan="9">Expected = schedule + mean unscheduled gas outage IESO adds later at that lead (measured May 2025 – Sep 2026: +179 MW at the bid, +313 at 2 days, +763 at 15 days). * = beyond the measured leads, held at the last measured value until the 16–34 day history is pulled.</td></tr>`;
+  }
+  // 18-month outlook
+  const RO = O.outlook || {}, Wk = RO.weeks || [];
+  $('#otrosub').textContent = `edition ${RO.edition||'–'}${RO.prev?` vs ${RO.prev}`:''} · weekly, expected weather, firm scenario`;
+  if (Wk.length){
+    const W=1040,H=240,L=56,R=12,T=14,Bm=30,iw=W-L-R,ih=H-T-Bm, mx=Math.max(...Wk.map(r=>Math.max(r.nuc_red||0,r.gas_red||0,r.nuc_prev||0,r.gas_prev||0)))*1.08;
+    const X=i=>L+i*iw/(Wk.length-1), Y=v=>T+ih-v/mx*ih; let g='';
+    for (const t of [0, mx/4, mx/2, 3*mx/4]){ g+=`<line x1="${L}" x2="${W-R}" y1="${Y(t)}" y2="${Y(t)}" stroke="var(--grid)"/><text x="${L-6}" y="${Y(t)+4}" font-size="11" text-anchor="end" fill="var(--ink3)" font-family="var(--f-mono)">${fmt0(t)}</text>`; }
+    const ln=(k,col,op,w)=>{ const pts=Wk.map((r,i)=>r[k]==null?null:[X(i),Y(r[k])]); let d='',pen=false; pts.forEach(p=>{ if(!p){pen=false;return;} d+=`${pen?'L':'M'}${p[0]} ${p[1]} `; pen=true; }); return `<path d="${d}" fill="none" stroke="${col}" stroke-width="${w}" opacity="${op}"/>`; };
+    g+=ln('gas_prev','var(--gas)',.4,1.6)+ln('nuc_prev','var(--nuc)',.4,1.6)+ln('gas_red','var(--gas)',1,2.4)+ln('nuc_red','var(--nuc)',1,2.4);
+    Wk.forEach((r,i)=>{ if (i%8===0) g+=`<text x="${X(i)}" y="${H-10}" font-size="11" text-anchor="middle" fill="var(--ink3)" font-family="var(--f-mono)">${r.week_end.slice(0,7)}</text>`; });
+    $('#otrochart').innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="18-month outlook reductions">${g}</svg>`;
+    const a = RO.accuracy || {};
+    $('#otroacc').innerHTML = `How good past editions were (${(a.gas||{}).weeks} weeks, May 2025 – Sep 2026, each week scored against the last edition published at least a week before): gas reductions corr ${fmt((a.gas||{}).corr,2)}, bias ${fmt0((a.gas||{}).bias)} MW, MAE ${fmt0((a.gas||{}).mae)} MW — better than assuming "same as a month ago" (MAE 1,009). Nuclear: corr ${fmt((a.nuc||{}).corr,2)}, bias ${fmt0((a.nuc||{}).bias)} MW, MAE ${fmt0((a.nuc||{}).mae)} — it misses unplanned nuclear outages (e.g. +1,700 MW from Aug 2026 not in the June edition). Use it for the gas maintenance calendar; treat nuclear as a floor.`;
+  }
+  const U = O.units_out || [];
+  $('#otunitsub').textContent = O.units_out_asof ? `${fmt0(O.units_out_mw)} MW across ${U.length} units · IESO capability report ${O.units_out_asof}` : '';
+  $('#otunits').innerHTML = `<tr><th class="l">Unit</th><th class="l">Fuel</th><th>Rating</th><th>Available</th><th>Out</th></tr>` + U.map(u => `<tr><td class="l">${u.unit}</td><td class="l">${u.fuel}</td><td>${fmt0(u.rating)}</td><td>${fmt0(u.cap)}</td><td class="neg">${fmt0(u.out)}</td></tr>`).join('');
+  const T = O.intertie_outages || [];
+  $('#otties').innerHTML = `<tr><th class="l">Start</th><th class="l">End</th><th class="l">Where</th><th class="l">Recall</th><th class="l">Limit impact</th></tr>` + (T.map(t => `<tr><td class="l">${t.start}</td><td class="l">${t.end}</td><td class="l">${t.station}</td><td class="l">${t.recall}</td><td class="l">${t.interface==='No Impact'?'none':t.interface+' '+t.reduction+' MW'}</td></tr>`).join('') || '<tr><td class="l" colspan="5">None listed.</td></tr>');
+  const Sx = O.seasonal || [], cur = new Date(B.target+'T12:00:00Z').getUTCMonth();
+  $('#otseas').innerHTML = `<tr><th class="l">Month</th><th>Gas P25</th><th>Gas P50</th><th>Gas P75</th><th>Gas P90</th><th>Gas avg MW</th><th>Gas trips / month</th><th>Nuclear P50</th><th>Hydro P50</th></tr>` +
+    Sx.map((r,i) => `<tr class="${i===cur?'eve':''}"><td class="l">${r.month}</td><td>${fmt(r.gas_p25*100,0)}%</td><td>${fmt(r.gas_p50*100,0)}%</td><td>${fmt(r.gas_p75*100,0)}%</td><td>${fmt(r.gas_p90*100,0)}%</td><td>${fmt0(r.gas_mw)}</td><td>${fmt(r.gas_trips,0)}</td><td>${fmt(r.nuc_p50*100,0)}%</td><td>${fmt(r.hyd_p50*100,0)}%</td></tr>`).join('');
+}
+
+function render(){
+  document.querySelectorAll('.seg button').forEach(b => b.setAttribute('aria-pressed', b.id === 'hub-'+HUB ? 'true' : 'false'));
+  $('#asof').textContent = `${ZN[HUB]} hub · DA for ${dlabel(B.target)} ${B.target.slice(0,4)} · inputs as of ${dlabel(B.origin)} 08:00 MT · hub limit ${B.hubs[HUB].cap_mw} MW`;
+  stats(); fan(); table(); stack(); accuracy(); dvInit(); otRender(); showTab();
+}
+for (const z of ['EAST','OTTAWA']) $('#hub-'+z).addEventListener('click', () => { HUB = z; try{localStorage.setItem('ovd-hub', z)}catch(e){} render(); });
+$('#basemw').addEventListener('input', table);
+$('#copybtn').addEventListener('click', () => {
+  const t = $('#ladder').value;
+  const fb = () => { $('#ladder').select(); $('#copymsg').textContent = 'Selected. Press Ctrl+C to copy.'; };
+  try { navigator.clipboard.writeText(t).then(() => { $('#copymsg').textContent = 'Copied.'; }).catch(fb); } catch(e){ fb(); }
+});
+render();
+</script>
