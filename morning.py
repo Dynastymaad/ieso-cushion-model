@@ -35,6 +35,10 @@ if __name__ == '__main__':
         if not (HERE / '.git').exists(): print('\n--push: this folder is not linked to GitHub yet (see GITHUB_SETUP.md)')
         else:
             g = lambda *a: subprocess.run(['git'] + list(a), cwd=HERE)
+            lk = HERE / '.git' / 'index.lock'                 # stale lock left by a crashed git / OneDrive sync
+            if lk.exists() and time.time() - lk.stat().st_mtime > 600:
+                try: lk.unlink(); print('--push: removed a stale .git/index.lock')
+                except Exception as ex: print('--push: could not remove .git/index.lock:', ex)
             g('add', '-A')
             if subprocess.run([PY, 'tools/check_secrets.py'], cwd=HERE).returncode != 0: print('--push: STOPPED by the secret check, nothing uploaded')
             else:
