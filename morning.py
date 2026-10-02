@@ -31,4 +31,13 @@ if __name__ == '__main__':
         for c in OPTIONAL_PULLS: run(c, optional=True)
     for c in MODEL: run(c)
     for c in OPTIONAL: run(c, optional=True)
+    if '--push' in sys.argv:                      # save the refreshed code/page to GitHub (credentials blocked by .gitignore + check)
+        if not (HERE / '.git').exists(): print('\n--push: this folder is not linked to GitHub yet (see GITHUB_SETUP.md)')
+        else:
+            g = lambda *a: subprocess.run(['git'] + list(a), cwd=HERE)
+            g('add', '-A')
+            if subprocess.run([PY, 'tools/check_secrets.py'], cwd=HERE).returncode != 0: print('--push: STOPPED by the secret check, nothing uploaded')
+            else:
+                g('commit', '-q', '-m', f'Daily refresh {time.strftime("%Y-%m-%d")}'); r = g('push', '-q')
+                print('--push: pushed to GitHub' if r.returncode == 0 else '--push: push failed (run  git push  to see why)')
     print(f'\nDONE in {(time.time()-t0)/60:.1f} min. Open site\\index.html for the ladders and site\\Checklist_Deviations.xlsx for the pre-model checklist, or tell Claude to publish it.')
