@@ -1,0 +1,41 @@
+# ---- credentials: NEVER commit (they stay on your PC) ----
+db.json
+nrg.json
+sv.json
+*.key
+*_key.txt
+aeso_key.txt
+.env
+*.pem
+*secret*
+*password*
+*credential*
+
+# ---- big / rebuilt data (re-created by the morning pulls) ----
+cache/
+archive/
+out/
+out2/
+out3/
+out_nrg/
+site/data/
+site/*.xlsx
+data/*
+!data/dv_rules_*.csv
+!data/dv_ladders_*.csv
+!data/dv_ladders2_*.csv
+!data/bt_trading_rules*.csv
+
+# ---- clutter ----
+__pycache__/
+*.pyc
+*.bak*
+*.bak_pre_*
+~$*
+.DS_Store
+Thumbs.db
+
+# keep the safety checker itself
+!tools/check_secrets.py
+
+_github_upload/
