@@ -30,6 +30,10 @@ if __name__ == '__main__':
         for c in PULLS: run(c)
         for c in OPTIONAL_PULLS: run(c, optional=True)
     for c in MODEL: run(c)
+    try:                                                # GitHub Pages serves /docs: keep a copy of the desk page there
+        import shutil; d = HERE / 'docs'; d.mkdir(exist_ok=True); (d / '.nojekyll').touch()
+        shutil.copyfile(HERE / 'site' / 'index.html', d / 'index.html')
+    except Exception as ex: print('docs copy skipped:', ex)
     for c in OPTIONAL: run(c, optional=True)
     if '--push' in sys.argv:                      # save the refreshed code/page to GitHub (credentials blocked by .gitignore + check)
         if not (HERE / '.git').exists(): print('\n--push: this folder is not linked to GitHub yet (see GITHUB_SETUP.md)')
