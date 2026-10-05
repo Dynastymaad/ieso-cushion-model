@@ -836,9 +836,23 @@ function ckRender(){
     R('Tesla' + (L.tesla_stale?' <b>(stale)</b>':''), fmt0(L.tesla)),
     R('<b>Your estimate (blend)</b>', `<b>${fmt0(L.blend)}</b>`),
     R('Tesla vs usual gap, HE16–20', sg(L.vs_usual)),
-    R(lw?`Last week (${dlabel(lw.date)}) actual`:'Last week actual', lw?`${fmt0(lw.peak)} at ${lw.tavg}°F`:'–'),
-    R('… temp-adjusted vs IESO', lw?sg(lw.gap):'–')],
-    L.vs_usual==null ? '' : (L.tesla_stale ? 'Tesla is stale — lean on IESO + bias.' : (L.vs_usual <= -300 ? 'Tesla unusually low: load likely lighter than IESO (bearish RT).' : L.vs_usual >= 300 ? 'Tesla unusually high: IESO likely right or low (bullish RT).' : 'Tesla gap normal: no load tilt.'))));
+    R(lw?`Same day last week (${dlabel(lw.date)})`:'Same day last week', lw?`${fmt0(lw.peak)} actual at ${lw.tavg}°F`:'–'),
+    R('… IESO had forecast', lw&&lw.lw_fc!=null?`${fmt0(lw.lw_fc)} (missed ${sg(lw.lw_miss)})`:'–'),
+    R('… temperature adjustment', lw?`${sg(lw.t_adj)} → baseline ${fmt0(lw.base)}`:'–'),
+    R('<b>IESO tomorrow vs that baseline</b>', lw?`<b>${sg(lw.gap)}</b>`:'–')],
+    (lw ? (Math.abs(lw.gap)>=1500 ? `IESO is ${fmt0(Math.abs(lw.gap))} MW ${lw.gap>0?'above':'below'} last week's temperature-adjusted level — find the reason (weather shift, holiday) before trusting it. ` : Math.abs(lw.gap)>=500 ? `IESO is ${fmt0(Math.abs(lw.gap))} MW ${lw.gap>0?'above':'below'} last week's temperature-adjusted level — worth a look (big temperature swing? IESO missed ${sg(lw.lw_miss)} last week). ` : 'IESO is in line with last week. ') : '') + (L.vs_usual==null ? '' : (L.tesla_stale ? 'Tesla is stale — lean on IESO + bias.' : (L.vs_usual <= -300 ? 'Tesla unusually low: load likely lighter than IESO (bearish RT).' : L.vs_usual >= 300 ? 'Tesla unusually high: IESO likely right or low (bullish RT).' : 'Tesla gap normal: no load tilt.')))));
+  const G = K.ramp;
+  if (G){ const rq = r => r==null ? '–' : `${sg(r.mw)} MW · ${r.pct}th pct (60d)`;
+    c.push(card('Gas &amp; ramp', [
+      R('Gas available (not committed)', `${fmt0(G.gas_av)} MW`),
+      R(`Peak gas need (HE${G.gas_pk_he})`, `${fmt0(G.gas_need_pk)} MW`),
+      R('Spare gas at that hour', `${fmt0(G.spare)} MW`),
+      R(`Biggest 1-h gas step up (HE${G.up_he})`, `${sg(G.up_mw)} MW`),
+      R(`Biggest 1-h step down (HE${G.dn_he})`, `${sg(G.dn_mw)} MW`),
+      R('Morning ramp HE5→8 (load − wind − solar)', rq(G.am)),
+      R('Evening ramp HE15→19', rq(G.pm))],
+      (G.am && G.am.quint>=5 ? 'Steep morning ramp (top 20%): DA tends to over-price it — RT−DA HE6–9 averaged −$6.7, negative in both halves. Supports morning sells. ' : G.am && G.am.quint<=1 ? 'Flat morning ramp: no ramp premium in DA. ' : 'Normal morning ramp. ') + (G.spare < 3000 ? 'Spare gas is thin — a trip on the ramp bites. ' : 'Plenty of spare gas to follow the ramp. ') + 'Evening ramp size has no consistent price effect (tested).'));
+  }
   // 3 clouds (Apr-Sep only)
   if (K.cloud) c.push(card('Clouds (midday)', [R('Toronto cloud cover HE11–15', `${K.cloud.mid}%`)], (K.cloud.mid>=75?'Overcast midday. ':K.cloud.mid<=25?'Clear midday. ':'Mixed cloud. ')+'Low weight: IESO already prices clouds, and cloud forecast misses have not moved RT−DA (tested).'));
   // 4 wind
@@ -847,7 +861,7 @@ function ckRender(){
     R('IESO', `${fmt0(W.ieso)} MW`), R('Meteologica', W.meteo==null?'–':`${fmt0(W.meteo)} MW (${sg(W.gap)})`),
     R(`Normal for ${K.month}`, `${fmt0(W.normal)} MW`), R('Ramp HE15 → HE20 (IESO)', `${sg(W.ramp)} MW`),
     R('Pressure, Toronto', pr.avg==null?'–':`${pr.avg} hPa, ${pr.change>0?'rising':'falling'} ${Math.abs(pr.change)} over the day`)],
-    (W.gap!=null && Math.abs(W.gap)>=200 ? `Meteologica ${W.gap>0?'above':'below'} IESO by ${fmt0(Math.abs(W.gap))} MW: about 60% of a gap like this has shown up, leaning RT ${W.gap>0?'soft':'firm'}. ` : 'IESO and Meteologica agree. ') + (W.ramp!=null && W.ramp<=-300 ? 'Wind falls >300 MW into the peak: East HE17–20 has run ~$15–20 better for longs than flat-wind days.' : '') + (pr.change!=null && Math.abs(pr.change)>=8 ? ' Big pressure change: a front is passing — check its timing.' : '')));
+    (W.gap!=null && Math.abs(W.gap)>=200 ? `Meteologica ${W.gap>0?'above':'below'} IESO by ${fmt0(Math.abs(W.gap))} MW: about 60% of a gap like this has shown up, leaning RT ${W.gap>0?'soft':'firm'}. ` : W.meteo==null ? 'Meteologica missing — no second opinion on wind today. ' : 'IESO and Meteologica agree. ') + (W.ramp!=null && W.ramp<=-300 ? 'Wind falls >300 MW into the peak: East HE17–20 has run ~$15–20 better for longs than flat-wind days.' : '') + (pr.change!=null && Math.abs(pr.change)>=8 ? ' Big pressure change: a front is passing — check its timing.' : '')));
   // 5 supply
   const st = (S.steps||[]).map(x => `HE${x.he} ${x.fuel} ${sg(x.mw)}`).join(', ');
   const rk = o => o && o.v!=null ? `${fmt0(o.v)} · avg ${fmt0(o.mean)} · ${o.rank}/${o.n}` : '–';

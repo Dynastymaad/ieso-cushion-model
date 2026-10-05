@@ -86,7 +86,10 @@ def build(target, bundle):
     if lw in L.index:
         r = L.loc[lw]; base = float(r.peak)
         if T: base += f(T['tavg']) - f(float(r.tavg))
-        lwk = dict(date=lw, peak=round(float(r.peak)), tavg=round(float(r.tavg)), base=round(base), gap=round(ieso - base))
+        lw_fc = dp.fc.get(lw) if lw in dp.index else None
+        lwk = dict(date=lw, peak=round(float(r.peak)), tavg=round(float(r.tavg)), base=round(base), gap=round(ieso - base),
+                   t_adj=round(base - float(r.peak)), lw_fc=None if lw_fc is None or pd.isna(lw_fc) else round(float(lw_fc)),
+                   lw_miss=None if lw_fc is None or pd.isna(lw_fc) else round(float(r.peak) - float(lw_fc)))
     out['load'] = dict(ieso=round(ieso), ieso_he=pk_he, bias30=round(bias), ieso_adj=round(adj), tesla=None if tes_pk is None else round(tes_pk),
                        tesla_stale=bool(TS.get('stale')), tesla_issued=TS.get('issued'), blend=round(blend),
                        vs_usual=None if not vs else round(float(np.mean(vs))), lastweek=lwk)
@@ -116,4 +119,21 @@ def build(target, bundle):
     mh = min(heads, key=heads.get)
     out['net'] = dict(peak_head=round(heads[mh]), peak_head_he=mh, load_surprise=round(blend - adj),
                       wind_surprise=None if wm is None else round(wm - wi))
+    # ---- gas & ramp: gas need from tomorrow's stack, ramps of residual load (demand - wind - solar) vs the last 60 days
+    gn = {k: H[k]['stack'].get('gas_need') for k in H}; ga = {k: H[k]['stack'].get('gas_av') for k in H}
+    pk_he2 = max((k for k in gn if gn[k] is not None), key=lambda k: gn[k])
+    steps = [(k, gn[k] - gn[k - 1]) for k in range(2, 25) if gn.get(k) is not None and gn.get(k - 1) is not None]
+    up = max(steps, key=lambda t: t[1]); dn = min(steps, key=lambda t: t[1])
+    a3 = C.adq2('preDA')[['date', 'he', 'dem_fc', 'wind_fc', 'solar_fc']]
+    a3['res'] = a3.dem_fc - a3.wind_fc.fillna(0) - a3.solar_fc.fillna(0)
+    rw = a3.pivot_table(index='date', columns='he', values='res')
+    rmp = pd.DataFrame({'am': rw[8] - rw[5], 'pm': rw[19] - rw[15]})
+    hist60 = rmp[(rmp.index < D) & (rmp.index >= (pd.Timestamp(D) - pd.Timedelta(days=60)).date().isoformat())]
+    def _r(k):
+        if D not in rmp.index or pd.isna(rmp.loc[D, k]): return None
+        v = float(rmp.loc[D, k]); allh = rmp[(rmp.index < D) & (rmp.index >= '2025-07-01')][k].dropna()
+        q = int((allh < v).mean() * 5) + 1 if len(allh) else None
+        return dict(mw=round(v), pct=round(float((hist60[k] < v).mean() * 100)) if len(hist60) else None, quint=min(q, 5) if q else None)
+    out['ramp'] = dict(gas_av=round(ga[pk_he2]), gas_need_pk=round(gn[pk_he2]), gas_pk_he=pk_he2, spare=round(ga[pk_he2] - gn[pk_he2]),
+                       up_he=up[0], up_mw=round(up[1]), dn_he=dn[0], dn_mw=round(dn[1]), am=_r('am'), pm=_r('pm'))
     return out
