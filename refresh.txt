@@ -1,0 +1,9 @@
+cd "C:\Users\mabbasi\OneDrive - Dynasty Power\Desktop\Ontario-Cushion Model"
+
+
+7:00:
+python -X utf8 morning.py --push
+
+7:45:
+python -X utf8 ieso_backfill.py
+python -X utf8 morning.py --model --push

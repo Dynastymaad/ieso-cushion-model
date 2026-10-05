@@ -1,4 +1,4 @@
-"""
+r"""
 ont_probe.py -- LIGHT discovery of Ontario/IESO data in both databases.
 
 Every query is catalog-only, TOP-N, TABLESAMPLE or index-filtered. Nothing
@@ -26,11 +26,24 @@ LOG = None   # opened in __main__ so importing this file never overwrites a summ
 TIMEOUT = 25
 
 
+def _cfg_candidates():
+    import os, glob
+    h = Path.home(); out = []
+    if os.environ.get('ONT_DB_JSON'): out.append(Path(os.environ['ONT_DB_JSON']))
+    out += [HERE / 'db.json', HERE.parent / 'aeso-cushion model' / 'db.json', h / 'Documents' / 'aeso-cushion model' / 'db.json']
+    for od in [os.environ.get('OneDriveCommercial'), os.environ.get('OneDrive')] + glob.glob(str(h / 'OneDrive*')):
+        if od: out += [Path(od) / 'Documents' / 'aeso-cushion model' / 'db.json', Path(od) / 'Desktop' / 'aeso-cushion model' / 'db.json']
+    out.append(h / 'Desktop' / 'aeso-cushion model' / 'db.json')
+    return out
+
+
 def find_cfg():
-    for p in (HERE / 'db.json', Path.home() / 'Documents' / 'aeso-cushion model' / 'db.json'):
+    tried = _cfg_candidates()
+    for p in tried:
         if p.exists():
             return json.loads(p.read_text()), p
-    raise SystemExit('db.json not found here or in Documents\\aeso-cushion model')
+    raise SystemExit('db.json not found. Looked in:\n  ' + '\n  '.join(dict.fromkeys(str(p) for p in tried)) +
+                     '\nFix: put db.json in one of these, or set ONT_DB_JSON to its full path.')
 
 
 def _q(v):
