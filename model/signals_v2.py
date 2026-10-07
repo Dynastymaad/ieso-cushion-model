@@ -14,6 +14,10 @@ import numpy as np, pandas as pd, common as C
 
 HEAD_THR = [7000, 7500, 8000, 8500, 9000, 9500, 10000]
 GAS_THR = [2500, 3000, 3500, 4000, 4500]
+# Oct 7 2026 walk-forward test (notes/Lookback_Test_2026-10-07.md): thresholds learned on the last 90 days beat
+# all-history at both zones (East +11%, Ottawa +25% total, both halves better); the extended SELL-L tier lost money -> off.
+LOOKBACK = 90
+USE_EXT = False
 FE = ['head_k', 'gapT_k', 'wind_k', 'dem_k', 'wkend', 'prof', 'lag2', 'nyx', 'pda']
 
 def schedules():
@@ -56,10 +60,11 @@ def day(d, D, win=42):
     te['gas_hat'] = te.dem_fc - te.nuc_av - te.wind_fc.fillna(0) - te.solar_fc.fillna(0) - te.hyd_exp + te.exp_exp
     # history with its own gas_hat (same construction, lagged) for threshold learning
     hist = d[(d.date <= cut) & d.sp.notna()].copy()
+    if LOOKBACK: hist = hist[hist.date > (pd.Timestamp(D) - pd.Timedelta(days=LOOKBACK)).date().isoformat()]
     if 'gas_hat' not in hist or hist.gas_hat.isna().all(): hist['gas_hat'] = np.nan
     te['thr_head'] = best_thr(hist, 'head', HEAD_THR)
     te['thr_gas'] = best_thr(hist.dropna(subset=['gas_hat']), 'gas_hat', GAS_THR)
-    te['thr_gas_ext'] = largest_thr(hist.dropna(subset=['gas_hat']), 'gas_hat', GAS_THR)
+    te['thr_gas_ext'] = largest_thr(hist.dropna(subset=['gas_hat']), 'gas_hat', GAS_THR) if USE_EXT else np.nan
     tight = te['head'] < te.thr_head.fillna(-1); surplus = te.gas_hat < te.thr_gas.fillna(-1)
     ext = (te.gas_hat < te.thr_gas_ext.fillna(-1)) & ~(tight | surplus)
     te['why'] = np.where(tight, 'tight', np.where(surplus, 'surplus', np.where(ext, 'surplus (ext)', '')))
