@@ -497,10 +497,15 @@ function S(h){                          // the hour under the current what-if (i
 }
 const isTight = h => { const th = (B.hubs[HUB].thr||{}).head; return th!=null && S(h).head < th; };   // v2's own tight branch
 const boosted = (h, s) => s===5 && (h.trips24||0) >= 500 && isTight(h);                              // x1.5 only on TIGHT sells (boost_test.py)
+// carbon-adjusted heat rate (cahr.py): HR = (Price + Bench x CO2$) / (Gas + 0.0554 x CO2$); recomputed from the what-if DA
+const cahrOf = h => { const G = B.hubs[HUB].gas; if (!G || G.gas_cad==null) return null; const p = S(h).p_da; return (p + G.bench*G.carbon) / (G.gas_cad + G.ef*G.carbon); };
+const gradeOf = (h, s) => { if (s!==5 || !isTight(h)) return null; const c = cahrOf(h); return c==null ? null : (c >= B.hubs[HUB].gas.a_grade ? 'A' : 'B'); };
 const eff = h => { const o = SCORES[HUB][h.he]; return o===undefined ? S(h).score : o; };
 function baseLadder(h){
   const x = S(h), s = eff(h); if (!s || !x.ladders_s) return {buy:[], sell:[]};
-  const L = x.ladders_s[String(s)], k = dvSize() * (boosted(h, s) ? 1.5 : 1), cap = B.hubs[HUB].cap_mw;
+  let L = x.ladders_s[String(s)]; const k = dvSize() * (boosted(h, s) ? 1.5 : 1), cap = B.hubs[HUB].cap_mw;
+  const gr = gradeOf(h, s);   // tested Oct 7 (cahr_ladder.py): A = tight & CAHR >= 12 -> offers capped at 0.9 x RT fc; B = tight & CAHR < 12 -> offers +$10
+  if (gr) L = {buy: L.buy, sell: L.sell.map(([q,p]) => [q, p==null ? p : (gr==='A' ? Math.round(Math.min(p, 0.9*x.p_rt)) : p + 10)])};
   const side = arr => { let t = arr.filter(y => y[1]!=null && y[0]>0).map(([q,p]) => [r5(q*k), p]);
     const tot = t.reduce((a,y)=>a+y[0],0);
     if (tot > cap){ t = t.map(([q,p]) => [r5(q*cap/tot), p]); let g = 0; while (t.reduce((a,y)=>a+y[0],0) > cap && g++ < 50){ const i = t.reduce((b,y,j,A)=>y[0]>A[b][0]?j:b, 0); t[i][0] -= 5; } t = t.filter(y => y[0] > 0); }
@@ -550,7 +555,7 @@ function dvStats(){
 function dvMatrix(){
   const hrs = B.hubs[HUB].hours;
   let t = `<tr><th>HE</th><th class="grp">DA fc</th><th>P10–P90</th><th>RT fc</th><th>RT−DA</th>
-    <th class="grp">Headroom</th><th class="l">Zone</th><th title="Share of past hours in this zone where RT settled above DA">RT&gt;DA</th><th title="Share of past hours in this zone with RT above $100">RT&gt;$100</th>
+    <th class="grp" title="Carbon-adjusted implied heat rate of our DA forecast, MMBtu/MWh: (DA + 0.310 × CO2 price) / (Dawn×FX + 0.0554 × CO2 price). ≥ 12 = above a peaker's cost (scarcity premium)">CAHR</th><th class="grp">Headroom</th><th class="l">Zone</th><th title="Share of past hours in this zone where RT settled above DA">RT&gt;DA</th><th title="Share of past hours in this zone with RT above $100">RT&gt;$100</th>
     <th class="grp">Signal</th><th title="Tested VA Hub signals: load vs IESO, wind 3h ramp, gas-need ramp. + = bullish RT">Lean</th><th title="Tesla / Dynasty load forecast minus IESO, MW">Tesla Δ</th><th>Dyn Δ</th>
     <th class="grp" title="Outage MW added to yesterday's hours after yesterday's bid (units that tripped in the last 24 h). 500+ on a TIGHT score-5 hour = 1.5x size (tested)">Trips 24h</th>
     <th class="grp" title="Trailing mean DA−RT at this HE, through D-2 (+ = DA settled above RT)">DA−RT 7d</th><th>14d</th>
@@ -569,12 +574,12 @@ function dvMatrix(){
     const sg = v => v==null ? '–' : `<span class="${v>0?'':'neg'}">${v>0?'+':''}${fmt(v,1)}</span>`;
     t += `<tr class="${h.in_band&&sig==='NONE'?'inband':''} ${sig!=='NONE'?'sellrow':''}"><td>${h0.he}</td>
       <td class="grp ${c(h.p_da,h0.p_da)}">${fmt(h.p_da)}</td><td class="muted">${fmt0(h.da[0])}–${fmt0(h.da[4])}</td><td class="${c(h.p_rt,h0.p_rt)}">${fmt(h.p_rt)}</td><td class="${d>=0?'pos':'neg'}">${d>=0?'+':''}${fmt(d,1)}</td>
-      <td class="grp ${c(h.head,h0.head)}">${fmt0(h.head)}</td><td class="l zone ${zc}">${h.band||'–'}${h.in_band?' · buy band':''}</td><td>${z.rt_gt_da==null?'–':fmt0(z.rt_gt_da)+'%'}</td><td>${z.rt100==null?'–':fmt0(z.rt100)+'%'}</td>
+      <td class="grp ${(cahrOf(h0)||0)>=12?'neg':''}">${cahrOf(h0)==null?'–':fmt(cahrOf(h0),1)}</td><td class="grp ${c(h.head,h0.head)}">${fmt0(h.head)}</td><td class="l zone ${zc}">${h.band||'–'}${h.in_band?' · buy band':''}</td><td>${z.rt_gt_da==null?'–':fmt0(z.rt_gt_da)+'%'}</td><td>${z.rt100==null?'–':fmt0(z.rt100)+'%'}</td>
       <td class="grp"><span class="chip ${sig}">${sig==='NONE'?'—':sig}</span>${h.chg&&sig!==h0.signal?' <span class="small" title="changed by the what-if">*</span>':''}</td><td title="${lt}">${lean.score==null?'–':(lean.score>0?'+':'')+lean.score}</td>
       <td>${tD==null?'–':(tD>0?'+':'')+fmt0(tD)}</td><td>${dD==null?'–':(dD>0?'+':'')+fmt0(dD)}</td>
       <td class="grp ${h0.trips24>=500?'neg':''}">${h0.trips24==null?'–':fmt0(h0.trips24)}</td>
       <td class="grp">${sg(h0.bias7&&h0.bias7.m)}</td><td>${sg(h0.bias14&&h0.bias14.m)}</td>
-      <td class="grp muted">${h0.va_auto}</td><td class="l"><span class="sc">${btn}</span></td><td class="l">${reco}${h.scarcity?' <span class="chip SELL" title="headroom under 2,000 MW">SCARCITY</span>':''}${boosted(h0, s)?' <span class="chip s5b" title="Tight sell after 500+ MW of units tripped in the last 24 h: tested +$22 to +$32/MWh (both halves) vs no edge on surplus sells">×1.5</span>':''}</td></tr>`;
+      <td class="grp muted">${h0.va_auto}</td><td class="l"><span class="sc">${btn}</span></td><td class="l">${reco}${h.scarcity?' <span class="chip SELL" title="headroom under 2,000 MW">SCARCITY</span>':''}${gradeOf(h0, s)?` <span class="chip ${gradeOf(h0,s)==='A'?'s5b':'s4'}" title="${gradeOf(h0,s)==='A'?'A-grade: tight and CAHR ≥ 12 — DA priced above a peaker. Tested +$19/MWh price-taker; offers capped at 0.9 × RT fc so they clear':'B-grade: tight but CAHR < 12 — tested only +$2/MWh, negative since Feb. Offers raised $10'}">${gradeOf(h0,s)}</span>`:''}${boosted(h0, s)?' <span class="chip s5b" title="Tight sell after 500+ MW of units tripped in the last 24 h: tested +$22 to +$32/MWh (both halves) vs no edge on surplus sells">×1.5</span>':''}</td></tr>`;
   }
   $('#dvmatrix').innerHTML = t;
   $('#dvmatrix').querySelectorAll('.sc button').forEach(b => b.addEventListener('click', () => {

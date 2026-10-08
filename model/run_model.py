@@ -118,6 +118,8 @@ def hub_next_day(zone, O, bf):
     ln = V.lean([dict(he=int(r.he), dem_fc=r.dem_fc, lf_tesla=r.lf_tesla, lf_dynasty=r.get('lf_dynasty', np.nan),
                       wind_fc=stk.loc[int(r.he), 'wind_ieso'] if int(r.he) in stk.index else np.nan,
                       gas_hat=v2.loc[int(r.he), 'gas_hat'] if int(r.he) in v2.index else np.nan) for _, r in e.iterrows()])
+    import cahr as K                                                   # carbon-adjusted heat rate (cahr_test.py / cahr_ladder.py)
+    g_usd, g_fx, g_cad = K.gas_table([D])[D]; g_cp = K.cprice(D)
     hrs = []
     for _, r in e.sort_values('he').iterrows():
         pool = bt[bt.blk == r.blk]; poolr = pool[pool.tb == r.tb] if (pool.tb == r.tb).sum() > 40 else pool
@@ -144,9 +146,12 @@ def hub_next_day(zone, O, bf):
                        bias14=None if he_ not in b14.index else dict(m=round(b14.loc[he_, 'm'], 1), rtgt=round(b14.loc[he_, 'rtgt'])),
                        ladders=V.ladders(round(float(r.p_da), 2), round(p_rt, 2), [float(x) for x in qd]),
                        scarcity=bool(r['head'] < 2000), trips24=trips.get(he_),
-                       boost=bool(sc == 5 and w.why == 'tight' and (trips.get(he_) or 0) >= V.TRIPS_BOOST))
+                       boost=bool(sc == 5 and w.why == 'tight' and (trips.get(he_) or 0) >= V.TRIPS_BOOST),
+                       cahr=None if pd.isna(g_cad) else round(float(K.hr(float(r.p_da), g_cad, g_cp)), 2),
+                       grade=None if not (sc == 5 and w.why == 'tight') or pd.isna(g_cad) else ('A' if K.hr(float(r.p_da), g_cad, g_cp) >= K.A_GRADE else 'B'))
     th = v2.iloc[0]
-    return dict(date=D, hub=zone, cap_mw=HUBS[zone], hours=hrs, thr=dict(head=th.thr_head, gas=th.thr_gas, gas_ext=th.thr_gas_ext),
+    return dict(date=D, hub=zone, cap_mw=HUBS[zone], hours=hrs, gas=dict(dawn_usd=None if pd.isna(g_usd) else round(float(g_usd), 3), fx=None if pd.isna(g_fx) else round(g_fx, 4),
+                gas_cad=None if pd.isna(g_cad) else round(float(g_cad), 3), carbon=g_cp, bench=K.BENCH, ef=K.EF, a_grade=K.A_GRADE), thr=dict(head=th.thr_head, gas=th.thr_gas, gas_ext=th.thr_gas_ext),
                 buy_band=band, band_table=V.band_table(zone), dv_results=dv_results(zone))
 
 
