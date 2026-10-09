@@ -1,0 +1,147 @@
+<title>Oct 8 Fundamentals Replay</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{--bg:#f6f7f6;--panel:#fff;--ink:#14201b;--ink2:#46534d;--ink3:#7a8680;--line:#dde3df;--grid:#eef1ef;
+--buy:#0f7a4a;--buy2:#cdeedd;--buy1:#e6f6ee;--sell:#b3361f;--sell2:#f6d3cb;--sell1:#fbebe7;--warn:#9a6a00;--warn1:#fbf1d9;--acc:#1d5c8a;--eve:#f1f4f8;
+--f:'IBM Plex Sans',system-ui,-apple-system,Segoe UI,sans-serif;--m:'IBM Plex Mono',ui-monospace,Consolas,monospace}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#0f1513;--panel:#161e1b;--ink:#e3ebe7;--ink2:#b2beb8;--ink3:#7f8b85;--line:#2a3531;--grid:#1d2623;
+--buy:#4cc98a;--buy2:#1d4a35;--buy1:#16332a;--sell:#f0806a;--sell2:#55261d;--sell1:#3a1d17;--warn:#e2b44c;--warn1:#3a2f14;--acc:#7fb6e0;--eve:#1a2421}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#0f1513;--panel:#161e1b;--ink:#e3ebe7;--ink2:#b2beb8;--ink3:#7f8b85;--line:#2a3531;--grid:#1d2623;
+--buy:#4cc98a;--buy2:#1d4a35;--buy1:#16332a;--sell:#f0806a;--sell2:#55261d;--sell1:#3a1d17;--warn:#e2b44c;--warn1:#3a2f14;--acc:#7fb6e0;--eve:#1a2421}
+body{background:var(--bg);color:var(--ink);font-family:var(--f);font-size:14px;line-height:1.5}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:16px;padding-block:20px 48px;display:flex;flex-direction:column;gap:22px}
+h1{font-size:22px;margin:0;font-weight:600;text-wrap:balance}h2{font-size:16px;margin:0 0 8px;font-weight:600}
+.eyebrow{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3)}
+.sub{color:var(--ink2);max-width:75ch}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px 16px}
+.chain{font-family:var(--m);font-size:12.5px;display:grid;grid-template-columns:auto 1fr;gap:3px 12px}
+.chain .r{text-align:right;font-variant-numeric:tabular-nums}.chain .tot{border-top:1px solid var(--line);padding-top:3px;font-weight:600}
+ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}ol li{max-width:70ch}
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:var(--panel)}
+table{border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:12.5px;width:100%}
+th,td{padding:4px 7px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--grid)}
+th{font-weight:500;color:var(--ink2);font-size:11.5px;position:sticky;top:0;background:var(--panel);z-index:1}
+thead tr.g th{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);text-align:center;border-bottom:none}
+td:first-child,th:first-child{position:sticky;left:0;background:var(--panel);text-align:center;z-index:2}
+.bl{border-left:1px solid var(--line)}
+tr.eve td{background:var(--eve)}tr.eve td:first-child{background:var(--eve)}
+.b1{background:var(--buy1)!important}.b2{background:var(--buy2)!important;font-weight:600}.r1{background:var(--sell1)!important}.r2{background:var(--sell2)!important;font-weight:600}.w1{background:var(--warn1)!important}
+.pos{color:var(--buy)}.neg{color:var(--sell)}.mut{color:var(--ink3)}
+.out{display:none}.show .out{display:table-cell}
+.btn{font:inherit;font-weight:500;border:1px solid var(--acc);color:var(--acc);background:transparent;border-radius:6px;padding:7px 14px;cursor:pointer}
+.btn[aria-pressed="true"]{background:var(--acc);color:var(--panel)}
+.bar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12px;color:var(--ink2)}.legend i{display:inline-block;width:12px;height:12px;border-radius:2px;vertical-align:-2px;margin-right:5px;border:1px solid var(--line)}
+.seg{display:grid;grid-template-columns:110px 1fr;gap:4px 14px;border-top:1px solid var(--line);padding-top:10px}.seg:first-of-type{border-top:none;padding-top:0}
+.seg b{font-weight:600}.segs{display:flex;flex-direction:column;gap:10px}
+.tag{font-size:11px;padding:1px 7px;border-radius:10px;font-weight:600;white-space:nowrap}.tag.g{background:var(--buy2);color:var(--buy)}.tag.r{background:var(--sell2);color:var(--sell)}.tag.y{background:var(--warn1);color:var(--warn)}
+#answer{display:none}.show #answer{display:block}
+dl{display:grid;grid-template-columns:150px 1fr;gap:6px 14px;margin:0}dt{font-weight:600}dd{margin:0;color:var(--ink2)}
+@media (max-width:560px){dl{grid-template-columns:1fr}dd{margin-bottom:6px}.seg{grid-template-columns:1fr}}
+</style>
+<div class="wrap" id="root">
+<header>
+ <div class="eyebrow">Ontario virtuals · East · bid-time replay</div>
+ <h1>Thursday, October 8 2026, as we saw it at the bid</h1>
+ <p class="sub">Every number below is what we had on Oct 7 at 07:49 EST, before DA cleared. Make your call hour by hour first: sell, buy or pass, and how big. Then press <b>Show what happened</b> to see DA, RT, the model's position and a read after the fact.</p>
+</header>
+
+<section class="grid2">
+ <div class="card">
+  <h2>How the columns connect (HE19 as the example)</h2>
+  <div class="chain">
+   <span>IESO demand</span><span class="r">17,168</span>
+   <span>− nuclear</span><span class="r">7,539</span>
+   <span>− wind</span><span class="r">1,673</span>
+   <span>− solar</span><span class="r">0</span>
+   <span class="tot">= Load net of nuc/wind/solar</span><span class="r tot">7,956</span>
+   <span>− hydro expected</span><span class="r">4,117</span>
+   <span>+ net exports, other</span><span class="r">≈ 2,450</span>
+   <span class="tot">= Gas need</span><span class="r tot">6,292</span>
+   <span>Gas available</span><span class="r">8,261</span>
+   <span class="tot">Spare = available − need</span><span class="r tot">1,969</span>
+  </div>
+  <p class="sub" style="margin:10px 0 0">Headroom (8,261 gas + 6,049 hydro available − 7,956) = <b>6,354</b>. Under ~7,000 the model calls a tight hour and sells, because DA has historically over-priced those hours. The question each day is whether something DA can't see will push RT higher anyway.</p>
+ </div>
+ <div class="card">
+  <h2>Six questions for a read</h2>
+  <ol>
+   <li><b>Is DA already pricing it?</b> CAHR ≥ 12 means DA is already at scarcity prices. A sell there needs RT to stay calm, not just "not spike".</li>
+   <li><b>Will load come in above IESO?</b> Tesla − IESO ≥ +200 (green) is the most useful single sign. Tesla normally sits below IESO.</li>
+   <li><b>Can wind disappoint?</b> Compare IESO wind with the models' low. A big gap with wind falling into the evening is how Oct 1, 7 and 8 went wrong.</li>
+   <li><b>How hard is the ramp?</b> Ramp 3h in the top 5% (dark green) means gas has to come on fast. Spikes happen inside the hour when units lag.</li>
+   <li><b>How much spare is left?</b> Spare under 1,500 (amber) leaves little room for any surprise.</li>
+   <li><b>What did the last week do?</b> Last 7d RT − DA and x/7. A big average from 1–2 days (low x/7) is one spike, not a pattern.</li>
+  </ol>
+ </div>
+</section>
+
+<section>
+ <div class="bar">
+  <h2 style="margin:0">Fundamentals at the bid, Oct 8</h2>
+  <button class="btn" id="rev" aria-pressed="false">Show what happened</button>
+ </div>
+ <div class="legend" style="margin:8px 0 10px">
+  <span><i style="background:var(--buy2)"></i>bullish RT, strong</span><span><i style="background:var(--buy1)"></i>bullish RT</span><span><i style="background:var(--sell1)"></i>bearish RT</span><span><i style="background:var(--sell2)"></i>bearish RT, strong</span><span><i style="background:var(--warn1)"></i>caution (spare &lt; 1,500, wind models far below IESO)</span><span><i style="background:var(--eve)"></i>evening HE16–21</span>
+ </div>
+ <div class="tw"><table id="t"></table></div>
+ <p class="sub" style="font-size:12.5px;margin-top:8px">Hours are hour-ending EST (HE19 = 18:00–19:00 EST, 19:00–20:00 EDT). Ramp % = rank of that hour's gas-need change against the same hour over the last 60 days. Evening ramp HE15→19: <b>+2,474 MW, 98th percentile</b>. Morning ramp HE5→8: +1,748 MW, 53rd percentile. Read = the all-fundamentals model's expected RT − DA ($/MWh, − favours sells).</p>
+</section>
+
+<section class="card" id="answer">
+ <h2>What happened, and what was visible</h2>
+ <p class="sub" style="margin-top:0">The model bought HE1–5 (headroom in the 9,500–11,500 buy band): +$241, +$163, +$57, +$38, +$101 at 10 MW, about <span class="pos">+$600</span>. It sold HE18–20 (score 5, tight). At 10 MW: HE18 <span class="pos">+$88</span>, HE19 <span class="neg">−$1,769</span>, HE20 <span class="mut">$0</span>. One hour, really its first 20 minutes, decided the day.</p>
+ <div class="segs">
+  <div class="seg"><b>HE1–4<br><span class="mut">overnight</span></b><div>RT beat DA by $4–24, mostly HE1 (5-min peak $85). <span class="tag g">Model bought</span> Headroom 9,900–10,700 put HE1–5 in the buy band, the one tested rule for longs. Nothing else in the fundamentals pointed up (read −6); the band is what caught it.</div></div>
+  <div class="seg"><b>HE5–7<br><span class="mut">morning ramp</span></b><div>RT +$8 to +$15. <span class="tag g">Visible</span> Ramp 3h was 78–80th percentile and <b>Tesla was +232 above IESO at HE7</b>, the clearest bullish sign of the morning. A small long at HE7 was the read.</div></div>
+  <div class="seg"><b>HE8–11<br><span class="mut">morning off-ramp</span></b><div>RT $1–5 under DA. <span class="tag g">Visible</span> HE9–11 ramps in the bottom 0–10% (red): gas backing down. The fundamentals said soft and were right; the edge was small.</div></div>
+  <div class="seg"><b>HE12–15<br><span class="mut">midday</span></b><div>RT +$9 to +$44 over a $35–37 DA, with 5-min prints of $82–89. <span class="tag y">Mostly not visible</span> Every column was bearish (bottom-percentile ramps, 4,500 spare). The one warning was the <b>wind models' low at 530–640 against IESO's 2,200–2,400</b>, the widest disagreement of the day. If wind under-delivered at midday, cheap DA hours had nowhere to go but up. Lesson: when DA is near the floor ($35) and the wind models disagree that much, selling has little to win and a long costs little.</div></div>
+  <div class="seg"><b>HE16–17<br><span class="mut">early evening</span></b><div>RT +$9 and +$1. HE16 had a 96th-percentile 1h ramp. Not sell hours; the model passed. Fair.</div></div>
+  <div class="seg"><b>HE18<br><span class="mut">sunset</span></b><div>DA $84.61, RT $75.80. <span class="tag r">Sell won</span> Ramps were 100th percentile and CAHR 12.5, but DA had already priced most of it. Tesla matched IESO (no load-miss sign).</div></div>
+  <div class="seg"><b>HE19<br><span class="mut">the spike</span></b><div>DA $95.28, RT $272.17 (5-min: 517, 532, 536, 468 in the first 20 minutes). <span class="tag g">Bullish signs lined up</span> All six questions pointed the same way: CAHR 13.2 (already at scarcity), <b>Tesla +103 above IESO</b>, wind models' low 308 vs IESO 1,673 with wind falling into the hour, ramp 98th percentile, spare down to 1,969 (the lowest of the day), last 7d +$32 (but only 2/7, one spike). Against all that, the read said −21 and the headroom rule said sell. What actually happened: load +100 over IESO, wind 308 short, a 480 MW demand jump in 20 minutes after sunset, while gas ramped too slowly. <b>The read: pass or a small long at HE19, not a full sell.</b> Our tests say we can't turn this into a rule yet (the guard failed out of sample), so this is a judgment call, and this page is for practising it.</div></div>
+  <div class="seg"><b>HE20–21<br><span class="mut">after the peak</span></b><div>RT matched DA ($71.65 vs 71.68; $47.97 vs 48.52). Ramps had turned negative hour-over-hour. The spike did not carry.</div></div>
+  <div class="seg"><b>HE22–23<br><span class="mut">late</span></b><div>HE22 +$8; HE23 RT $9.74, $28 under DA (surplus overnight). HE24 not yet published.</div></div>
+ </div>
+</section>
+
+<section class="card">
+ <h2>Column guide</h2>
+ <dl>
+  <dt>Load: IESO / Tesla / Dynasty / Meteo</dt><dd>Demand forecasts. DA leans on IESO's. <b>Tesla − IESO</b> is the one that matters most: positive is unusual and means load may come in above what DA priced.</dd>
+  <dt>Wind: IESO / Meteo / Models low–high</dt><dd>IESO's and Meteologica's wind, plus the lowest and highest of five weather models. A model low far under IESO means wind could disappoint. Amber when the low is under half of IESO.</dd>
+  <dt>Solar</dt><dd>Gone by HE18 in October. Its fall is part of the evening ramp.</dd>
+  <dt>Nuclear, Hydro exp</dt><dd>Nuclear is flat (7,539 all day). Hydro exp is the hydro we expect to run; it peaks in the evening to cover the ramp.</dd>
+  <dt>Net exports</dt><dd>Expected exports (+ = Ontario exporting). Exports add to what gas must cover; cuts after the bid help RT, adds hurt.</dd>
+  <dt>Load net of nuc/wind/solar</dt><dd>What hydro, gas and imports must cover. Its HE15→19 rise is the evening ramp.</dd>
+  <dt>Gas: available / need / spare</dt><dd>Available = gas fleet minus outages. Need = what gas must cover. Spare = the cushion. Amber under 1,500.</dd>
+  <dt>Ramp 1h / 3h</dt><dd>Change in gas need from 1 or 3 hours earlier, coloured by percentile for that hour (last 60 days). Green = gas must ramp hard; red = gas backing off.</dd>
+  <dt>Headroom</dt><dd>Gas + hydro available − net load. The model's main driver: under ~7,000 it sells.</dd>
+  <dt>CAHR</dt><dd>DA forecast as a carbon-adjusted heat rate. 7–8 = efficient gas on the margin; 10–12 = peakers; 12+ = DA already pricing scarcity.</dd>
+  <dt>DA fc</dt><dd>Our DA forecast for East ($/MWh).</dd>
+  <dt>Read</dt><dd>All-fundamentals model's expected RT − DA. − favours sells, + favours longs. Right 56–70% of the time, but its misses are larger than its hits.</dd>
+  <dt>Last 7d / x/7</dt><dd>Average RT − DA in that hour over the last 7 days, and on how many of those days RT beat DA.</dd>
+  <dt>Model</dt><dd>The live model's call. Score 5 = tight sell; SW = Spike Watch score (it only buys hours that aren't sells).</dd>
+ </dl>
+</section>
+</div>
+<script>
+const R=[{"he":1,"dem":13626,"tesla":13409,"dyn":13479,"meteo_load":13617,"wind":2030,"wind_meteo":2079,"wind_nwp_min":1671,"wind_nwp_max":2060,"solar":0,"nuc":7539,"hydro_exp":2708,"net_exp":-3635,"resid":4057,"gas_av":8325,"gas_need":4262,"gas_spare":4063,"ramp1":null,"ramp1_pct":null,"ramp3":null,"ramp3_pct":null,"head":10377,"cahr":7.0,"da_e":32.0,"read":-6.6,"rtda7":4.4,"win7":4,"da_act":32.05,"rt":56.15,"mx":85,"sig":"NONE","sw":0,"buy":true},{"he":2,"dem":13462,"tesla":13213,"dyn":13251,"meteo_load":13438,"wind":2052,"wind_meteo":2134,"wind_nwp_min":1858,"wind_nwp_max":2351,"solar":0,"nuc":7539,"hydro_exp":2655,"net_exp":-3608,"resid":3871,"gas_av":8325,"gas_need":4190,"gas_spare":4135,"ramp1":-72,"ramp1_pct":63,"ramp3":null,"ramp3_pct":null,"head":10563,"cahr":6.96,"da_e":31.6,"read":-7.0,"rtda7":3.0,"win7":4,"da_act":30.28,"rt":46.58,"mx":53,"sig":"NONE","sw":0,"buy":true},{"he":3,"dem":13330,"tesla":13111,"dyn":13143,"meteo_load":13339,"wind":1995,"wind_meteo":2149,"wind_nwp_min":1907,"wind_nwp_max":2142,"solar":0,"nuc":7539,"hydro_exp":2663,"net_exp":-3717,"resid":3796,"gas_av":8325,"gas_need":4012,"gas_spare":4313,"ramp1":-178,"ramp1_pct":39,"ramp3":null,"ramp3_pct":null,"head":10638,"cahr":6.93,"da_e":31.28,"read":-7.1,"rtda7":2.4,"win7":4,"da_act":32.74,"rt":38.48,"mx":47,"sig":"NONE","sw":0,"buy":true},{"he":4,"dem":13284,"tesla":13176,"dyn":13078,"meteo_load":13353,"wind":1966,"wind_meteo":2117,"wind_nwp_min":1744,"wind_nwp_max":2116,"solar":0,"nuc":7539,"hydro_exp":2797,"net_exp":-3849,"resid":3779,"gas_av":8325,"gas_need":3988,"gas_spare":4337,"ramp1":-24,"ramp1_pct":59,"ramp3":-274,"ramp3_pct":61,"head":10655,"cahr":6.94,"da_e":31.42,"read":-5.7,"rtda7":2.3,"win7":4,"da_act":32.96,"rt":36.77,"mx":43,"sig":"NONE","sw":0,"buy":true},{"he":5,"dem":14062,"tesla":13590,"dyn":13309,"meteo_load":13738,"wind":1986,"wind_meteo":2095,"wind_nwp_min":1524,"wind_nwp_max":2211,"solar":0,"nuc":7539,"hydro_exp":2724,"net_exp":-3819,"resid":4537,"gas_av":8325,"gas_need":4585,"gas_spare":3740,"ramp1":597,"ramp1_pct":65,"ramp3":395,"ramp3_pct":61,"head":9897,"cahr":7.28,"da_e":34.64,"read":-2.4,"rtda7":-0.5,"win7":5,"da_act":33.6,"rt":43.66,"mx":65,"sig":"NONE","sw":0,"buy":true},{"he":6,"dem":15165,"tesla":14722,"dyn":13864,"meteo_load":14766,"wind":2047,"wind_meteo":2117,"wind_nwp_min":1784,"wind_nwp_max":2422,"solar":0,"nuc":7539,"hydro_exp":3066,"net_exp":-3780,"resid":5579,"gas_av":8325,"gas_need":5515,"gas_spare":2810,"ramp1":930,"ramp1_pct":86,"ramp3":1503,"ramp3_pct":78,"head":8855,"cahr":8.78,"da_e":48.74,"read":2.4,"rtda7":-3.5,"win7":2,"da_act":50.52,"rt":58.91,"mx":75,"sig":"NONE","sw":0,"buy":false},{"he":7,"dem":15773,"tesla":16005,"dyn":14970,"meteo_load":15884,"wind":2077,"wind_meteo":2107,"wind_nwp_min":2144,"wind_nwp_max":2527,"solar":7,"nuc":7539,"hydro_exp":3351,"net_exp":-3126,"resid":6150,"gas_av":8321,"gas_need":5420,"gas_spare":2901,"ramp1":-95,"ramp1_pct":29,"ramp3":1432,"ramp3_pct":80,"head":8281,"cahr":10.2,"da_e":62.11,"read":0.2,"rtda7":-11.5,"win7":1,"da_act":63.02,"rt":77.83,"mx":88,"sig":"NONE","sw":3,"buy":false},{"he":8,"dem":16053,"tesla":16109,"dyn":16012,"meteo_load":16120,"wind":2127,"wind_meteo":2082,"wind_nwp_min":2208,"wind_nwp_max":2696,"solar":102,"nuc":7539,"hydro_exp":3306,"net_exp":-2332,"resid":6285,"gas_av":8321,"gas_need":5142,"gas_spare":3179,"ramp1":-278,"ramp1_pct":33,"ramp3":557,"ramp3_pct":76,"head":8151,"cahr":9.53,"da_e":55.84,"read":-4.1,"rtda7":1.1,"win7":1,"da_act":57.88,"rt":52.97,"mx":54,"sig":"NONE","sw":2,"buy":false},{"he":9,"dem":15791,"tesla":15817,"dyn":15993,"meteo_load":15853,"wind":2245,"wind_meteo":2059,"wind_nwp_min":2192,"wind_nwp_max":2765,"solar":224,"nuc":7539,"hydro_exp":3359,"net_exp":-2156,"resid":5783,"gas_av":8284,"gas_need":4452,"gas_spare":3832,"ramp1":-690,"ramp1_pct":2,"ramp3":-1063,"ramp3_pct":2,"head":8374,"cahr":8.76,"da_e":48.6,"read":-6.0,"rtda7":-3.7,"win7":2,"da_act":48.21,"rt":47.34,"mx":49,"sig":"NONE","sw":2,"buy":false},{"he":10,"dem":15657,"tesla":15668,"dyn":15661,"meteo_load":15616,"wind":2331,"wind_meteo":2063,"wind_nwp_min":932,"wind_nwp_max":2787,"solar":320,"nuc":7539,"hydro_exp":3257,"net_exp":-2088,"resid":5467,"gas_av":8284,"gas_need":4192,"gas_spare":4092,"ramp1":-260,"ramp1_pct":10,"ramp3":-1228,"ramp3_pct":4,"head":8690,"cahr":8.7,"da_e":47.99,"read":-5.8,"rtda7":3.1,"win7":4,"da_act":39.74,"rt":37.48,"mx":48,"sig":"NONE","sw":1,"buy":false},{"he":11,"dem":15507,"tesla":15457,"dyn":15432,"meteo_load":15415,"wind":2378,"wind_meteo":2201,"wind_nwp_min":716,"wind_nwp_max":3074,"solar":367,"nuc":7539,"hydro_exp":3305,"net_exp":-2132,"resid":5223,"gas_av":8284,"gas_need":3846,"gas_spare":4438,"ramp1":-346,"ramp1_pct":2,"ramp3":-1296,"ramp3_pct":0,"head":8937,"cahr":8.28,"da_e":44.03,"read":-5.4,"rtda7":-1.6,"win7":3,"da_act":36.79,"rt":34.97,"mx":37,"sig":"NONE","sw":0,"buy":false},{"he":12,"dem":15421,"tesla":15326,"dyn":15371,"meteo_load":15316,"wind":2414,"wind_meteo":2407,"wind_nwp_min":635,"wind_nwp_max":3251,"solar":376,"nuc":7539,"hydro_exp":3061,"net_exp":-2273,"resid":5092,"gas_av":8257,"gas_need":3674,"gas_spare":4583,"ramp1":-172,"ramp1_pct":6,"ramp3":-778,"ramp3_pct":0,"head":9041,"cahr":8.22,"da_e":43.49,"read":-5.8,"rtda7":-1.6,"win7":3,"da_act":36.79,"rt":53.58,"mx":89,"sig":"NONE","sw":0,"buy":false},{"he":13,"dem":15461,"tesla":15307,"dyn":15395,"meteo_load":15308,"wind":2410,"wind_meteo":2573,"wind_nwp_min":606,"wind_nwp_max":3332,"solar":373,"nuc":7539,"hydro_exp":3092,"net_exp":-2512,"resid":5139,"gas_av":8257,"gas_need":3757,"gas_spare":4500,"ramp1":83,"ramp1_pct":24,"ramp3":-435,"ramp3_pct":0,"head":8994,"cahr":8.25,"da_e":43.71,"read":-5.3,"rtda7":-3.8,"win7":3,"da_act":34.78,"rt":79.02,"mx":87,"sig":"NONE","sw":0,"buy":false},{"he":14,"dem":15433,"tesla":15296,"dyn":15397,"meteo_load":15322,"wind":2310,"wind_meteo":2706,"wind_nwp_min":597,"wind_nwp_max":3349,"solar":352,"nuc":7539,"hydro_exp":3021,"net_exp":-2593,"resid":5232,"gas_av":8257,"gas_need":3777,"gas_spare":4480,"ramp1":20,"ramp1_pct":24,"ramp3":-69,"ramp3_pct":8,"head":8901,"cahr":8.36,"da_e":44.78,"read":-5.3,"rtda7":-0.3,"win7":3,"da_act":35.83,"rt":52.55,"mx":88,"sig":"NONE","sw":0,"buy":false},{"he":15,"dem":15540,"tesla":15300,"dyn":15533,"meteo_load":15508,"wind":2202,"wind_meteo":2771,"wind_nwp_min":534,"wind_nwp_max":3215,"solar":317,"nuc":7539,"hydro_exp":3032,"net_exp":-2575,"resid":5482,"gas_av":8257,"gas_need":4008,"gas_spare":4249,"ramp1":231,"ramp1_pct":71,"ramp3":334,"ramp3_pct":31,"head":8651,"cahr":8.38,"da_e":44.96,"read":-3.1,"rtda7":1.3,"win7":4,"da_act":36.7,"rt":45.72,"mx":82,"sig":"NONE","sw":1,"buy":false},{"he":16,"dem":16270,"tesla":15822,"dyn":15890,"meteo_load":15980,"wind":2119,"wind_meteo":2719,"wind_nwp_min":367,"wind_nwp_max":3074,"solar":237,"nuc":7539,"hydro_exp":3447,"net_exp":-2233,"resid":6375,"gas_av":8257,"gas_need":4630,"gas_spare":3627,"ramp1":622,"ramp1_pct":96,"ramp3":873,"ramp3_pct":86,"head":8000,"cahr":8.91,"da_e":49.98,"read":-0.5,"rtda7":-11.4,"win7":1,"da_act":42.28,"rt":51.47,"mx":95,"sig":"NONE","sw":2,"buy":false},{"he":17,"dem":16584,"tesla":16515,"dyn":16365,"meteo_load":16547,"wind":1911,"wind_meteo":2539,"wind_nwp_min":247,"wind_nwp_max":2795,"solar":128,"nuc":7539,"hydro_exp":3744,"net_exp":-2354,"resid":7006,"gas_av":8261,"gas_need":5054,"gas_spare":3207,"ramp1":424,"ramp1_pct":69,"ramp3":1277,"ramp3_pct":96,"head":7373,"cahr":11.16,"da_e":71.23,"read":-0.8,"rtda7":-12.1,"win7":0,"da_act":55.04,"rt":56.12,"mx":95,"sig":"NONE","sw":3,"buy":false},{"he":18,"dem":16858,"tesla":16857,"dyn":16788,"meteo_load":16797,"wind":1800,"wind_meteo":2224,"wind_nwp_min":243,"wind_nwp_max":2564,"solar":21,"nuc":7539,"hydro_exp":4014,"net_exp":-2726,"resid":7498,"gas_av":8261,"gas_need":5721,"gas_spare":2540,"ramp1":667,"ramp1_pct":100,"ramp3":1713,"ramp3_pct":100,"head":6815,"cahr":12.52,"da_e":84.06,"read":-12.3,"rtda7":30.8,"win7":2,"da_act":84.61,"rt":75.8,"mx":131,"sig":"SELL","sw":2,"buy":false},{"he":19,"dem":17168,"tesla":17271,"dyn":16929,"meteo_load":17103,"wind":1673,"wind_meteo":1910,"wind_nwp_min":308,"wind_nwp_max":2240,"solar":0,"nuc":7539,"hydro_exp":4117,"net_exp":-2871,"resid":7956,"gas_av":8261,"gas_need":6292,"gas_spare":1969,"ramp1":571,"ramp1_pct":92,"ramp3":1662,"ramp3_pct":98,"head":6354,"cahr":13.15,"da_e":89.96,"read":-20.9,"rtda7":32.4,"win7":2,"da_act":95.28,"rt":272.17,"mx":536,"sig":"SELL","sw":3,"buy":false},{"he":20,"dem":16907,"tesla":16910,"dyn":17058,"meteo_load":16891,"wind":1703,"wind_meteo":1729,"wind_nwp_min":439,"wind_nwp_max":1966,"solar":0,"nuc":7539,"hydro_exp":4040,"net_exp":-2527,"resid":7665,"gas_av":8292,"gas_need":6134,"gas_spare":2158,"ramp1":-158,"ramp1_pct":39,"ramp3":1080,"ramp3_pct":98,"head":6676,"cahr":11.84,"da_e":77.61,"read":-9.6,"rtda7":-2.4,"win7":4,"da_act":71.68,"rt":71.65,"mx":90,"sig":"SELL","sw":3,"buy":false},{"he":21,"dem":16280,"tesla":16224,"dyn":16870,"meteo_load":16342,"wind":1767,"wind_meteo":1682,"wind_nwp_min":583,"wind_nwp_max":2052,"solar":0,"nuc":7539,"hydro_exp":3644,"net_exp":-2235,"resid":6974,"gas_av":8292,"gas_need":5792,"gas_spare":2500,"ramp1":-342,"ramp1_pct":63,"ramp3":71,"ramp3_pct":86,"head":7296,"cahr":10.37,"da_e":63.76,"read":-2.0,"rtda7":-9.0,"win7":3,"da_act":48.52,"rt":47.97,"mx":54,"sig":"NONE","sw":3,"buy":false},{"he":22,"dem":15459,"tesla":15320,"dyn":16213,"meteo_load":15475,"wind":1736,"wind_meteo":1684,"wind_nwp_min":686,"wind_nwp_max":1990,"solar":0,"nuc":7539,"hydro_exp":3344,"net_exp":-2627,"resid":6184,"gas_av":8292,"gas_need":5530,"gas_spare":2762,"ramp1":-262,"ramp1_pct":69,"ramp3":-762,"ramp3_pct":59,"head":8086,"cahr":8.88,"da_e":49.71,"read":-0.9,"rtda7":4.7,"win7":4,"da_act":43.14,"rt":51.54,"mx":54,"sig":"NONE","sw":2,"buy":false},{"he":23,"dem":14646,"tesla":14481,"dyn":15281,"meteo_load":14611,"wind":1668,"wind_meteo":1656,"wind_nwp_min":749,"wind_nwp_max":2286,"solar":0,"nuc":7539,"hydro_exp":2822,"net_exp":-2811,"resid":5439,"gas_av":8329,"gas_need":5290,"gas_spare":3039,"ramp1":-240,"ramp1_pct":47,"ramp3":-844,"ramp3_pct":67,"head":8868,"cahr":8.52,"da_e":46.3,"read":-1.6,"rtda7":11.3,"win7":5,"da_act":38.1,"rt":9.74,"mx":58,"sig":"NONE","sw":1,"buy":false},{"he":24,"dem":14086,"tesla":13949,"dyn":14396,"meteo_load":14013,"wind":1543,"wind_meteo":1573,"wind_nwp_min":754,"wind_nwp_max":2282,"solar":0,"nuc":7539,"hydro_exp":2724,"net_exp":-2847,"resid":5004,"gas_av":8329,"gas_need":4997,"gas_spare":3332,"ramp1":-293,"ramp1_pct":80,"ramp3":-795,"ramp3_pct":73,"head":9303,"cahr":8.39,"da_e":45.11,"read":-0.3,"rtda7":1.4,"win7":3,"da_act":42.9,"rt":null,"mx":null,"sig":"NONE","sw":2,"buy":false}];
+const n=v=>v==null?'–':Math.round(v).toLocaleString('en-US'), d=(v,k=2)=>v==null?'–':v.toFixed(k), sg=v=>v==null?'–':(v>0?'+':'')+Math.round(v).toLocaleString('en-US');
+const rc=p=>p==null?'':p>=95?'b2':p>=80?'b1':p<=5?'r2':p<=20?'r1':'';
+const H=`<thead><tr class="g"><th></th><th colspan="5" class="bl">Load</th><th colspan="4" class="bl">Wind</th><th class="bl">Solar</th><th colspan="3" class="bl">Other supply</th><th class="bl">Net load</th><th colspan="5" class="bl">Gas</th><th class="bl">Headroom</th><th class="bl">CAHR</th><th class="bl">DA fc</th><th class="bl">Read</th><th colspan="2" class="bl">Last 7d</th><th class="bl">Model</th><th class="out bl" colspan="5">What happened</th></tr>
+<tr><th>HE</th><th class="bl">IESO</th><th>Tesla</th><th>Dynasty</th><th>Meteo</th><th>Tesla−IESO</th><th class="bl">IESO</th><th>Meteo</th><th>Models low</th><th>Models high</th><th class="bl">MW</th><th class="bl">Nuclear</th><th>Hydro exp</th><th>Net exports</th><th class="bl">MW</th><th class="bl">Available</th><th>Need</th><th>Spare</th><th>Ramp 1h</th><th>Ramp 3h</th><th class="bl">MW</th><th class="bl">HR</th><th class="bl">$</th><th class="bl">RT−DA</th><th class="bl">RT−DA</th><th>x/7</th><th class="bl">Call</th><th class="out bl">DA</th><th class="out">RT</th><th class="out">RT−DA</th><th class="out">5-min max</th><th class="out">P&amp;L 10 MW</th></tr></thead>`;
+const B=R.map(r=>{const g=r.tesla-r.dem, wl=r.wind_nwp_min!=null&&r.wind_nwp_min<0.5*r.wind, rd=r.rt==null?null:r.rt-r.da_act, pl=rd==null?null:r.sig==='SELL'?-rd*10:r.buy?rd*10:null;
+return `<tr class="${r.he>=16&&r.he<=21?'eve':''}"><td>${r.he}</td><td class="bl">${n(r.dem)}</td><td>${n(r.tesla)}</td><td>${n(r.dyn)}</td><td>${n(r.meteo_load)}</td><td class="${g>=200?'b2':g>=75?'b1':g<=-400?'r1':''}">${sg(g)}</td>
+<td class="bl">${n(r.wind)}</td><td>${n(r.wind_meteo)}</td><td class="${wl?'w1':''}">${n(r.wind_nwp_min)}</td><td>${n(r.wind_nwp_max)}</td><td class="bl">${n(r.solar)}</td>
+<td class="bl">${n(r.nuc)}</td><td>${n(r.hydro_exp)}</td><td>${sg(-r.net_exp)}</td><td class="bl">${n(r.resid)}</td>
+<td class="bl">${n(r.gas_av)}</td><td>${n(r.gas_need)}</td><td class="${r.gas_spare<1000?'r2':r.gas_spare<1500?'w1':''}">${n(r.gas_spare)}</td>
+<td class="${rc(r.ramp1_pct)}" title="${r.ramp1_pct??''} pct">${sg(r.ramp1)}${r.ramp1_pct!=null?` <span class="mut">${r.ramp1_pct}</span>`:''}</td><td class="${rc(r.ramp3_pct)}" title="${r.ramp3_pct??''} pct">${sg(r.ramp3)}${r.ramp3_pct!=null?` <span class="mut">${r.ramp3_pct}</span>`:''}</td>
+<td class="bl ${r.head<7000?'w1':''}">${n(r.head)}</td><td class="bl ${r.cahr>=12?'b1':''}">${d(r.cahr,1)}</td><td class="bl">${d(r.da_e,1)}</td>
+<td class="bl ${r.read>=10?'b2':r.read>=5?'b1':r.read<=-10?'r2':r.read<=-5?'r1':''}">${sg(r.read)}</td><td class="bl ${r.rtda7>=10?'pos':r.rtda7<=-10?'neg':''}">${sg(r.rtda7)}</td><td>${r.win7}/7</td>
+<td class="bl">${r.sig==='SELL'?'<span class="tag r">SELL</span>':r.buy?'<span class="tag g">BUY</span>':'<span class="mut">—</span>'}${r.sw>=2&&r.sig!=='SELL'?' <span class="mut">SW'+r.sw+'</span>':''}</td>
+<td class="out bl">${d(r.da_act)}</td><td class="out">${d(r.rt)}</td><td class="out ${rd>=50?'b2':rd>=5?'b1':rd<=-5?'r1':''}">${rd==null?'–':(rd>0?'+':'')+rd.toFixed(1)}</td><td class="out">${n(r.mx)}</td><td class="out ${pl>0?'pos':pl<0?'neg':''}">${pl==null?'':(pl>0?'+$':'−$')+Math.abs(Math.round(pl)).toLocaleString('en-US')}</td></tr>`}).join('');
+document.getElementById('t').innerHTML=H+'<tbody>'+B+'</tbody>';
+const btn=document.getElementById('rev'),root=document.getElementById('root');
+btn.onclick=()=>{const s=root.classList.toggle('show');btn.setAttribute('aria-pressed',s);btn.textContent=s?'Hide what happened':'Show what happened';if(s)document.getElementById('answer').scrollIntoView({behavior:'smooth',block:'start'})};
+</script>

@@ -149,6 +149,25 @@ def hub_next_day(zone, O, bf):
                        boost=bool(sc == 5 and w.why == 'tight' and (trips.get(he_) or 0) >= V.TRIPS_BOOST),
                        cahr=None if pd.isna(g_cad) else round(float(K.hr(float(r.p_da), g_cad, g_cp)), 2),
                        grade=None if not (sc == 5 and w.why == 'tight') or pd.isna(g_cad) else ('A' if K.hr(float(r.p_da), g_cad, g_cp) >= K.A_GRADE else 'B'))
+    # Spike Watch (spike_watch.py / spike_watch_2026.py, Oct 8 2026): evening HE16-21 hours we are NOT selling, score >= 2 of
+    # headroom 7,000-8,500 | CAHR >= 10 | Tesla or Dynasty >= IESO demand | IESO wind down >= 150 MW over 3 h -> small long, bid DA fc + $30.
+    # Tested Sep 2025 -> Oct 2026: +$14 (East) / +$17.5 (Ottawa) per MWh, 2026 at 20 MW +$153k / +$205k. Context flag: Tesla above IESO on a
+    # tight evening sell (tight_guard.py: those sells earned ~$0 and carried 30% of the bad days, incl. Oct 1 and Oct 7).
+    wmap = {h['he']: h['stack'].get('wind_ieso') for h in hrs}
+    for h in hrs:
+        he_ = h['he']; f = []
+        if 7000 <= h['head'] <= 8500: f.append('headroom 7-8.5k')
+        if h.get('cahr') is not None and h['cahr'] >= 10: f.append('CAHR>=10')
+        if (h.get('tesla') is not None and h['tesla'] >= h['dem_fc']) or (h.get('dyn') is not None and h['dyn'] >= h['dem_fc']): f.append('Tesla/Dynasty>=IESO')
+        w0, w3 = wmap.get(he_), wmap.get(he_ - 3)
+        if w0 is not None and w3 is not None and w0 - w3 <= -150: f.append('wind falling')
+        sell = h['score'] == 5
+        h['sw'] = dict(score=len(f), flags=f, flag=bool(16 <= he_ <= 21 and not sell and len(f) >= 2), mw=20, bid=int(round(h['p_da'] + 30)),
+                       tight_tesla=bool(16 <= he_ <= 21 and sell and h.get('tesla') is not None and h['tesla'] > h['dem_fc']))
+    # Oct 9 2026: a tight-evening guard (Tesla > IESO -> no edge; + wind fc >= 1,500 -> flip to buy) was wired and then REMOVED after
+    # guard_validate.py: the no-edge part cost money (-$58k E / -$70k O); the flip beat random placebos (98.6%) but lost money without its
+    # best 3 days and with thresholds chosen walk-forward (-$219k E / -$84k O). Not backed -> live signals unchanged.
+    for h in hrs: h['guard'] = None
     th = v2.iloc[0]
     return dict(date=D, hub=zone, cap_mw=HUBS[zone], hours=hrs, gas=dict(dawn_usd=None if pd.isna(g_usd) else round(float(g_usd), 3), fx=None if pd.isna(g_fx) else round(g_fx, 4),
                 gas_cad=None if pd.isna(g_cad) else round(float(g_cad), 3), carbon=g_cp, bench=K.BENCH, ef=K.EF, a_grade=K.A_GRADE), thr=dict(head=th.thr_head, gas=th.thr_gas, gas_ext=th.thr_gas_ext),
@@ -222,6 +241,10 @@ def main():
         import outages_tab as OTB
         out['outages'] = OTB.build(out['target'], V.trips_d1(out['target']))
     except Exception as ex: print('outages tab skipped:', ex)
+    try:
+        import fund_panel as FP
+        out['fund'] = FP.build(out['target'], out)
+    except Exception as ex: print('fundamentals panel skipped:', ex)
     try:
         import checks_panel as CK
         out['checks'] = CK.build(out['target'], out)

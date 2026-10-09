@@ -2,6 +2,7 @@
 
     python morning.py            # pulls + model + page  (then open site\\index.html, or ask Claude to publish)
     python morning.py --model    # skip the pulls, just rebuild the model and page from what is already in cache\\
+    python morning.py --wind     # after ~07:20 MT: top up vendor wind (Meteologica) and rebuild the model + page (about 2 min)
 
 Run it after IESO's pre-DA Adequacy file for tomorrow is out (about 06:50 MT), ideally after the NYISO DAM
 (about 07:35 MT). The IESO DAM closes 08:00 MT (10:00 EPT)."""
@@ -26,9 +27,17 @@ def run(cmd, optional=False):
 
 if __name__ == '__main__':
     t0 = time.time()
-    if '--model' not in sys.argv:
+    if '--wind' in sys.argv:
+        run(['pull_history.py', '--only', 'windtopup'])
+    elif '--model' not in sys.argv:
         for c in PULLS: run(c)
         for c in OPTIONAL_PULLS: run(c, optional=True)
+    try:                                                # Meteologica wind for tomorrow lands in the Warehouse ~07:18 MT
+        import pandas as pd, datetime as dt
+        tom = (dt.date.today() + dt.timedelta(days=1)).isoformat(); w = pd.read_csv(HERE / 'cache' / 'ieso_wind_fc.csv', usecols=['DataSourceName', 'EffectiveDateTime'])
+        if not ((w.DataSourceName == 'Meteologica') & w.EffectiveDateTime.astype(str).str.startswith(tom)).any():
+            print(f'\nNOTE: Meteologica wind for {tom} is not in yet (the Warehouse loads it ~07:18 MT). After 07:20 MT run:  python morning.py --wind')
+    except Exception as ex: print('Meteologica check skipped:', ex)
     for c in MODEL: run(c)
     try:                                                # GitHub Pages serves /docs: keep a copy of the desk page there
         import shutil; d = HERE / 'docs'; d.mkdir(exist_ok=True); (d / '.nojekyll').touch()

@@ -10,6 +10,7 @@ indexed column or chunked by month, and progress prints as it goes.
     python pull_history.py --only fwd35 --since 2025-05-01     # 35-day outage schedule now + its 16-34 day history
     python pull_history.py --only quebec --since 2025-05-01    # Hydro-Quebec demand (Warehouse) + IESO DA intertie LMPs (sandbox)
     python pull_history.py --since 2025-04-01
+    python pull_history.py --only windtopup   # last 3 days of vendor wind (Meteologica lands ~07:18 MT), merged into the cache
 
 Re-running overwrites the CSVs. Expect 5-20 minutes the first time, most of it
 the Adequacy2 archive (121M rows, no index, so it is read in ONE pass).
@@ -61,6 +62,21 @@ def mssql(cfg, since, only):
         chunked(cn, 'ieso_wind_fc', f"""SELECT DataSourceName, [Timestamp], EffectiveDateTime, Value, DateCreated
             FROM WindForecast WITH (NOLOCK) WHERE MarketName='IESO'
             AND EffectiveDateTime >= '{{a}}' AND EffectiveDateTime < '{{b}}' AND {LEAD}""", since)
+    if only == 'windtopup':
+        # Oct 8 2026: Meteologica (and the other wind vendors) land in the Warehouse ~07:18 MT, after an early morning run.
+        # Pull only the last 3 days and MERGE into cache\ieso_wind_fc.csv (no truncation of history).
+        a = (date.today() - timedelta(days=3)).isoformat(); b = (date.today() + timedelta(days=5)).isoformat()
+        new = pd.read_sql(f"""SELECT DataSourceName, [Timestamp], EffectiveDateTime, Value, DateCreated
+            FROM WindForecast WITH (NOLOCK) WHERE MarketName='IESO'
+            AND EffectiveDateTime >= '{a}' AND EffectiveDateTime < '{b}' AND {LEAD}""", cn)
+        f = CACHE / 'ieso_wind_fc.csv'; old = pd.read_csv(f) if f.exists() else new.iloc[:0]
+        for c in ('Timestamp', 'EffectiveDateTime', 'DateCreated'): new[c] = new[c].astype(str); old[c] = old[c].astype(str)
+        both = pd.concat([old, new], ignore_index=True).drop_duplicates(['DataSourceName', 'Timestamp', 'EffectiveDateTime', 'DateCreated'], keep='last')
+        both.to_csv(f, index=False)
+        tom = (date.today() + timedelta(days=1)).isoformat(); m = new[(new.DataSourceName == 'Meteologica') & new.EffectiveDateTime.str.startswith(tom)]
+        say(f'  wind top-up: {len(new):,} rows pulled, cache now {len(both):,}; Meteologica rows for {tom}: {len(m)}'
+            + ('' if len(m) else '  <-- not loaded yet (Warehouse loads it ~07:18 MT); try again in a few minutes'))
+        return
     if only in (None, 'solar'):
         chunked(cn, 'ieso_solar_fc', """SELECT DataSourceName, TimeStamp, EffectiveDateTime, Value, DateCreated
             FROM SolarForecast WITH (NOLOCK) WHERE MarketName='IESO'

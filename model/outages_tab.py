@@ -151,7 +151,10 @@ def build(D, trips=None):
         c = L30['tomorrow']['tot']; lvl = 'above the 30-day P75' if c['v'] > c['p75'] else 'inside the 30-day range'
         W.insert(0, dict(tag='baked', text=f"Tomorrow's outages at the bid: {c['v']:,} MW ({lvl}; last 30 days mean {c['mean']:,}, P75 {c['p75']:,}, max {c['mx']:,}; higher than {c['rank']} of {c['n']} days)."))
     import json as _j; pf = C.DATA / 'outage_priced.json'; priced = _j.loads(pf.read_text()) if pf.exists() else None
-    return dict(look30=L30, priced=priced, now=now, ret_assumed=ret, units_out=uo[:25], units_out_asof=uo_asof, units_out_mw=sum(u['out'] for u in uo),
+    try:
+        import outage_returns as ORt; rets = dict(day=ORt.target(D), hist={z: ORt.summary(z) for z in ('EAST', 'OTTAWA')})
+    except Exception as ex: print('outage returns skipped:', ex); rets = None
+    return dict(returns=rets, look30=L30, priced=priced, now=now, ret_assumed=ret, units_out=uo[:25], units_out_asof=uo_asof, units_out_mw=sum(u['out'] for u in uo),
                 fwd35=fwd, fwd35_snapshot=fsnap, lead_bias=[dict(lead=int(i), gas=J(r.gas), nuc=J(r.nuc), measured=bool(r.measured)) for i, r in lead_bias().iterrows()],
                 outlook=dict(edition=last, prev=prev, weeks=L.round(0).to_dict('records'), accuracy=acc), intertie_outages=ties, seasonal=seas, watch=W)
 
