@@ -168,6 +168,38 @@ def hub_next_day(zone, O, bf):
     # guard_validate.py: the no-edge part cost money (-$58k E / -$70k O); the flip beat random placebos (98.6%) but lost money without its
     # best 3 days and with thresholds chosen walk-forward (-$219k E / -$84k O). Not backed -> live signals unchanged.
     for h in hrs: h['guard'] = None
+    # Oct 9 2026 RISK GAUGE (short_gauge.py, gauge_wire_test.py). Unpriced risk signs known at the bid: Tesla >= IESO + 150 MW |
+    # IESO wind falling >= 200 MW over 3 h | gas need rising >= 500 MW over 3 h. With 2+ signs: (a) the model does NOT short the hour,
+    # (b) a non-sell hour gets a separate long (10 MW, bid DA fc + $30) unless Spike Watch already holds it.
+    # Tested Sep 2025 - Oct 2026, per MW vs current sells: East +$13.2k (both halves up, last 120 days +$0.6k, w/o best 3 days +$13.4k),
+    # Ottawa +$13.6k; better in 27/27 threshold combos on total and w/o best 3, 85-96% on last 120 days. Half-sizing 1-sign sells: worse, not used.
+    # Window: an hour counts the larger of its own signs and the previous hour's (a risky ramp does not stop on the hour) --
+    # better than this-hour-only on total, halves, last 120 days and worst day in both zones (27-combo grid: 96-100% / 93-96%).
+    # Last 60 days roughly flat vs current sells. Sign thresholds unchanged.
+    gmap = {h['he']: h.get('gas_hat') for h in hrs}; own = {}
+    for h in hrs:
+        he_ = h['he']; f = []
+        if h.get('tesla') is not None and h['tesla'] - h['dem_fc'] >= 150: f.append(f"Load +{h['tesla'] - h['dem_fc']:,}")
+        w0, w3 = wmap.get(he_), wmap.get(he_ - 3)
+        if w0 is not None and w3 is not None and w0 - w3 <= -200: f.append(f"Wind {w0 - w3:,}")
+        g0, g3 = gmap.get(he_), gmap.get(he_ - 3)
+        if g0 is not None and g3 is not None and g0 - g3 >= 500: f.append(f"Gas ramp +{g0 - g3:,}")
+        own[he_] = f
+    for h in hrs:
+        he_ = h['he']; f = own[he_]; pf = own.get(he_ - 1, [])
+        n = max(len(f), len(pf)); rich = bool((h.get('cahr') or 0) >= 10 or h['head'] < 7000)
+        gz = dict(signs=f, prev=pf if len(pf) > len(f) else [], n=n, rich=rich, cut=None, buy=None)
+        lab = ', '.join(f) + (f" (HE{he_ - 1}: {', '.join(pf)})" if gz['prev'] else '')
+        if n >= 2 and h['score'] in (4, 5):
+            gz['cut'] = dict(signal=h['signal'], score=h['score'], why=h['score_why'])
+            h.update(signal='NONE', score=3, score_why=f"risk gauge: {n} unpriced signs ({lab}), no short", grade=None, boost=False)
+            if h.get('sw'): h['sw']['tight_tesla'] = False
+        if n >= 2 and gz['cut'] is None and not (h.get('sw') or {}).get('flag'):
+            gz['buy'] = dict(mw=10, bid=int(round(h['p_da'] + 30)))
+        gz['label'] = lab
+        gz['call'] = ('LONG' if gz['buy'] or (h.get('sw') or {}).get('flag') else 'NO SHORT' if n >= 2 else
+                      'SHORT OK' if rich and n == 0 else 'SHORT, 1 SIGN' if rich else 'NO EDGE' if n == 0 else 'WATCH')
+        h['gauge'] = gz
     th = v2.iloc[0]
     return dict(date=D, hub=zone, cap_mw=HUBS[zone], hours=hrs, gas=dict(dawn_usd=None if pd.isna(g_usd) else round(float(g_usd), 3), fx=None if pd.isna(g_fx) else round(g_fx, 4),
                 gas_cad=None if pd.isna(g_cad) else round(float(g_cad), 3), carbon=g_cp, bench=K.BENCH, ef=K.EF, a_grade=K.A_GRADE), thr=dict(head=th.thr_head, gas=th.thr_gas, gas_ext=th.thr_gas_ext),

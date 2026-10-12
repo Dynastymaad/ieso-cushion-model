@@ -16,7 +16,7 @@ PULLS = [['pull_history.py', '--since', '2025-04-01'],
 OPTIONAL_PULLS = [['ieso_fwd35.py']]              # 35-day outlook (Outages tab only): a failure does not stop the run
 OPTIONAL = [['model/checklist_xlsx.py']]          # failures here do not stop the morning run
 MODEL = [['model/parse_archive.py'], ['model/adq_fallback.py'], ['model/load_edge.py'], ['model/outage_timeline.py'],
-         ['model/da_virtual_bt.py', 'EAST', 'OTTAWA'], ['model/run_model.py'], ['model/build_page.py']]
+         ['model/da_virtual_bt.py', 'EAST', 'OTTAWA'], ['model/da_cleared_ties.py'], ['model/run_model.py'], ['model/build_page.py']]
 
 def run(cmd, optional=False):
     t = time.time(); print(f'\n>>> {" ".join(cmd)}', flush=True)
