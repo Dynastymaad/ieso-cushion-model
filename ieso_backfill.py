@@ -49,6 +49,8 @@ REPORTS = [
     ('TxOutagesTodayAll',             'all'),     # transmission outages today, every version (CreatedAt stamped)
     ('TxLimitsOutage0to2Days',        'all'),     # transmission outage limits, days 0-2, every ~30 min
     ('TxOutages1to30DaysPlanned',     'final'),
+    ('DASecurityConstraints2',        'final'),   # constraints enforced in each DA run (congestion read, Oct 13 2026)
+    ('TxLimitsAllInService0to34Days', 'final'),   # all-in-service interface limits (baseline for the outage limits)
 ]
 QUICK = {'DAHourlyZonal','DAHourlyOntarioZonalPrice','RealtimeZonalEnergyPrices',
          'RealtimeOntarioZonalPrice','Adequacy3'}

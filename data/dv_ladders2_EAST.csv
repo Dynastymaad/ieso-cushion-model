@@ -1,3 +1,3 @@
 ladder,days,mwh_cleared,buy_mwh,sell_mwh,usd_per_mwh,usd_per_day,ci90_day,total,days_up,worst_day,h2_usd_mwh
-VA Hub auto-score,408,320600,20195,300405,3.14,2468,-676..+5710,1007063,61,-257822,0.81
-"Ours: v2 SELL=5, buy band=1, else 3",408,390020,48675,341345,6.7,6404,+3552..+9252,2612740,64,-206655,6.47
+VA Hub auto-score,409,321365,20195,301170,3.09,2428,-817..+5652,993246,61,-257822,0.73
+"Ours: v2 SELL=5, buy band=1, else 3",409,390835,48675,342160,6.65,6355,+3642..+9182,2599383,65,-206655,6.38
