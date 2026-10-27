@@ -281,6 +281,10 @@ def main():
         import checks_panel as CK
         out['checks'] = CK.build(out['target'], out)
     except Exception as ex: print('checks panel skipped:', ex)
+    try:                                                # Oct 26 2026: Gates tab, display only (no effect on ladders)
+        import gates_tab as GT
+        out['gates'] = GT.build(out['target'], out)
+    except Exception as ex: print('gates tab skipped:', ex)
     site = C.ROOT / 'site' / 'data'; site.mkdir(parents=True, exist_ok=True)
     (site / 'bundle.json').write_text(json.dumps(out, default=float))
     print('bundle ->', site / 'bundle.json', 'origin', O, 'target', out['target'])

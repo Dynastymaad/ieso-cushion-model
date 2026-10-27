@@ -74,12 +74,27 @@ dl.cols dt{font-weight:600} dl.cols dd{margin:0;max-width:78ch}
 .ck .r span:first-child{color:var(--ink2)}
 .ck .v{margin-top:4px;font-size:12.5px;font-weight:600}
 .fu td,.fu th{white-space:nowrap} .fu .fu-he{position:sticky;left:0;background:var(--surface);z-index:1} .fu-b1{background:var(--buy-soft);color:var(--buy)} .fu-b2{background:var(--buy);color:var(--surface);font-weight:600} .fu-r1{background:var(--sell-soft);color:var(--sell)} .fu-r2{background:var(--sell);color:var(--surface);font-weight:600} .fu tr.sig td:first-child{font-weight:700}
+.gtcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.gtcard{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:8px;padding:11px 13px;display:flex;flex-direction:column;gap:6px}
+.gtcard.up{border-left-color:var(--buy)} .gtcard.dn{border-left-color:var(--sell)} .gtcard.wn{border-left-color:var(--warn)}
+.gth{display:flex;justify-content:space-between;align-items:baseline;gap:8px} .gtn{font:600 15px var(--f-disp);letter-spacing:.02em}
+.gtst{font:600 11.5px var(--f-disp);letter-spacing:.05em;padding:2px 8px;border-radius:999px;white-space:nowrap;background:var(--accent-soft);color:var(--accent)}
+.gtst.up{background:var(--buy-soft);color:var(--buy)} .gtst.dn{background:var(--sell-soft);color:var(--sell)} .gtst.wn{background:var(--warn-soft);color:var(--warn)}
+.gtban{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;padding:14px 16px;border-radius:8px;border:1px solid var(--line);background:var(--surface)}
+.gtban.open{border-color:var(--warn);background:var(--warn-soft)} .gtbig{font:700 30px var(--f-disp);letter-spacing:.04em}
+.gtban.shut .gtbig{color:var(--accent)} .gtban.open .gtbig{color:var(--warn)} .gtside{font:600 17px var(--f-disp)}
+.gthist{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,470px),1fr));gap:18px}
+.gtf{display:inline-block;font-size:11.5px;padding:1px 7px;border-radius:4px;margin:1px 0;background:var(--accent-soft);color:var(--accent);font-family:var(--f-body);white-space:nowrap}
+.gtf.up{background:var(--buy-soft);color:var(--buy)} .gtf.dn{background:var(--sell-soft);color:var(--sell)} .gtf.wn{background:var(--warn-soft);color:var(--warn)}
+td.gtfl{white-space:normal;min-width:260px}
+td.gtdn{background:var(--sell-soft);color:var(--sell);font-weight:500} td.gtdn2{color:var(--sell)} td.gtup{background:var(--buy-soft);color:var(--buy);font-weight:500} td.gtwn{background:var(--warn-soft);color:var(--warn)}
 .note{border-left:3px solid var(--warn);background:var(--warn-soft);padding:9px 12px;border-radius:4px;font-size:13.5px}
 button.copy{font:600 13px var(--f-disp);letter-spacing:.04em;padding:7px 12px;border:1px solid var(--accent);color:var(--accent);background:transparent;border-radius:6px;cursor:pointer}
 textarea#ladder{width:100%;height:120px;font:12px var(--f-mono);border:1px solid var(--line);border-radius:6px;background:var(--sunk);color:var(--ink);padding:8px}
 ul.tight{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:5px;max-width:78ch}
 .pos{color:var(--buy)} .neg{color:var(--sell)}
-nav.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-top:-10px}
+nav.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-top:-10px;overflow-x:auto;scrollbar-width:thin}
+nav.tabs button{white-space:nowrap;flex:none}
 nav.tabs button{font:600 15px var(--f-disp);letter-spacing:.03em;padding:9px 16px;border:1px solid transparent;border-bottom:0;border-radius:7px 7px 0 0;background:transparent;color:var(--ink2);cursor:pointer;margin-bottom:-1px}
 nav.tabs button[aria-selected="true"]{background:var(--surface);border-color:var(--line);color:var(--ink)}
 .dvbar{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center}
@@ -156,7 +171,7 @@ textarea.prnote{font:inherit;font-size:13px;width:100%;min-height:150px;border:1
     </div>
   </header>
 
-  <nav class="tabs" role="tablist" aria-label="Views"><button id="t-next" role="tab" aria-selected="true">Next day</button><button id="t-fu" role="tab" aria-selected="false">Fundamentals</button><button id="t-dv" role="tab" aria-selected="false">DA Virtual</button><button id="t-eo" role="tab" aria-selected="false">East–Ottawa &amp; Quebec</button><button id="t-out" role="tab" aria-selected="false">Outages</button></nav>
+  <nav class="tabs" role="tablist" aria-label="Views"><button id="t-next" role="tab" aria-selected="true">Next day</button><button id="t-fu" role="tab" aria-selected="false">Fundamentals</button><button id="t-dv" role="tab" aria-selected="false">DA Virtual</button><button id="t-eo" role="tab" aria-selected="false">East–Ottawa &amp; Quebec</button><button id="t-out" role="tab" aria-selected="false">Outages</button><button id="t-gt" role="tab" aria-selected="false">Gates</button></nav>
 
   <div id="tab-next" style="display:flex;flex-direction:column;gap:26px">
   <div class="stats" id="stats"></div>
@@ -357,6 +372,30 @@ textarea.prnote{font:inherit;font-size:13px;width:100%;min-height:150px;border:1
       <div class="sechead"><h2>Normal outage levels by month</h2><span class="muted small">share of capacity out, peak hours, IESO unit capability data May 2019 – Dec 2025</span></div>
       <div class="tablewrap"><table class="dv" id="otseas"></table></div>
       <div class="small muted">Gas outage includes summer ambient derates (as IESO's own Adequacy figure does). Nuclear shares are distorted by multi-year refurbishments (a unit in refurbishment drops out of the rating), so for nuclear read the MW, not the share. Gas trips = unit drops below half its rating for a day or less.</div>
+    </section>
+  </div>
+
+  <div id="tab-gt" hidden style="display:flex;flex-direction:column;gap:26px">
+    <div class="sechead"><h2>Morning gates</h2><span class="muted small">bid-time inputs only (D−1 morning) · display only: nothing here changes the ladders</span></div>
+    <div class="gtcards" id="gtcards"></div>
+    <section style="display:flex;flex-direction:column;gap:12px">
+      <div class="sechead"><h2>Congestion: is there a spread to trade?</h2><span class="muted small" id="gtcongsub"></span></div>
+      <div id="gtbanner"></div>
+      <div class="grid2">
+        <div class="panel"><h3>West / Bruce / Toronto 500 kV equipment out on D</h3><div class="tablewrap" style="border:0"><table class="dv" id="gtout"></table></div><div class="small muted" id="gtlim"></div></div>
+        <div class="panel"><h3>Gate history</h3><div class="tablewrap" style="border:0"><table class="dv" id="gtgs"></table></div><div class="small muted" id="gtrule"></div></div>
+      </div>
+      <div class="panel"><h3>Daily log: the call each morning vs what happened (HE10–20, $/MWh)</h3><div class="tablewrap scrollbox" style="border:0"><table class="dv" id="gtlog"></table></div>
+        <div class="small muted">Split = East − West. Go-with = buy East / sell West, P&amp;L = RT split − DA split. Calls before today are re-derived from the archived bid-time read, so the open-gate days are the ones the rule was drawn from; only days after Oct 26 are a live test.</div></div>
+    </section>
+    <section style="display:flex;flex-direction:column;gap:12px">
+      <div class="sechead"><h2>Hour by hour</h2><span class="muted small">shift = (Meteologica load − IESO load) + (IESO wind − Meteologica wind); + means more gas needed than IESO shows</span></div>
+      <div class="tablewrap"><table class="dv" id="gthrs"></table></div>
+      <div class="tablewrap"><table class="dv" id="gtblk"></table></div>
+    </section>
+    <section style="display:flex;flex-direction:column;gap:12px">
+      <div class="sechead"><h2>What each gate has meant (East RT − DA)</h2><span class="muted small" id="gthsub"></span></div>
+      <div class="gthist" id="gthist"></div>
     </section>
   </div>
 
@@ -701,9 +740,9 @@ $('#copysell').addEventListener('click', () => dvCopy((dvLadders.rows||{}).sell.
 let TAB = 'next';
 try { const t = localStorage.getItem('ovd-tab'); if (t) TAB = t; } catch(e){}
 if (location.hash === '#dv') TAB = 'dv'; if (location.hash === '#next') TAB = 'next';
-function showTab(){ for (const k of ['next','fu','dv','eo','out']){ $('#tab-'+k).hidden = TAB !== k; $('#t-'+k).setAttribute('aria-selected', TAB===k); } }
-if (location.hash === '#outages') TAB = 'out'; if (location.hash === '#fundamentals') TAB = 'fu'; if (location.hash === '#eo') TAB = 'eo';
-for (const [id, k] of [['#t-next','next'],['#t-fu','fu'],['#t-dv','dv'],['#t-eo','eo'],['#t-out','out']]) $(id).addEventListener('click', () => { TAB = k; try{localStorage.setItem('ovd-tab', k)}catch(e){} showTab(); });
+function showTab(){ for (const k of ['next','fu','dv','eo','out','gt']){ $('#tab-'+k).hidden = TAB !== k; $('#t-'+k).setAttribute('aria-selected', TAB===k); } }
+if (location.hash === '#outages') TAB = 'out'; if (location.hash === '#fundamentals') TAB = 'fu'; if (location.hash === '#eo') TAB = 'eo'; if (location.hash === '#gates') TAB = 'gt';
+for (const [id, k] of [['#t-next','next'],['#t-fu','fu'],['#t-dv','dv'],['#t-eo','eo'],['#t-out','out'],['#t-gt','gt']]) $(id).addEventListener('click', () => { TAB = k; try{localStorage.setItem('ovd-tab', k)}catch(e){} showTab(); });
 
 // ================= East-Ottawa & Quebec tab =================
 function eoRender(){
@@ -753,6 +792,46 @@ $('#eomw').addEventListener('input', () => { const v = parseFloat($('#eomw').val
 $('#eo-std').addEventListener('click', () => { PAIR = {mw: PAIR.mw > 0 ? PAIR.mw : 25, hrs: [12,13,14,15,16]}; $('#eomw').value = PAIR.mw; pairSave(); eoRender(); dvRender(); });
 $('#eo-off').addEventListener('click', () => { PAIR.mw = 0; $('#eomw').value = 0; pairSave(); eoRender(); dvRender(); });
 $('#eomw').value = PAIR.mw || 0;
+
+// ================= Gates tab (display only) =================
+function gtRender(){
+  const G = B.gates; if (!G){ $('#tab-gt').innerHTML = '<div class="note">Gates not in this bundle (run morning.py).</div>'; return; }
+  const f0 = v => v==null ? '–' : Math.round(v).toLocaleString('en-US');
+  const sg = v => v==null ? '–' : (v>0?'+':'') + Math.round(v).toLocaleString('en-US');
+  const sg1 = v => v==null ? '–' : (v>0?'+':'') + Number(v).toFixed(1);
+  const tcls = t => t==='bull' ? 'up' : t==='bear' ? 'dn' : t==='warn' ? 'wn' : 'nt';
+  $('#gtcards').innerHTML = G.summary.map(s => `<div class="gtcard ${tcls(s.tone)}"><div class="gth"><span class="gtn">${s.gate}</span><span class="gtst ${tcls(s.tone)}">${s.status}</span></div><div class="small">${s.text}</div></div>`).join('');
+  const c = G.cong || {};
+  if (c.error){ $('#gtbanner').innerHTML = `<div class="note">Congestion read failed: ${c.error}</div>`; }
+  else {
+    const side = c.call==='go-with' ? 'Go with the spread: buy East / sell West (and Southwest)' : c.call==='fade' ? 'Fade the spread: sell East / buy West (Southwest is the steadier fade)' : 'Pass: no spread trade';
+    $('#gtbanner').innerHTML = `<div class="gtban ${c.gate?'open':'shut'}"><div><span class="eyebrow">Outage gate</span><div class="gtbig">${c.gate?'OPEN':'CLOSED'}</div><div class="small">${c.gate ? 'DA enforced ' + c.tables.join(', ') : (c.dc_known ? 'Yesterday\'s DA used the all-in-service FETT table only' : 'Yesterday\'s DA constraint file not archived yet')}</div></div>
+      <div><span class="eyebrow">Suggested side</span><div class="gtside">${side}</div><div class="small">${c.why}</div></div>
+      <div><span class="eyebrow">Wind HE10–20</span><div class="gtside mono">IESO ${f0(c.wind_ieso)} · Meteo ${f0(c.wind_met)}</div><div class="small">split episode day ${c.episode_day||0}</div></div></div>`;
+    $('#gtcongsub').textContent = `gate = an outage-specific West→Toronto (FETT) limit in yesterday's DA constraint list, out before the bid`;
+    $('#gtout').innerHTML = '<tr><th>Status</th><th>Start</th><th>End</th><th>Equipment</th><th>Where</th></tr>' + ((c.outages||[]).length ? c.outages.map(o => `<tr><td class="l">${o.tag}${o.long?' (long-term)':''}</td><td>${o.start.slice(5)}</td><td>${o.end.slice(5)}</td><td class="l">${o.equip}</td><td class="l">${o.where}</td></tr>`).join('') : '<tr><td class="l" colspan="5">none on the West / Bruce / Toronto side</td></tr>');
+    $('#gtlim').innerHTML = (c.limits||[]).length ? 'Reduced southern limits: ' + c.limits.map(l => `${l.iface} ${f0(l.limit)} MW${l.ais?` (normal ${f0(l.ais)})`:''} ${l.hours}`).join(' · ') : 'No southern interface or NY / Michigan limits reduced on D.';
+    $('#gtgs').innerHTML = '<tr><th>Previous day\'s DA</th><th>Days</th><th>DA split</th><th>RT split</th></tr>' + (c.gate_stats||[]).map(g => `<tr><td class="l">${g.state}</td><td>${g.days}</td><td>$${fmt(g.da,1)}</td><td>$${fmt(g.rt,1)}</td></tr>`).join('');
+    const r = c.rule||{}; $('#gtrule').innerHTML = `Inside-the-gate rule (go-with if wind ≥ 2,000; fade if wind &lt; 1,300 and Meteologica lighter; go-with if Meteologica 75+ MW windier; else pass): <b>${r.wins} of ${r.days}</b> traded days right, ${sg1(r.avg)} $/MWh per traded day. Drawn from these same days, so treat it as a hypothesis until the live log builds up. Outside the gate, history says fade wins ~65% of split hours but go-with has the fatter tail (winter).`;
+    $('#gtlog').innerHTML = '<tr><th>Day</th><th>Gate</th><th>Wind IESO</th><th>Meteo</th><th>Call</th><th>DA split</th><th>RT split</th><th>Go-with West</th><th>Go-with SW</th><th>Call P&amp;L</th></tr>' +
+      (c.log||[]).map(x => `<tr><td>${x.date.slice(5)}</td><td class="l">${x.gate?'<b>open</b>':'closed'}</td><td>${f0(x.wind)}</td><td>${f0(x.wmet)}</td><td class="l">${x.call}</td><td>${fmt(x.da_split,1)}</td><td>${fmt(x.rt_split,1)}</td><td class="${x.go_west>0?'pos':'neg'}">${sg1(x.go_west)}</td><td class="${x.go_sw>0?'pos':'neg'}">${sg1(x.go_sw)}</td><td class="${x.pnl==null?'':x.pnl>0?'pos':'neg'}">${x.pnl==null?'–':sg1(x.pnl)}</td></tr>`).join('');
+  }
+  const chip = fl => fl.map(x => `<span class="gtf ${tcls(x.tone)}">${x.text}</span>`).join(' ');
+  $('#gthrs').innerHTML = '<tr><th>HE</th><th>IESO load</th><th>Meteo load</th><th>Load gap</th><th>IESO wind</th><th>Meteo wind</th><th>Wind gap</th><th>Shift</th><th>Gas need</th><th>Spare</th><th>Lean</th><th class="l">Gates firing</th></tr>' +
+    G.hours.map(h => `<tr><td>${h.he}</td><td>${f0(h.dem)}</td><td>${f0(h.met)}</td><td>${sg(h.lgap)}</td><td>${f0(h.w)}</td><td>${f0(h.wm)}</td><td>${sg(h.wgap)}</td>
+      <td class="${h.shift==null?'':h.shift<=-400?'gtdn':h.shift<=-200?'gtdn2':h.shift>=400?'gtup':''}">${sg(h.shift)}</td><td class="${h.need!=null&&h.need<2500?'gtdn':''}">${f0(h.need)}</td>
+      <td class="${h.sp!=null&&h.sp<1500&&h.need>=6000?'gtwn':''}">${f0(h.sp)}</td><td><span class="gtst ${tcls(h.lean)}">${h.lean}</span></td><td class="l gtfl">${chip(h.flags)}</td></tr>`).join('');
+  $('#gtblk').innerHTML = '<tr><th>Block</th><th>Gas need avg</th><th>Tightest spare</th><th>Shift avg</th><th>Hours leaning bull</th><th>Hours leaning bear</th></tr>' +
+    G.blocks.map(b => `<tr><td class="l">${b.blk}</td><td>${f0(b.need)}</td><td>${f0(b.sp_min)}</td><td>${sg(b.shift)}</td><td>${b.bull}</td><td>${b.bear}</td></tr>`).join('');
+  const H = G.hist; $('#gthsub').textContent = `${H.days} bid-time reads, ${H.from} to ${H.to} · recomputed every morning · spike = RT ≥ DA + $25`;
+  const tb = (title, rows, note) => `<div class="panel"><h3>${title}</h3><div class="tablewrap" style="border:0"><table class="dv"><tr><th class="l">Bucket</th><th>Hours</th><th>Avg</th><th>Median</th><th>RT &gt; DA</th><th>Spike</th></tr>` +
+    rows.map(r => `<tr><td class="l">${r.bin}</td><td>${f0(r.hrs)}</td><td class="${r.avg>0?'pos':'neg'}">${sg1(r.avg)}</td><td class="${r.med>0?'pos':'neg'}">${sg1(r.med)}</td><td>${r.up==null?'–':r.up+'%'}</td><td>${r.spike==null?'–':r.spike+'%'}</td></tr>`).join('') + `</table></div>${note?`<div class="small muted">${note}</div>`:''}</div>`;
+  $('#gthist').innerHTML = tb('Gas shift, all hours', H.shift, '≤ −400 is the clean short signal. +200 to +400 has no edge; ≥ +400 is a lean on few hours.') +
+    tb('Gas shift, gas need ≥ 6,000', H.shift_highgas, 'In tight hours even a small + shift carries the spike tail.') +
+    tb('Gas floor (gas expected online)', H.floor, 'Below ~2,500 MW gas is not reliably on the margin.') +
+    tb('Spare in high-gas hours', H.tight, 'Thin spare: DA usually prices the risk in (median well below 0), the spike tail is what you buy.') +
+    tb('Meteologica vs IESO wind', H.wind, 'Meteologica lighter by 300+ MW: spike-prone. Windier by 300+: extra cushion.');
+}
 
 // ================= Outages tab =================
 function otRender(){
@@ -1004,7 +1083,7 @@ function fuRender(){
 function render(){
   document.querySelectorAll('.seg button').forEach(b => b.setAttribute('aria-pressed', b.id === 'hub-'+HUB ? 'true' : 'false'));
   $('#asof').textContent = `${ZN[HUB]} hub · DA for ${dlabel(B.target)} ${B.target.slice(0,4)} · inputs as of ${dlabel(B.origin)} 08:00 MT · hub limit ${B.hubs[HUB].cap_mw} MW`;
-  stats(); ckRender(); fan(); table(); stack(); dvInit(); eoRender(); otRender(); nyRender(); fuRender(); showTab();
+  stats(); ckRender(); fan(); table(); stack(); dvInit(); eoRender(); otRender(); nyRender(); fuRender(); try{ gtRender(); }catch(e){ console.error(e); } showTab();
 }
 for (const z of ['EAST','OTTAWA']) $('#hub-'+z).addEventListener('click', () => { HUB = z; try{localStorage.setItem('ovd-hub', z)}catch(e){} render(); });
 $('#basemw').addEventListener('input', table);
