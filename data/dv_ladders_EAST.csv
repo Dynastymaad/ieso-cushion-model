@@ -1,5 +1,5 @@
 ladder,days,mwh_cleared,buy_mwh,sell_mwh,usd_per_mwh,usd_per_day,ci90_day,total,days_up,worst_day
-every hour at score 1,484,255020,255020,0,2.45,1291,+131..+2522,624922,47,-75665
+every hour at score 1,484,255170,255170,0,2.45,1290,+127..+2522,624267,47,-75665
 every hour at score 2,484,146860,79415,67445,6.24,1893,+1061..+2707,916315,63,-83454
 every hour at score 3,484,159615,14325,145290,5.01,1652,+605..+2657,799343,66,-92136
 every hour at score 4,484,215530,1720,213810,3.56,1586,+390..+2725,767757,62,-97528
