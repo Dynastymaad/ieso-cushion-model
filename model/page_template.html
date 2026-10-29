@@ -74,6 +74,20 @@ dl.cols dt{font-weight:600} dl.cols dd{margin:0;max-width:78ch}
 .ck .r span:first-child{color:var(--ink2)}
 .ck .v{margin-top:4px;font-size:12.5px;font-weight:600}
 .fu td,.fu th{white-space:nowrap} .fu .fu-he{position:sticky;left:0;background:var(--surface);z-index:1} .fu-b1{background:var(--buy-soft);color:var(--buy)} .fu-b2{background:var(--buy);color:var(--surface);font-weight:600} .fu-r1{background:var(--sell-soft);color:var(--sell)} .fu-r2{background:var(--sell);color:var(--surface);font-weight:600} .fu tr.sig td:first-child{font-weight:700}
+.hiseg{display:flex;flex-wrap:wrap;gap:4px}.hiseg button{font:600 13px var(--f-body);padding:4px 10px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink2);cursor:pointer}
+.hiseg button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+table.higrid td,table.higrid th{padding:4px 5px;font-size:12px;text-align:right}
+td.hu1{background:var(--buy-soft)} td.hu2{background:var(--buy-soft);color:var(--buy);font-weight:600} td.hu3{background:var(--buy);color:var(--surface);font-weight:600}
+td.hd1{background:var(--sell-soft)} td.hd2{background:var(--sell-soft);color:var(--sell);font-weight:600} td.hd3{background:var(--sell);color:var(--surface);font-weight:600}
+.coctl{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}.coctl input{font:13px var(--f-mono);padding:3px 6px;border:1px solid var(--line);border-radius:5px;background:var(--surface);color:var(--ink)}
+table.comat{border-collapse:collapse;font-family:var(--f-mono);font-size:11px;font-variant-numeric:tabular-nums}
+table.comat th,table.comat td{padding:3px 4px;text-align:center;min-width:26px;border:1px solid var(--grid)} table.comat th{color:var(--ink2);font-weight:600;background:var(--sunk)}
+td.cg1{background:color-mix(in srgb,var(--buy) 22%,var(--surface));color:var(--ink)} td.cg2{background:color-mix(in srgb,var(--buy) 50%,var(--surface));color:var(--ink)} td.cg3{background:var(--buy);color:var(--surface);font-weight:600}
+td.cr1{background:color-mix(in srgb,var(--sell) 25%,var(--surface))} td.cr2{background:var(--sell);color:var(--surface)}
+.cochip{display:inline-block;font:12px var(--f-mono);padding:1px 6px;border-radius:4px;margin:1px 2px}.cochip.cg1{background:color-mix(in srgb,var(--buy) 22%,var(--surface))}.cochip.cg2{background:color-mix(in srgb,var(--buy) 50%,var(--surface))}.cochip.cg3{background:var(--buy);color:var(--surface)}.cochip.cr1,.cochip.cr2{background:var(--sell-soft);color:var(--sell)}
+td.cp1{background:color-mix(in srgb,var(--accent) 12%,var(--surface))} td.cp2{background:color-mix(in srgb,var(--accent) 28%,var(--surface))}
+td.cp3{background:color-mix(in srgb,var(--accent) 50%,var(--surface))} td.cp4{background:var(--accent);color:var(--surface)}
+td.cn1{background:color-mix(in srgb,var(--warn) 22%,var(--surface))} td.cn2{background:color-mix(in srgb,var(--warn) 45%,var(--surface))} td.cd{background:var(--sunk)} td.c0{color:var(--ink3)}
 .gtcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
 .gtcard{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:8px;padding:11px 13px;display:flex;flex-direction:column;gap:6px}
 .gtcard.up{border-left-color:var(--buy)} .gtcard.dn{border-left-color:var(--sell)} .gtcard.wn{border-left-color:var(--warn)}
@@ -171,7 +185,7 @@ textarea.prnote{font:inherit;font-size:13px;width:100%;min-height:150px;border:1
     </div>
   </header>
 
-  <nav class="tabs" role="tablist" aria-label="Views"><button id="t-next" role="tab" aria-selected="true">Next day</button><button id="t-fu" role="tab" aria-selected="false">Fundamentals</button><button id="t-dv" role="tab" aria-selected="false">DA Virtual</button><button id="t-eo" role="tab" aria-selected="false">East–Ottawa &amp; Quebec</button><button id="t-out" role="tab" aria-selected="false">Outages</button><button id="t-gt" role="tab" aria-selected="false">Gates</button></nav>
+  <nav class="tabs" role="tablist" aria-label="Views"><button id="t-next" role="tab" aria-selected="true">Next day</button><button id="t-fu" role="tab" aria-selected="false">Fundamentals</button><button id="t-dv" role="tab" aria-selected="false">DA Virtual</button><button id="t-eo" role="tab" aria-selected="false">East–Ottawa &amp; Quebec</button><button id="t-out" role="tab" aria-selected="false">Outages</button><button id="t-gt" role="tab" aria-selected="false">Gates</button><button id="t-hi" role="tab" aria-selected="false">History</button><button id="t-co" role="tab" aria-selected="false">Correlation</button></nav>
 
   <div id="tab-next" style="display:flex;flex-direction:column;gap:26px">
   <div class="stats" id="stats"></div>
@@ -232,6 +246,7 @@ textarea.prnote{font:inherit;font-size:13px;width:100%;min-height:150px;border:1
       <span class="prlegend"><span>Bullish (RT likely above DA):</span><span><i style="background:var(--pu1)"></i>60–75th pct</span><span><i style="background:var(--pu2)"></i>75–90th</span><span><i style="background:var(--pu3)"></i>90th+</span><span style="margin-left:6px"><i style="background:var(--pn0)"></i>Neutral 40–60th</span><span style="margin-left:6px">Bearish:</span><span><i style="background:var(--pd1)"></i>25–40th</span><span><i style="background:var(--pd2)"></i>10–25th</span><span><i style="background:var(--pd3)"></i>under 10th</span><span><i style="background:transparent;box-shadow:inset 4px 0 0 var(--pd3)"></i>HE bar = load bearish (Tesla and Dynasty 300+ MW under IESO)</span></span></div>
     <p class="small muted" style="margin:0">Each cell is ranked against the same hour on up to 60 earlier days that had settled before the bid. Green always means pointing to RT above DA (bullish RT), red means pointing to RT below DA (bearish RT). Signed columns (Tesla − IESO, wind 3 h change, net load 3 h change, gas ramps, DA vs usual) are coloured by their sign first, then by size against past values on the same side; near zero is blue. Hover a cell for its percentile.</p>
     <div class="prtw prcc" id="prtw"><table class="prt" id="prtable"></table></div>
+    <div class="small muted" id="rtnote"></div>
     <div class="prgrid">
       <div><label for="prnote" class="eyebrow">My read for this day (saved in this browser)</label><textarea id="prnote" class="prnote"></textarea></div>
       <div class="prcard"><h2 style="margin:0 0 6px;font-size:15px">Reading order</h2><ol style="margin:0;padding-left:18px;font-size:13px;color:var(--ink2)">
@@ -278,7 +293,7 @@ textarea.prnote{font:inherit;font-size:13px;width:100%;min-height:150px;border:1
         <span class="small muted" id="dvcap"></span>
       </div>
       <div class="tablewrap"><table class="dv" id="dvmatrix"></table></div>
-      <div class="small muted">Scores: 1 strong buy · 2 buy · 3 neutral straddle · 4 sell · 5 strong sell. Suggested = our tested rule (outlined). VA = what the VA Hub auto-score would say from the same prices.
+      <div class="small muted">Scores: 1 strong buy · 2 buy · 3 neutral (no orders unless picked by hand) · 4 sell · 5 strong sell. Suggested = our tested rule (outlined). VA = what the VA Hub auto-score would say from the same prices.
         Zone odds are measured over 17 months at this hub. Lean counts only the three VA Hub signals that held up in the re-test.</div>
     </section>
 
@@ -375,6 +390,29 @@ textarea.prnote{font:inherit;font-size:13px;width:100%;min-height:150px;border:1
     </section>
   </div>
 
+  <div id="tab-hi" hidden style="display:flex;flex-direction:column;gap:22px">
+    <div class="sechead"><h2>Last 7 days</h2><span class="muted small" id="hisub"></span></div>
+    <div class="tablewrap"><table class="dv" id="hisum"></table></div>
+    <section style="display:flex;flex-direction:column;gap:10px">
+      <div class="sechead"><h3>Hour by hour</h3><div class="hiseg" id="hiview"><button data-v="x" aria-pressed="true">RT − DA</button><button data-v="da" aria-pressed="false">DA</button><button data-v="rt" aria-pressed="false">RT</button></div></div>
+      <div class="tablewrap"><table class="dv higrid" id="higrid"></table></div>
+    </section>
+    <section style="display:flex;flex-direction:column;gap:10px">
+      <div class="sechead"><h3>One day in detail</h3><div class="hiseg" id="hidays"></div></div>
+      <div class="tablewrap"><table class="dv" id="hiday"></table></div>
+      <div class="small muted" id="hichk"></div>
+    </section>
+  </div>
+  <div id="tab-co" hidden style="display:flex;flex-direction:column;gap:18px">
+    <div class="sechead"><h2>How each hour's RT − DA moves with the other hours</h2><span class="muted small" id="cosub"></span></div>
+    <div class="coctl">
+      <div class="hiseg" id="copre"><button data-p="7">Last 7 d</button><button data-p="14">Last 14 d</button><button data-p="30">Last 30 d</button><button data-p="60">Last 60 d</button><button data-p="ytd">YTD</button><button data-p="all">All history</button></div>
+      <label class="small">From <input type="date" id="cofrom"></label><label class="small">To <input type="date" id="coto"></label>
+    </div>
+    <div class="tablewrap"><table class="comat" id="comat"></table></div>
+    <div class="small muted"><b>How to read it.</b> Each cell asks: on days when HE <i>x</i> came in further above (or below) DA than usual, did HE <i>y</i> do the same? 100% = always together, 0% = unrelated, negative (red) = opposite. It is a rank correlation, so one spike day can't create a link. A cell is shown only when the link is both at least moderate (40%+) and statistically real at the 1% level for the number of days picked; blank = too weak to count. Hover a cell for the exact value and roughly how much of the moves it explains. <b>Why it matters:</b> if you are long HE17 and HE18 and they move together 65%, that is closer to one bet at double size than two trades, so size them together. The window that best predicts the next two weeks is all history; 7–14 days is noisy, use it only to spot a change.</div>
+    <div class="panel"><h3>Which hours each hour actually moves with</h3><div class="tablewrap" style="border:0"><table class="dv" id="colag"></table></div></div>
+  </div>
   <div id="tab-gt" hidden style="display:flex;flex-direction:column;gap:26px">
     <div class="sechead"><h2>Morning gates</h2><span class="muted small">bid-time inputs only (D−1 morning) · display only: nothing here changes the ladders</span></div>
     <div class="gtcards" id="gtcards"></div>
@@ -386,7 +424,7 @@ textarea.prnote{font:inherit;font-size:13px;width:100%;min-height:150px;border:1
         <div class="panel"><h3>Gate history</h3><div class="tablewrap" style="border:0"><table class="dv" id="gtgs"></table></div><div class="small muted" id="gtrule"></div></div>
       </div>
       <div class="panel"><h3>Daily log: the call each morning vs what happened (HE10–20, $/MWh)</h3><div class="tablewrap scrollbox" style="border:0"><table class="dv" id="gtlog"></table></div>
-        <div class="small muted">Split = East − West. Go-with = buy East / sell West, P&amp;L = RT split − DA split. Calls before today are re-derived from the archived bid-time read, so the open-gate days are the ones the rule was drawn from; only days after Oct 26 are a live test.</div></div>
+        <div class="small muted">Split = East − West. Go-with = buy East / sell West, P&amp;L = RT split − DA split. Wind is IESO pre-DA and Meteologica as loaded before the bid (archives). "In-sample" = days the rule's thresholds were chosen from; "live" = called with the rule as it now stands.</div></div>
     </section>
     <section style="display:flex;flex-direction:column;gap:12px">
       <div class="sechead"><h2>Hour by hour</h2><span class="muted small">shift = (Meteologica load − IESO load) + (IESO wind − Meteologica wind); + means more gas needed than IESO shows</span></div>
@@ -594,6 +632,7 @@ const gradeOf = (h, s) => { if (s!==5 || !isTight(h)) return null; const c = cah
 const eff = h => { const o = SCORES[HUB][h.he]; return o===undefined ? S(h).score : o; };
 function baseLadder(h){
   const x = S(h), s = eff(h); if (!s || !x.ladders_s) return {buy:[], sell:[]};
+  if (s === 3 && SCORES[HUB][h.he] === undefined) return {buy:[], sell:[]};   // Oct 28 2026: no orders on score 3 unless you pick it (season_ladder_test.py)
   let L = x.ladders_s[String(s)]; const k = dvSize() * (boosted(h, s) ? 1.5 : 1), cap = B.hubs[HUB].cap_mw;
   if (h.guard === 'flip' && s === 1 && SCORES[HUB][h.he] === undefined) L = {buy: [[20, Math.round(x.p_da + 30)], [30, Math.round(x.p_da + 30)], [35, Math.round(x.p_da + 30)]], sell: []};   // tested flip: bid DA fc + $30
   const gr = gradeOf(h, s);   // tested Oct 7 (cahr_ladder.py): A = tight & CAHR >= 12 -> offers capped at 0.9 x RT fc; B = tight & CAHR < 12 -> offers +$10
@@ -709,7 +748,7 @@ function dvRules(){
     [[5,'v2 SELL: spare below the learned tight threshold, or gas need below the learned surplus threshold. <b>×1.5 MW</b> when 500+ MW tripped in the last 24 h', ruleRes('OURS v2 SELL') + ' · with 500+ MW trips: +12.33 $/MWh (90%: +6.96..+18.00), else +3.66'],
      [4,'v2 SELL-L: extended surplus tier (more hours, lower $/MWh)', 'shown on the Next day tab'],
      [1,`Headroom inside the buy band (${bb?fmt0(bb.lo)+'–'+fmt0(bb.hi)+' MW today':'none today'}), re-learned daily on the last 120 days`, ruleRes('OURS buy band')],
-     [3,'Everything else: small wide straddle','ladder-only; see table below']].map(r => `<tr><td><span class="chip s${r[0]}">${r[0]}</span></td><td class="l">${r[1]}</td><td class="l">${r[2]}</td></tr>`).join('');
+     [3,'Everything else: no orders (the straddle was dropped Oct 28: it lost money in every recent test window). Pick 3 by hand to get it back.','ladder-only; see table below']].map(r => `<tr><td><span class="chip s${r[0]}">${r[0]}</span></td><td class="l">${r[1]}</td><td class="l">${r[2]}</td></tr>`).join('');
 }
 function ruleRes(prefix){ const r = ((B.hubs[HUB].dv_results||{}).rules||[]).find(x => String(x.rule).startsWith(prefix)); return r ? `${r.usd_mwh>0?'+':''}${fmt(r.usd_mwh)} $/MWh (90%: ${r.ci90}) over ${fmt0(r.hours)} h, win ${fmt(r.win,1)}%` : '–'; }
 function dvTests(){
@@ -740,9 +779,9 @@ $('#copysell').addEventListener('click', () => dvCopy((dvLadders.rows||{}).sell.
 let TAB = 'next';
 try { const t = localStorage.getItem('ovd-tab'); if (t) TAB = t; } catch(e){}
 if (location.hash === '#dv') TAB = 'dv'; if (location.hash === '#next') TAB = 'next';
-function showTab(){ for (const k of ['next','fu','dv','eo','out','gt']){ $('#tab-'+k).hidden = TAB !== k; $('#t-'+k).setAttribute('aria-selected', TAB===k); } }
-if (location.hash === '#outages') TAB = 'out'; if (location.hash === '#fundamentals') TAB = 'fu'; if (location.hash === '#eo') TAB = 'eo'; if (location.hash === '#gates') TAB = 'gt';
-for (const [id, k] of [['#t-next','next'],['#t-fu','fu'],['#t-dv','dv'],['#t-eo','eo'],['#t-out','out'],['#t-gt','gt']]) $(id).addEventListener('click', () => { TAB = k; try{localStorage.setItem('ovd-tab', k)}catch(e){} showTab(); });
+function showTab(){ for (const k of ['next','fu','dv','eo','out','gt','hi','co']){ $('#tab-'+k).hidden = TAB !== k; $('#t-'+k).setAttribute('aria-selected', TAB===k); } }
+if (location.hash === '#outages') TAB = 'out'; if (location.hash === '#fundamentals') TAB = 'fu'; if (location.hash === '#eo') TAB = 'eo'; if (location.hash === '#gates') TAB = 'gt'; if (location.hash === '#history') TAB = 'hi'; if (location.hash === '#correlation') TAB = 'co';
+for (const [id, k] of [['#t-next','next'],['#t-fu','fu'],['#t-dv','dv'],['#t-eo','eo'],['#t-out','out'],['#t-gt','gt'],['#t-hi','hi'],['#t-co','co']]) $(id).addEventListener('click', () => { TAB = k; try{localStorage.setItem('ovd-tab', k)}catch(e){} showTab(); });
 
 // ================= East-Ottawa & Quebec tab =================
 function eoRender(){
@@ -793,6 +832,91 @@ $('#eo-std').addEventListener('click', () => { PAIR = {mw: PAIR.mw > 0 ? PAIR.mw
 $('#eo-off').addEventListener('click', () => { PAIR.mw = 0; $('#eomw').value = 0; pairSave(); eoRender(); dvRender(); });
 $('#eomw').value = PAIR.mw || 0;
 
+// ================= History tab (display only) =================
+let HIV = 'x', HID = null;
+function hiRender(){
+  const H = B.history; if (!H || !H.days || !H.days.length){ $('#tab-hi').innerHTML = '<div class="note">History not in this bundle (run morning.py).</div>'; return; }
+  const P = H.hubs[HUB] || {}, f0 = v => v==null ? '–' : Math.round(v).toLocaleString('en-US'), f1 = v => v==null ? '–' : Number(v).toFixed(1);
+  const sg = v => v==null ? '–' : (v>0?'+':'') + Number(v).toFixed(1), sg0 = v => v==null ? '–' : (v>0?'+':'') + Math.round(v).toLocaleString('en-US');
+  const avg = a => { const b = a.filter(v => v!=null && !isNaN(v)); return b.length ? b.reduce((s,v)=>s+v,0)/b.length : null; };
+  $('#hisub').textContent = `${ZN[HUB]} hub · DA and RT from IESO public reports · "at bid" = as known D−1 morning · actual = what happened`;
+  const dayPx = d => { const m = {}; (P[d.date]||[]).forEach(([he,da,rt]) => m[he] = {da, rt}); return m; };
+  let sum = '<tr><th class="l">Day</th><th>DA on-peak</th><th>RT on-peak</th><th>RT − DA</th><th>DA off-peak</th><th>RT off-peak</th><th>Highest RT</th><th class="grp">Load miss (actual − IESO)</th><th>Wind IESO / Meteo / actual</th><th>Gas expected / ran</th><th>Tightest spare</th><th class="l">Bid-time read</th></tr>';
+  for (const d of H.days){
+    const m = dayPx(d), on = [], off = []; for (let h=1; h<=24; h++){ (h>=7 && h<=22 ? on : off).push(m[h]||{}); }
+    const dON = avg(on.map(x=>x.da)), rON = avg(on.map(x=>x.rt)), dOF = avg(off.map(x=>x.da)), rOF = avg(off.map(x=>x.rt));
+    let mx = null; for (let h=1; h<=24; h++){ const r = (m[h]||{}).rt; if (r!=null && (!mx || r > mx[1])) mx = [h, r]; }
+    const R = d.rows, lm = avg(R.map(r => r.act==null||r.dem==null ? null : r.act - r.dem));
+    const sp = R.map(r=>r.sp).filter(v=>v!=null);
+    sum += `<tr><td class="l"><b>${d.dow} ${d.date.slice(5)}</b></td><td>${f1(dON)}</td><td>${f1(rON)}</td><td class="${rON-dON>0?'pos':'neg'}">${sg(rON==null||dON==null?null:rON-dON)}</td><td>${f1(dOF)}</td><td>${f1(rOF)}</td><td>${mx?`$${f1(mx[1])} HE${mx[0]}`:'–'}</td>
+      <td class="grp ${lm>0?'pos':'neg'}">${sg0(lm)}</td><td>${f0(avg(R.map(r=>r.w)))} / ${f0(avg(R.map(r=>r.wm)))} / ${f0(avg(R.map(r=>r.wact)))}</td><td>${f0(avg(R.map(r=>r.need)))} / ${f0(avg(R.map(r=>r.gas)))}</td><td>${sp.length?f0(Math.min(...sp)):'–'}</td><td class="l">${d.saved?'saved morning read':'<span class="muted">rebuilt from archives</span>'}</td></tr>`;
+  }
+  $('#hisum').innerHTML = sum;
+  document.querySelectorAll('#hiview button').forEach(b => { b.setAttribute('aria-pressed', b.dataset.v===HIV); b.onclick = () => { HIV = b.dataset.v; hiRender(); }; });
+  let g = '<tr><th class="l">Day</th>' + Array.from({length:24},(_,i)=>`<th>${i+1}</th>`).join('') + '</tr>';
+  for (const d of H.days){
+    const m = dayPx(d); g += `<tr><td class="l">${d.dow} ${d.date.slice(5)}</td>`;
+    for (let h=1; h<=24; h++){ const x = m[h]||{}, v = HIV==='x' ? (x.rt==null||x.da==null?null:x.rt-x.da) : x[HIV];
+      const cls = HIV!=='x' || v==null ? '' : v>=25?'hu3':v>=10?'hu2':v>0?'hu1':v<=-25?'hd3':v<=-10?'hd2':'hd1';
+      g += `<td class="${cls}" title="HE${h} DA ${f1(x.da)} · RT ${f1(x.rt)}">${v==null?'–':HIV==='x'?sg(v):f1(v)}</td>`; }
+    g += '</tr>';
+  }
+  $('#higrid').innerHTML = g;
+  if (!HID || !H.days.find(d=>d.date===HID)) HID = H.days[H.days.length-1].date;
+  $('#hidays').innerHTML = H.days.map(d => `<button data-d="${d.date}" aria-pressed="${d.date===HID}">${d.dow} ${d.date.slice(5)}</button>`).join('');
+  document.querySelectorAll('#hidays button').forEach(b => b.onclick = () => { HID = b.dataset.d; hiRender(); });
+  const d = H.days.find(x=>x.date===HID), m = dayPx(d);
+  let t = '<tr><th>HE</th><th>DA</th><th>RT</th><th>RT − DA</th><th class="grp">Load IESO (bid)</th><th>Meteo (bid)</th><th>Actual</th><th class="grp">Wind IESO (bid)</th><th>Meteo (bid)</th><th>Actual</th><th class="grp">Gas expected (bid)</th><th>Gas ran</th><th>Spare (bid)</th><th>Shift (bid)</th></tr>';
+  for (const r of d.rows){ const x = m[r.he]||{}, dx = x.rt==null||x.da==null?null:x.rt-x.da;
+    t += `<tr><td>${r.he}</td><td>${f1(x.da)}</td><td>${f1(x.rt)}</td><td class="${dx==null?'':dx>0?'pos':'neg'}">${sg(dx)}</td><td class="grp">${f0(r.dem)}</td><td>${f0(r.met)}</td><td>${f0(r.act)}</td><td class="grp">${f0(r.w)}</td><td>${f0(r.wm)}</td><td>${f0(r.wact)}</td><td class="grp">${f0(r.need)}</td><td>${f0(r.gas)}</td><td>${f0(r.sp)}</td><td>${sg0(r.shift)}</td></tr>`; }
+  $('#hiday').innerHTML = t;
+  const C = H.checks || {}, z = C[HUB] || {}, n = C.nrg || {}, l = C.load || {};
+  $('#hichk').innerHTML = `<b>Data checks:</b> ${z.missing_rt && z.missing_rt.length ? 'RT missing in the IESO files for ' + z.missing_rt.join(', ') + ' (shown as –, left out of averages)' : 'no missing RT hours'}; ${z.dup ? z.dup + ' duplicate rows' : 'no duplicates'}. Actual load matches IESO's published Ontario demand in ${l.hours - (l.off||0)} of ${l.hours} hours. Prices agree with the independent NRG feed (checked Sep 1 – ${n.through||'?'}): DA ${n.hours - (n.da_off||0)} of ${n.hours} hours exact, RT within $0.50 in ${n.hours - (n.rt_off||0)}. Gas expected and spare come from the saved morning read; on days without a morning run they are rebuilt from the archived IESO and DB inputs with the same formula (it reproduces every saved read to within 1 MW). Oct 23 HE11–12: IESO itself never published those 5-minute prices (checked on IESO's site), so they stay blank.`;
+}
+// ================= Correlation tab (display only) =================
+let COF = null, COT = null;
+function coRender(){
+  const Cd = B.corr && B.corr[HUB]; if (!Cd){ $('#tab-co').innerHTML = '<div class="note">Correlation data not in this bundle (run morning.py).</div>'; return; }
+  const all = Object.keys(Cd).sort(), last = all[all.length-1];
+  if (!COF){ COF = all[0]; COT = last; }
+  $('#cofrom').min = all[0]; $('#cofrom').max = last; $('#coto').min = all[0]; $('#coto').max = last; $('#cofrom').value = COF; $('#coto').value = COT;
+  const ds = all.filter(d => d >= COF && d <= COT), n = ds.length;
+  document.querySelectorAll('#copre button').forEach(b => b.setAttribute('aria-pressed', 'false'));
+  // rank (Spearman) correlation: one spike day cannot manufacture a link
+  const rank = a => { const o = a.map((v,i)=>[v,i]).sort((x,y)=>x[0]-y[0]), r = new Array(a.length); let k = 0;
+    while (k < o.length){ let e = k; while (e+1 < o.length && o[e+1][0] === o[k][0]) e++; const av = (k+e)/2 + 1; for (let q=k; q<=e; q++) r[o[q][1]] = av; k = e+1; } return r; };
+  const M = Array.from({length:24}, () => new Array(24).fill(null));
+  if (n >= 5){
+    const X = ds.map(d => Cd[d]), R = []; for (let h=0; h<24; h++) R.push(rank(X.map(r=>r[h])));
+    const mu = R.map(c => c.reduce((a,b)=>a+b,0)/n), sd = R.map((c,h) => Math.sqrt(c.reduce((a,b)=>a+(b-mu[h])*(b-mu[h]),0)/n));
+    for (let i=0; i<24; i++) for (let j=0; j<24; j++){ if (!sd[i] || !sd[j]) continue; let s = 0; for (let k=0; k<n; k++) s += (R[i][k]-mu[i])*(R[j][k]-mu[j]); M[i][j] = s/n/(sd[i]*sd[j]); }
+  }
+  const T = [[1,63.7],[2,9.92],[3,5.84],[4,4.6],[5,4.03],[6,3.71],[7,3.5],[8,3.36],[9,3.25],[10,3.17],[12,3.05],[15,2.95],[20,2.85],[30,2.75],[60,2.66],[120,2.62],[1e9,2.576]];
+  const df = n - 2, tc = (T.find(x => x[0] >= df) || T[T.length-1])[1];
+  const rmin = Math.max(0.4, tc / Math.sqrt(df + tc*tc));            // real = at least moderate (|r| >= 0.40) AND significant at 1%
+  const real = v => v != null && Math.abs(v) >= rmin;
+  $('#cosub').textContent = `${ZN[HUB]} hub · ${n} settled days, ${COF} to ${COT} · shown when |r| ≥ ${Math.round(rmin*100)}%`;
+  const cc = v => v>=.7?'cg3':v>=.55?'cg2':v>0?'cg1':v<=-.55?'cr2':'cr1';
+  const pc = v => (v<0?'−':'') + Math.round(Math.abs(v)*100) + '%';
+  let t = '<tr><th class="he">HE</th>' + Array.from({length:24},(_,i)=>`<th>${i+1}</th>`).join('') + '</tr>';
+  for (let i=0; i<24; i++){ t += `<tr><th class="he">${i+1}</th>` + M[i].map((v,j) => i===j ? '<td class="cd"></td>' : real(v) ? `<td class="${cc(v)}" title="HE${i+1} vs HE${j+1}: ${pc(v)} (explains ~${Math.round(v*v*100)}% of the moves)">${pc(v)}</td>` : `<td class="c0" title="HE${i+1} vs HE${j+1}: ${v==null?'–':pc(v)}, too weak to count"></td>`).join('') + '</tr>'; }
+  $('#comat').innerHTML = n >= 5 ? t : '<tr><td>Pick at least 5 days.</td></tr>';
+  let g = '<tr><th>HE</th><th class="l">Moves with (strongest first)</th></tr>';
+  for (let i=0; i<24; i++){ const L = M[i].map((v,j)=>[j,v]).filter(([j,v]) => j!==i && real(v)).sort((a,b)=>Math.abs(b[1])-Math.abs(a[1]));
+    g += `<tr><td>${i+1}</td><td class="l">${L.length ? L.map(([j,v]) => `<span class="cochip ${cc(v)}">HE${j+1} ${pc(v)}</span>`).join(' ') : '<span class="muted">nothing real: trade it on its own</span>'}</td></tr>`; }
+  $('#colag').innerHTML = n >= 5 ? g : '';
+}
+function coInit(){
+  document.querySelectorAll('#copre button').forEach(b => b.onclick = () => {
+    const Cd = B.corr && B.corr[HUB]; if (!Cd) return; const all = Object.keys(Cd).sort(), last = all[all.length-1], p = b.dataset.p;
+    COT = last;
+    if (p === 'all') COF = all[0]; else if (p === 'ytd') COF = last.slice(0,4) + '-01-01'; else COF = all[Math.max(0, all.length - Number(p))];
+    coRender(); b.setAttribute('aria-pressed', 'true');
+  });
+  $('#cofrom').onchange = e => { COF = e.target.value || COF; if (COF > COT) [COF, COT] = [COT, COF]; coRender(); };
+  $('#coto').onchange = e => { COT = e.target.value || COT; if (COF > COT) [COF, COT] = [COT, COF]; coRender(); };
+}
+
 // ================= Gates tab (display only) =================
 function gtRender(){
   const G = B.gates; if (!G){ $('#tab-gt').innerHTML = '<div class="note">Gates not in this bundle (run morning.py).</div>'; return; }
@@ -812,9 +936,9 @@ function gtRender(){
     $('#gtout').innerHTML = '<tr><th>Status</th><th>Start</th><th>End</th><th>Equipment</th><th>Where</th></tr>' + ((c.outages||[]).length ? c.outages.map(o => `<tr><td class="l">${o.tag}${o.long?' (long-term)':''}</td><td>${o.start.slice(5)}</td><td>${o.end.slice(5)}</td><td class="l">${o.equip}</td><td class="l">${o.where}</td></tr>`).join('') : '<tr><td class="l" colspan="5">none on the West / Bruce / Toronto side</td></tr>');
     $('#gtlim').innerHTML = (c.limits||[]).length ? 'Reduced southern limits: ' + c.limits.map(l => `${l.iface} ${f0(l.limit)} MW${l.ais?` (normal ${f0(l.ais)})`:''} ${l.hours}`).join(' · ') : 'No southern interface or NY / Michigan limits reduced on D.';
     $('#gtgs').innerHTML = '<tr><th>Previous day\'s DA</th><th>Days</th><th>DA split</th><th>RT split</th></tr>' + (c.gate_stats||[]).map(g => `<tr><td class="l">${g.state}</td><td>${g.days}</td><td>$${fmt(g.da,1)}</td><td>$${fmt(g.rt,1)}</td></tr>`).join('');
-    const r = c.rule||{}; $('#gtrule').innerHTML = `Inside-the-gate rule (go-with if wind ≥ 2,000; fade if wind &lt; 1,300 and Meteologica lighter; go-with if Meteologica 75+ MW windier; else pass): <b>${r.wins} of ${r.days}</b> traded days right, ${sg1(r.avg)} $/MWh per traded day. Drawn from these same days, so treat it as a hypothesis until the live log builds up. Outside the gate, history says fade wins ~65% of split hours but go-with has the fatter tail (winter).`;
-    $('#gtlog').innerHTML = '<tr><th>Day</th><th>Gate</th><th>Wind IESO</th><th>Meteo</th><th>Call</th><th>DA split</th><th>RT split</th><th>Go-with West</th><th>Go-with SW</th><th>Call P&amp;L</th></tr>' +
-      (c.log||[]).map(x => `<tr><td>${x.date.slice(5)}</td><td class="l">${x.gate?'<b>open</b>':'closed'}</td><td>${f0(x.wind)}</td><td>${f0(x.wmet)}</td><td class="l">${x.call}</td><td>${fmt(x.da_split,1)}</td><td>${fmt(x.rt_split,1)}</td><td class="${x.go_west>0?'pos':'neg'}">${sg1(x.go_west)}</td><td class="${x.go_sw>0?'pos':'neg'}">${sg1(x.go_sw)}</td><td class="${x.pnl==null?'':x.pnl>0?'pos':'neg'}">${x.pnl==null?'–':sg1(x.pnl)}</td></tr>`).join('');
+    const r = c.rule||{}, lv = c.live||{}; $('#gtrule').innerHTML = `Inside-the-gate rule (go-with if IESO wind HE10–20 ≥ 2,000; fade if under 1,300 and Meteologica lighter; go-with if Meteologica 75+ MW windier; else pass). <b>Honest record:</b> the thresholds were picked on Oct 21 by looking at the Oct 5–17 open days, so those ${r.days} calls (${r.wins} right, ${sg1(r.avg)} $/MWh) are in-sample: they show the rule fits, not that it would have called them. Every input was known before 08:00 MT the day before (yesterday's DA constraint list, IESO pre-DA wind, Meteologica as loaded before the bid), and P&amp;L assumes both legs were entered at fill-certain prices and settled at the DA clear. <b>Live calls since Oct 21: ${lv.days||0} traded</b>${lv.days?` (${lv.wins} right, ${sg1(lv.avg)} $/MWh)`:' (the gate has been closed every day)'}. Outside the gate, history says fade wins ~65% of split hours but go-with has the fatter tail (winter).`;
+    $('#gtlog').innerHTML = '<tr><th>Day</th><th>Basis</th><th>Gate</th><th>Wind IESO</th><th>Meteo</th><th>Call</th><th>DA split</th><th>RT split</th><th>Go-with West</th><th>Go-with SW</th><th>Call P&amp;L</th></tr>' +
+      (c.log||[]).map(x => `<tr><td>${x.date.slice(5)}</td><td class="l">${x.insample?'<span class="muted">in-sample</span>':'<b>live</b>'}</td><td class="l">${x.gate?'<b>open</b>':'closed'}</td><td>${f0(x.wind)}</td><td>${f0(x.wmet)}</td><td class="l">${x.call}</td><td>${fmt(x.da_split,1)}</td><td>${fmt(x.rt_split,1)}</td><td class="${x.go_west>0?'pos':'neg'}">${sg1(x.go_west)}</td><td class="${x.go_sw>0?'pos':'neg'}">${sg1(x.go_sw)}</td><td class="${x.pnl==null?'':x.pnl>0?'pos':'neg'}">${x.pnl==null?'–':sg1(x.pnl)}</td></tr>`).join('');
   }
   const chip = fl => fl.map(x => `<span class="gtf ${tcls(x.tone)}">${x.text}</span>`).join(' ');
   $('#gthrs').innerHTML = '<tr><th>HE</th><th>IESO load</th><th>Meteo load</th><th>Load gap</th><th>IESO wind</th><th>Meteo wind</th><th>Wind gap</th><th>Shift</th><th>Gas need</th><th>Spare</th><th>Lean</th><th class="l">Gates firing</th></tr>' +
@@ -1050,6 +1174,9 @@ function fuRender(){
   const n=v=>v==null?'–':Math.round(v).toLocaleString('en-US'), d=(v,k=1)=>v==null?'–':Number(v).toFixed(k), sg=v=>v==null?'–':(v>0?'+':'')+Math.round(v).toLocaleString('en-US');
   const DOW=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], dow=s=>DOW[new Date(s+'T12:00:00Z').getUTCDay()];
   const S={get:k=>{try{return localStorage.getItem(k)}catch(e){return null}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}};
+  const RR=(B.rtread&&B.rtread.hubs&&B.rtread.hubs.EAST)||[], RH={}; RR.forEach(x=>RH[x.he]=x); const SA=(B.rtread&&B.rtread.spare_adj)||{};
+  const rtCell=r=>{const x=RH[r.he]; if(!x) return '<td>–</td><td>–</td>'; const g=x.rt_minus_da, c=g>=3?'u2':g<=-15?'d3':g<=-8?'d2':g<=-3?'d1':'n0';
+    return `<td class="${c}" title="RT − DA fc ${g>0?'+':''}${d(g)}">${d(x.rt_p50)}</td><td>${d(x.rt_p10,0)}–${d(x.rt_p90,0)}</td>`;};
   const R=P.rows, X=P.facts, hm=R.reduce((a,r)=>r.head<a.head?r:a,R[0]), sp=R.reduce((a,r)=>r.sp<a.sp?r:a,R[0]);
   $('#prfacts').innerHTML=`<span><b>${dow(X.date)} ${X.date}</b>${X.hol?` · <span class="prwarn">${X.hol}</span>`:''}</span>${X.sunset?`<span>Sunset <b>${X.sunset}</b></span>`:''}<span>Nuclear <b>${n(X.nuc)}</b> MW</span><span>Gas available <b>${n(Math.min(...R.map(r=>r.gav)))}–${n(Math.max(...R.map(r=>r.gav)))}</b> MW</span><span>Evening ramp HE15→19 <b>${sg(X.pm)}</b> (${X.pmp??'–'}th pct)</span><span>Morning ramp HE5→8 <b>${sg(X.am)}</b> (${X.amp??'–'}th pct)</span><span>Tightest headroom <b>${n(hm.head)}</b> HE${hm.he}</span><span>Lowest gas spare <b>${n(sp.sp)}</b> HE${sp.he}</span>${X.meteo_missing?'<span class="prwarn">Meteologica wind missing — run morning.py --wind</span>':''}${X.models_missing?'<span class="prwarn">Weather-model wind missing</span>':''}`;
   const DIR={xy:1,nuc:-1,dem:1,tes:1,dyn:1,met:1,tg:1,w:-1,wm:-1,wlo:-1,whi:-1,w3:-1,sol:-1,res:1,n3:1,nlW:1,head:-1,hT:-1,hW:-1,hX:-1,need:1,sp:-1,r1:1,r3:1,hyd:-1,exp:1,cahr:-1,daf:-1,vs:-1};
@@ -1058,19 +1185,21 @@ function fuRender(){
   const T=(r,k)=>r.ps&&r.ps[k]?(r.ps[k][1]==null?' title="near zero: neutral"':` title="${r.ps[k][0][0]==='u'?'bullish':'bearish'} side: bigger than ${r.ps[k][1]}% of past values on that side"`):r.pc&&r.pc[k]!=null?` title="${r.pc[k]}th percentile for HE${r.he}"`:'';
   const td=(r,k,txt,extra='')=>`<td class="${extra} ${C(r,k)}"${T(r,k)}>${txt}</td>`;
   const f=b=>b&&b[1]?`<span title="average RT − DA ${b[2]>0?'+':''}${b[2]} $/MWh"><b>${b[0]}/${b[1]}</b></span>`:'–';
-  const H=`<thead><tr class="g"><th class="he"></th><th colspan="5" class="bl">Load (MW)</th><th colspan="5" class="bl">Wind (MW)</th><th class="bl">Solar</th><th colspan="3" class="bl nl">Net load (MW)</th><th colspan="4" class="bl cu">Cushion: headroom (MW)</th><th colspan="4" class="bl">Gas (MW)</th><th colspan="3" class="bl">Hydro / ties</th><th colspan="3" class="bl">Price (East)</th><th colspan="2" class="bl" title="Days RT settled above DA at this hour, East, last 7 / 14 settled days known at the bid. Hover for the average RT − DA.">RT beat DA</th></tr>
+  const H=`<thead><tr class="g"><th class="he"></th><th colspan="5" class="bl">Load (MW)</th><th colspan="5" class="bl">Wind (MW)</th><th class="bl">Solar</th><th colspan="3" class="bl nl">Net load (MW)</th><th colspan="4" class="bl cu">Cushion: headroom (MW)</th><th colspan="5" class="bl">Gas (MW)</th><th colspan="3" class="bl">Hydro / ties</th><th colspan="5" class="bl">Price (East)</th><th colspan="2" class="bl" title="Days RT settled above DA at this hour, East, last 7 / 14 settled days known at the bid. Hover for the average RT − DA.">RT beat DA</th></tr>
   <tr><th class="he">HE</th><th class="bl">IESO</th><th>Tesla</th><th>Dyna&shy;sty</th><th>Meteo</th><th>Tesla − IESO</th><th class="bl">IESO</th><th>Meteo</th><th>Models low</th><th>Models high</th><th>3 h change</th><th class="bl">MW</th>
   <th class="bl nl" title="IESO demand − nuclear − IESO wind − solar">IESO basis</th><th class="nl">3 h change</th><th class="nl" title="Highest load forecast − nuclear − lowest wind forecast − solar">Worst case</th>
   <th class="bl cu" title="Gas available + hydro available − net load">IESO basis</th><th class="cu">If Tesla load</th><th class="cu">If wind at models low</th><th class="cu">Worst case</th>
-  <th class="bl" title="Gas expected online (gas need)">Online (exp)</th><th title="Change in gas expected online from the previous hour">Online ramp 1 h</th><th title="Change from 3 hours earlier">Ramp 3 h</th><th>Spare</th><th class="bl">Hydro exp</th><th title="Our forecast of net exports at the bid">Exp fc</th><th title="Net exports that cleared in day-ahead for YESTERDAY, same hour (known at the bid)">Cleared yday</th><th class="bl">CAHR</th><th>DA fc $</th><th>vs usual</th><th class="bl">7 d</th><th>14 d</th></tr></thead>`;
+  <th class="bl" title="Gas expected online (gas need)">Online (exp)</th><th title="Change in gas expected online from the previous hour">Online ramp 1 h</th><th title="Change from 3 hours earlier">Ramp 3 h</th><th>Spare</th><th title="Spare corrected by the last 30 days' average miss of gas expected vs gas that actually ran (same hour, through 2 days ago). Gas need has been running high this fall, so real spare has been larger.">Spare adj.</th><th class="bl">Hydro exp</th><th title="Our forecast of net exports at the bid">Exp fc</th><th title="Net exports that cleared in day-ahead for YESTERDAY, same hour (known at the bid)">Cleared yday</th><th class="bl">CAHR</th><th>DA fc $</th><th>vs usual</th><th title="RT P50 read: DA forecast + what all bid-time fundamentals expect RT − DA to be (typical hour, not spikes)">RT P50 $</th><th title="80% of hours landed inside this range in the walk-forward test">RT P10–P90</th><th class="bl">7 d</th><th>14 d</th></tr></thead>`;
   const Bd=R.map(r=>`<tr class="${r.he>=16&&r.he<=21?'eve':''}"><td class="he ${r.lb?'lbear':''}"${r.lb?' title="Load bearish: Tesla and Dynasty 300+ MW under IESO"':''}>${r.he}</td>${td(r,'dem',n(r.dem),'bl')}${td(r,'tes',n(r.tes))}${td(r,'dyn',n(r.dyn))}${td(r,'met',n(r.met))}${td(r,'tg',sg(r.tg))}
   ${td(r,'w',n(r.w),'bl')}${td(r,'wm',n(r.wm))}${td(r,'wlo',n(r.wlo))}${td(r,'whi',n(r.whi))}${td(r,'w3',sg(r.w3))}${td(r,'sol',n(r.sol),'bl')}
   ${td(r,'res','<b>'+n(r.res)+'</b>','bl nl')}${td(r,'n3',sg(r.n3),'nl')}${td(r,'nlW',n(r.nlW),'nl')}
   ${td(r,'head','<b>'+n(r.head)+'</b>','bl cu')}${td(r,'hT',n(r.hT),'cu')}${td(r,'hW',n(r.hW),'cu')}${td(r,'hX',n(r.hX),'cu')}
-  ${td(r,'need',n(r.need),'bl')}${td(r,'r1',sg(r.r1))}${td(r,'r3',sg(r.r3))}${td(r,'sp',n(r.sp))}
-  ${td(r,'hyd',n(r.hyd),'bl')}${td(r,'exp',sg(r.exp))}${td(r,'xy',n(r.xy))}${td(r,'cahr',d(r.cahr),'bl')}${td(r,'daf',d(r.daf))}${td(r,'vs',r.vs==null?'–':(r.vs>0?'+':'')+d(r.vs))}
+  ${td(r,'need',n(r.need),'bl')}${td(r,'r1',sg(r.r1))}${td(r,'r3',sg(r.r3))}${td(r,'sp',n(r.sp))}<td title="${SA[r.he]&&SA[r.he].miss!=null?'30-day avg miss '+sg(SA[r.he].miss)+' MW':''}">${SA[r.he]?n(SA[r.he].sp_adj):'–'}</td>
+  ${td(r,'hyd',n(r.hyd),'bl')}${td(r,'exp',sg(r.exp))}${td(r,'xy',n(r.xy))}${td(r,'cahr',d(r.cahr),'bl')}${td(r,'daf',d(r.daf))}${td(r,'vs',r.vs==null?'–':(r.vs>0?'+':'')+d(r.vs))}${rtCell(r)}
   ${td(r,'f7',f(r.b7),'bl')}${td(r,'f14',f(r.b14))}</tr>`).join('');
   $('#prtable').innerHTML=H+'<tbody>'+Bd+'</tbody>';
+  const TK=(B.rtread&&B.rtread.track)||{}, te=TK.test||{}, lv=TK.live;
+  $('#rtnote').innerHTML = RR.length ? `<b>RT P50 read</b> (East): typical-hour RT from all bid-time fundamentals. Walk-forward test ${te.period||''}: off by $${te.mae} on average (DA forecast alone: $${te.mae_da_only}), within $10 in ${te.within10}% of hours, P10–P90 held the actual RT ${te.cover}% of hours. Its RT − DA gap ranks hours well: read ≤ −$15 → RT averaged $20 under DA (RT above DA 24%); −$3 to +$3 → +$3.5 (47%); ≥ +$3 → +$11 (72%). Most hours read negative because most hours settle under DA, so read the size of the gap, not just the sign.` + (lv ? ` Live so far: ${lv.days} days, off by $${lv.mae}, within $10 ${lv.within10}%, direction ${lv.direction}%, range held ${lv.cover}%.` : ' Live record starts with today\'s read.') + (B.rtread.spare_days ? ` <b>Spare adj.</b> uses the last ${B.rtread.spare_days} saved days.` : '') : '';
   const TPL='HE1–4:\nHE5–8:\nHE9–15:\nHE16–19:\nHE20–24:\nSize / confidence:', key='desk-note-'+X.date;
   const ta=$('#prnote'); ta.value=S.get(key)||TPL; ta.oninput=e=>S.set(key,e.target.value);
   const cc=$('#prcc'); if(S.get('desk-cc')==='off'){cc.checked=false;$('#prtw').classList.remove('prcc');}
@@ -1083,7 +1212,7 @@ function fuRender(){
 function render(){
   document.querySelectorAll('.seg button').forEach(b => b.setAttribute('aria-pressed', b.id === 'hub-'+HUB ? 'true' : 'false'));
   $('#asof').textContent = `${ZN[HUB]} hub · DA for ${dlabel(B.target)} ${B.target.slice(0,4)} · inputs as of ${dlabel(B.origin)} 08:00 MT · hub limit ${B.hubs[HUB].cap_mw} MW`;
-  stats(); ckRender(); fan(); table(); stack(); dvInit(); eoRender(); otRender(); nyRender(); fuRender(); try{ gtRender(); }catch(e){ console.error(e); } showTab();
+  stats(); ckRender(); fan(); table(); stack(); dvInit(); eoRender(); otRender(); nyRender(); fuRender(); try{ gtRender(); }catch(e){ console.error(e); } try{ hiRender(); }catch(e){ console.error(e); } try{ coRender(); }catch(e){ console.error(e); } showTab();
 }
 for (const z of ['EAST','OTTAWA']) $('#hub-'+z).addEventListener('click', () => { HUB = z; try{localStorage.setItem('ovd-hub', z)}catch(e){} render(); });
 $('#basemw').addEventListener('input', table);
@@ -1092,5 +1221,6 @@ $('#copybtn').addEventListener('click', () => {
   const fb = () => { $('#ladder').select(); $('#copymsg').textContent = 'Selected. Press Ctrl+C to copy.'; };
   try { navigator.clipboard.writeText(t).then(() => { $('#copymsg').textContent = 'Copied.'; }).catch(fb); } catch(e){ fb(); }
 });
+try{ coInit(); }catch(e){ console.error(e); }
 render();
 </script>

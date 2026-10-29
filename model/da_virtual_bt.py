@@ -106,14 +106,15 @@ def run_ladder(e, score_col, name):
                 usd_per_mwh=round(x.pl.sum() / max(mw, 1), 2), usd_per_day=round(dd.mean()), ci90_day=f'{np.percentile(bt, 5):+.0f}..{np.percentile(bt, 95):+.0f}',
                 total=round(x.pl.sum()), days_up=round((dd > 0).mean() * 100), worst_day=round(dd.min()))
 
-def walk_v2(e, start='2025-07-01'):
+def walk_v2(e, start='2025-07-01', look=None):
     """Our tested sell rule on 17 months: TIGHT (head < thr) or SURPLUS (gas_hat < thr), thresholds re-learned each day on
     trailing spreads through D-2 (same candidates and >= 40 h rule as signals_v2.py)."""
     import signals_v2 as S
+    look = look or S.LOOKBACK           # Oct 28 2026: same 90-day window as the live rule (was 120 here)
     out = pd.Series(0, index=e.index)
     for D in sorted(e.date.unique()):
         if D < start: continue
-        c2 = (pd.Timestamp(D) - pd.Timedelta(days=2)).date().isoformat(); lo = (pd.Timestamp(D) - pd.Timedelta(days=120)).date().isoformat()
+        c2 = (pd.Timestamp(D) - pd.Timedelta(days=2)).date().isoformat(); lo = (pd.Timestamp(D) - pd.Timedelta(days=look)).date().isoformat()
         tr = e[(e.date <= c2) & (e.date > lo) & e.sp.notna()]
         th, tg = S.best_thr(tr, 'head', S.HEAD_THR), S.best_thr(tr.dropna(subset=['gas_hat']), 'gas_hat', S.GAS_THR)
         m = e.date == D
@@ -184,9 +185,9 @@ def finalize(zone):
     add = [E.score(t, 'OURS buy band (middle headroom, walk-forward)', np.where(t.v2 == 1, 0, t.buyband)),
            E.score(t, 'OURS combined: v2 SELL + buy band', np.where(t.v2 == 1, 1, t.buyband))]
     R = pd.concat([R, pd.DataFrame(add)], ignore_index=True); R.to_csv(C.DATA / f'dv_rules_{zone}.csv', index=False)
-    t['ours'] = np.where(t.v2 == 1, 5, np.where(t.buyband == -1, 1, 3))
+    t['ours'] = np.where(t.v2 == 1, 5, np.where(t.buyband == -1, 1, 0))   # Oct 28 2026: score-3 straddle dropped (season_ladder_test.py)
     L = []
-    for c, n in (('auto', 'VA Hub auto-score'), ('ours', 'Ours: v2 SELL=5, buy band=1, else 3')):
+    for c, n in (('auto', 'VA Hub auto-score'), ('ours', 'Ours: v2 SELL=5, buy band=1, else no orders')):
         r = run_ladder(t, c, n); r['h2_usd_mwh'] = run_ladder(t[t.date >= '2026-02-01'], c, n)['usd_per_mwh']; L.append(r)
     pd.DataFrame(L).to_csv(C.DATA / f'dv_ladders2_{zone}.csv', index=False); print(zone); print(pd.DataFrame(L).to_string(index=False))
 

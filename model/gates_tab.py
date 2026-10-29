@@ -75,6 +75,7 @@ def hour_rows(fund):
     return rows
 
 # ---------------- congestion ----------------
+RULE_FIT_END = '2026-10-20'     # the inside-the-gate thresholds (2,000 / 1,300 / 75 MW) were chosen on Oct 21 from the Oct 5-17 open days; later calls are live
 def cong_call(gate, w_ieso, w_met):
     if not gate: return 'pass', 'Gate closed: DA used normal limits, the East–West split averages about $2. No spread trade.'
     if w_ieso is not None and w_ieso >= 2000: return 'go-with', f'Gate open and IESO wind {w_ieso:,.0f} MW ≥ 2,000: more power trapped west, split widens.'
@@ -96,7 +97,8 @@ def congestion(D, fund_rows):
     call, why = cong_call(gate, wi, wm)
     S = R.price_frame()
     S['W_go'] = (-S.WEST_rt) - (-S.WEST_da); S['SW_go'] = (-S.SOUTHWEST_rt) - (-S.SOUTHWEST_da)
-    hist = json.loads((C.DATA / 'fund_history.json').read_text())
+    import supply_fc as SF                            # bid-time wind for every day from the archives (IESO pre-DA + Meteologica as loaded before the bid)
+    AW = C.adq2('preDA')[['date', 'he', 'wind_fc']].merge(SF.wind_at_bid()[['date', 'he', 'wf_meteologica']], on=['date', 'he'], how='left')
     days = sorted({n[-12:-4] for z in sorted((C.ROOT / 'archive' / 'DASecurityConstraints2').glob('*.zip')) for n in __import__('zipfile').ZipFile(z).namelist()})
     log = []
     for d8 in days:                                   # file d8 = DA for delivery d8 -> gate for delivery d8+1
@@ -105,24 +107,26 @@ def congestion(D, fund_rows):
         c = R.da_constraints(X) or {}; g = bool(c.get('fett_outage_table'))
         s = S[(S.date == X) & S.he.between(10, 20)]
         if s.WEST_rt.isna().all(): continue
-        fr = [dict(he=x['he'], w=x.get('w'), wm=x.get('wm')) for x in hist.get(X, [])]
+        q = AW[AW.date == X]; fr = [dict(he=int(r.he), w=None if pd.isna(r.wind_fc) else r.wind_fc, wm=None if pd.isna(r.wf_meteologica) else r.wf_meteologica) for r in q.itertuples()]
         a, b = wind_mid(fr, 'w'), wind_mid(fr, 'wm'); cl, _ = cong_call(g, a, b)
         wgo = s.W_go.mean(); swgo = s.SW_go.mean()
         res = None if cl == 'pass' else (wgo if cl == 'go-with' else -wgo)
-        log.append(dict(date=X, gate=g, table=', '.join(c.get('fett_outage_table') or []), wind=J(a), wmet=J(b), call=cl,
+        log.append(dict(date=X, insample=X <= RULE_FIT_END, gate=g, table=', '.join(c.get('fett_outage_table') or []), wind=J(a), wmet=J(b), call=cl,
                         da_split=J(-s.WEST_da.mean(), 1), rt_split=J(-s.WEST_rt.mean(), 1), go_west=J(wgo, 1), go_sw=J(swgo, 1), pnl=J(res, 1)))
     L = pd.DataFrame(log)
     gs = []
     for k, g in (('Gate closed', L[~L.gate]), ('Gate open', L[L.gate])) if len(L) else ():
         gs.append(dict(state=k, days=int(len(g)), da=J(g.da_split.mean(), 1), rt=J(g.rt_split.mean(), 1)))
     tr = L[L.call != 'pass'] if len(L) else L
+    lv = tr[~tr.insample] if len(tr) else tr
+    live = dict(days=int(len(lv)), wins=int((lv.pnl > 0).sum()) if len(lv) else 0, avg=J(lv.pnl.mean(), 1) if len(lv) else None)
     rule = dict(days=int(len(tr)), wins=int((tr.pnl > 0).sum()) if len(tr) else 0, avg=J(tr.pnl.mean(), 1) if len(tr) else None)
     south_out = [dict(tag=o['tag'], start=o['start'][:16], end=o['end'][:16], equip=o['equip'][:80], where=o['where'], long=o['long'])
                  for o in rd.get('outages', []) if any(t in (o.get('where') or '') for t in ('(W)', '(SW)', 'Bruce', '(TOR)'))]
     lim = [dict(iface=l['iface'], limit=J(l['limit']), ais=J(l['ais']), hours=l['hours'], why=l['why'][:80]) for l in rd.get('limits', []) if l.get('south')]
     return dict(gate=gate, tables=dc.get('fett_outage_table') or [], south_families=dc.get('south') or {}, call=call, why=why,
                 wind_ieso=J(wi), wind_met=J(wm), episode_day=rd.get('episode_day'), recent=rd.get('recent'), outages=south_out, limits=lim,
-                gate_stats=gs, rule=rule, log=log[::-1], dc_known=bool(rd.get('da_constraints')))
+                gate_stats=gs, rule=rule, live=live, log=log[::-1], dc_known=bool(rd.get('da_constraints')))
 
 def outage_gate(ob):
     try:

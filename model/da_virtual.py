@@ -1,7 +1,7 @@
 """da_virtual.py -- live pieces of the DA Virtual tab (same rules as the 17-month re-test in da_virtual_bt.py).
   score 5  STRONG SELL : v2 SELL (tight or surplus, signals_v2.py)        4 : v2 SELL-L (extended surplus)
   score 1  STRONG BUY  : headroom inside the 'middle band' learned on the trailing 120 days (walk_buy_band)
-  score 3  neutral     : everything else (wide straddle, small MW)
+  score 3  neutral     : everything else -> no orders (the wide straddle lost money; dropped Oct 28 2026, season_ladder_test.py)
 Ladders: the VA Hub 3-tier formulas exactly (da_virtual_bt.ladder), priced off our DA and RT forecasts.
 Lean: only the VA Hub signals that passed the re-test (load vs IESO, wind ramp 3h, gas-need ramp); the others are shown
 as information in the guide, not scored."""
@@ -69,7 +69,7 @@ def score_hour(signal, head, band):
     if signal == 'SELL': return 5, 'v2 SELL'
     if signal == 'SELL-L': return 4, 'v2 SELL-L'
     if band and head is not None and band['lo'] <= head < band['hi']: return 1, f"headroom in buy band {band['lo']:,}-{band['hi']:,}"
-    return 3, 'no tested edge'
+    return 3, 'no tested edge: no orders (straddle dropped Oct 28 2026)'
 
 def va_auto(p_da, p_rt):
     g = p_rt - p_da

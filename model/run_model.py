@@ -281,6 +281,14 @@ def main():
         import checks_panel as CK
         out['checks'] = CK.build(out['target'], out)
     except Exception as ex: print('checks panel skipped:', ex)
+    try:                                                # Oct 28 2026: RT P50 read + spare adj (Fundamentals tab), display only
+        import rt_read as RR
+        out['rtread'] = RR.build(out['target'], out)
+    except Exception as ex: print('rt read skipped:', ex)
+    try:                                                # Oct 28 2026: History + Correlation tabs, display only
+        import history_tab as HT
+        out['history'] = HT.build(out['target']); out['corr'] = HT.corr_data()
+    except Exception as ex: print('history tab skipped:', ex)
     try:                                                # Oct 26 2026: Gates tab, display only (no effect on ladders)
         import gates_tab as GT
         out['gates'] = GT.build(out['target'], out)
