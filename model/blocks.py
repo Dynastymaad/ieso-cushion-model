@@ -116,3 +116,4 @@ def walk(X, win=60, lam=1.0):
 if __name__ == '__main__':
     import time; t0 = time.time()
     X = build(); X.to_csv(C.DATA / 'blocks_features.csv', index=False); print('features', X.shape, round(time.time() - t0), 's')
+    R = walk(X); R.to_csv(C.DATA / 'bt_blocks.csv', index=False); print('bt_blocks', R.shape, R.date.max(), round(time.time() - t0), 's')   # Oct 31 2026: was a one-off, now daily

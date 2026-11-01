@@ -16,6 +16,7 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 from datetime import datetime, timedelta
 import pandas as pd
+import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
 ARCH, DATA = ROOT / 'archive', ROOT / 'data'; DATA.mkdir(exist_ok=True)
@@ -126,7 +127,9 @@ def adequacy():
         except Exception as ex: print('  skip', n, ex); continue
         d = rows[0]['date']
         if '_v' in n:
-            if d not in pre or rows[0]['issued'] > pre[d][0]['issued']: pre[d] = rows
+            # Nov 1 2026: pre-DA = the latest version issued before D-1 09:00 EST (was: latest version of any time, i.e. after the bid)
+            cut = (pd.Timestamp(d) - pd.Timedelta(days=1) + pd.Timedelta(hours=9)).isoformat()
+            if rows[0]['issued'] and rows[0]['issued'] < cut and (d not in pre or rows[0]['issued'] > pre[d][0]['issued']): pre[d] = rows
         else: fin[d] = rows
     for name, dct in (('adq3_preDA', pre), ('adq3_final', fin)):
         df = pd.DataFrame([r for rows in dct.values() for r in rows]).sort_values(['date', 'he'])
@@ -172,9 +175,11 @@ def _nyiso_rows(folder, fn):
     for f in sorted(src.glob('*.csv')): fn(f.read_text())
 
 
-def _to_ieso_key(ts_ept):
-    """NYISO hour-beginning Eastern prevailing -> IESO (date, HE) in EST."""
-    ts = pd.to_datetime(ts_ept).dt.tz_localize('America/New_York', ambiguous='NaT', nonexistent='NaT')
+def _to_ieso_key(ts_ept, first=None):
+    """NYISO hour-beginning Eastern prevailing -> IESO (date, HE) in EST. first = True for the first of a repeated fall-back hour
+    (daylight time), False for the repeat (standard time); without it the repeated hour is dropped."""
+    amb = 'NaT' if first is None else np.asarray(first, dtype=bool)
+    ts = pd.to_datetime(ts_ept).dt.tz_localize('America/New_York', ambiguous=amb, nonexistent='NaT')
     est_he = ts.dt.tz_convert('Etc/GMT+5').dt.tz_localize(None) + pd.Timedelta(hours=1)
     x = est_he - pd.Timedelta(minutes=1)
     return x.dt.date.astype(str), x.dt.hour + 1
@@ -183,12 +188,13 @@ def _to_ieso_key(ts_ept):
 def nyiso():
     rows = []
     def lbmp(txt):
+        seen = set()
         for line in txt.splitlines()[1:]:
             p = line.replace('"', '').split(',')
-            if len(p) > 3 and p[1] == 'WEST': rows.append((p[0], float(p[3])))
+            if len(p) > 3 and p[1] == 'WEST': rows.append((p[0], float(p[3]), p[0] not in seen)); seen.add(p[0])
     _nyiso_rows('NYISO_damlbmp', lbmp)
-    df = pd.DataFrame(rows, columns=['ts', 'nyA_da']).drop_duplicates('ts', keep='last')
-    df['date'], df['he'] = _to_ieso_key(pd.to_datetime(df.ts, format='%m/%d/%Y %H:%M'))
+    df = pd.DataFrame(rows, columns=['ts', 'nyA_da', 'first']).drop_duplicates(['ts', 'first'], keep='last')
+    df['date'], df['he'] = _to_ieso_key(pd.to_datetime(df.ts, format='%m/%d/%Y %H:%M'), df['first'])
     df = df.dropna(subset=['he']); df['he'] = df.he.astype(int)
     df[['date', 'he', 'nyA_da']].sort_values(['date', 'he']).to_csv(DATA / 'nyiso_zoneA_da.csv', index=False)
     print(f'nyiso_zoneA_da: {len(df):,} rows, {df.date.min()} -> {df.date.max()}')
@@ -198,15 +204,16 @@ def nyiso():
     def energy(txt):
         L = txt.splitlines();
         if not L: return
-        hd = L[0].split(','); idx = [hd.index(w) if w in hd else None for w in want]
+        hd = L[0].split(','); idx = [hd.index(w) if w in hd else None for w in want]; seen = set()
         for line in L[1:]:
             p = line.split(',')
             if len(p) < 10 or not re.match(r'\d{2}/\d{2}/\d{4} \d{2}:\d{2}$', p[0]): continue
-            rows.append([p[0]] + [float(p[i]) if i is not None and p[i] not in ('', None) else None for i in idx])
+            rows.append([p[0]] + [float(p[i]) if i is not None and p[i] not in ('', None) else None for i in idx] + [p[0] not in seen]); seen.add(p[0])
     _nyiso_rows('NYISO_damenergy', energy)
-    df = pd.DataFrame(rows, columns=['ts', 'ny_dni_oh', 'ny_imp_oh', 'ny_exp_oh', 'ny_dni_hq', 'ny_dni_pjm', 'ny_load_fc'])
-    df = df.drop_duplicates('ts', keep='last')
-    df['date'], df['he'] = _to_ieso_key(pd.to_datetime(df.ts, format='%m/%d/%Y %H:%M'))
+    df = pd.DataFrame(rows, columns=['ts', 'ny_dni_oh', 'ny_imp_oh', 'ny_exp_oh', 'ny_dni_hq', 'ny_dni_pjm', 'ny_load_fc', 'first'])
+    df = df.drop_duplicates(['ts', 'first'], keep='last')
+    df['date'], df['he'] = _to_ieso_key(pd.to_datetime(df.ts, format='%m/%d/%Y %H:%M'), df['first'])
+    df = df.drop(columns='first')
     df = df.dropna(subset=['he']); df['he'] = df.he.astype(int)
     df.drop(columns='ts').sort_values(['date', 'he']).to_csv(DATA / 'nyiso_dam_energy.csv', index=False)
     print(f'nyiso_dam_energy: {len(df):,} rows, {df.date.min()} -> {df.date.max()}')

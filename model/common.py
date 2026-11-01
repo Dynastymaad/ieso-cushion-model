@@ -7,6 +7,15 @@ ROOT = Path(__file__).resolve().parents[1]
 CACHE, DATA, ARCH = ROOT / 'cache', ROOT / 'data', ROOT / 'archive'
 
 
+def onpeak(date, he):
+    """Nov 1 2026: Ontario on-peak block (XDE) is 07:00-23:00 Eastern PREVAILING time. On the IESO clock (EST all year) that is
+    HE7-22 while daylight time is on (Mar-Nov) and HE8-23 in standard time (Nov-Mar). Vectorised over date / he."""
+    d = pd.to_datetime(pd.Series(date).values) + pd.Timedelta(hours=12)
+    dst = pd.Series(d).dt.tz_localize('America/New_York').map(lambda t: bool(t.dst())).values
+    h = pd.Series(he).values
+    return pd.Series(np.where(dst, (h >= 7) & (h <= 22), (h >= 8) & (h <= 23)), index=he.index if isinstance(he, pd.Series) else None)
+
+
 def _ts_to_key(ts_he):
     """hour-ending timestamp (EST) -> (date, he)"""
     x = ts_he - pd.Timedelta(minutes=1)
@@ -35,6 +44,9 @@ def load_forecasts_at_bid():
     eff_est = f.eff.copy()
     eff_est[met] = (f.eff[met].dt.tz_localize('America/New_York', ambiguous='NaT', nonexistent='NaT')
                     .dt.tz_convert('Etc/GMT+5').dt.tz_localize(None))
+    if 'EffectiveDateTimeUtc' in f:                     # Nov 1 2026: the UTC stamp is unambiguous (fall-back day keeps all 24 hours)
+        utc = pd.to_datetime(f.EffectiveDateTimeUtc.astype(str).str.slice(0, 19), errors='coerce') - pd.Timedelta(hours=5)
+        eff_est = utc.fillna(eff_est)
     ts_he = eff_est + pd.Timedelta(hours=1)
     f['date'], f['he'] = _ts_to_key(ts_he)
     d = pd.to_datetime(f.date)
@@ -100,14 +112,21 @@ def prices(zone=None, history=True):
     if history and n.exists():
         h = pd.read_csv(n)[['zone', 'date', 'he', 'da', 'rt']]
         k = p.set_index(['zone', 'date', 'he']).index
-        h = h[~h.set_index(['zone', 'date', 'he']).index.isin(k)]
+        hk = h.set_index(['zone', 'date', 'he'])
+        # Nov 1 2026: an hour IESO's archive has without RT (or DA) takes NRG's value when NRG has it
+        pi = p.set_index(['zone', 'date', 'he'])
+        for c in ('da', 'rt'):
+            miss = pi[c].isna(); fill = hk[c].reindex(pi.index[miss])
+            pi.loc[miss, c] = fill.values
+        p = pi.reset_index()
+        h = h[~hk.index.isin(k)]
         p = pd.concat([p, h], ignore_index=True).sort_values(['zone', 'date', 'he']).reset_index(drop=True)
     return p if zone is None else p[p.zone == zone]
 
 
 def daily_blocks():
     """Settled DA block averages from the warehouse (rows struck AFTER the strip day):
-    XDE = on-peak HE8-23 EPT (= IESO HE7-22), XDG = off-peak, XDY = flat. CAD."""
+    XDE = on-peak HE8-23 EPT (= IESO HE7-22 in daylight time, HE8-23 in standard time: see onpeak()), XDG = off-peak, XDY = flat. CAD."""
     f = pd.read_csv(CACHE / 'fwd_daily_ontario.csv', parse_dates=['EffectiveDate', 'Strip'])
     f = f[(f.NodeName == 'Ontario Hub') & (f.ExchangeCode.isin(['XDE', 'XDG', 'XDY']))]
     s = f[f.Strip < f.EffectiveDate].sort_values('EffectiveDate').groupby(['Strip', 'ExchangeCode']).Price.last().unstack()

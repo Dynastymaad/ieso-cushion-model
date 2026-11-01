@@ -2,10 +2,13 @@
 
     python morning.py            # pulls + model + page  (then open site\\index.html, or ask Claude to publish)
     python morning.py --model    # skip the pulls, just rebuild the model and page from what is already in cache\\
-    python morning.py --wind     # after ~07:20 MT: top up vendor wind (Meteologica) and rebuild the model + page (about 2 min)
+    python morning.py --wind     # after ~07:40 MT: top up Meteologica wind, the NYISO DAM (~07:35 MT) and the latest IESO files, rebuild (about 3 min)
 
-Run it after IESO's pre-DA Adequacy file for tomorrow is out (about 06:50 MT), ideally after the NYISO DAM
-(about 07:35 MT). The IESO DAM closes 08:00 MT (10:00 EPT)."""
+Run it after IESO's pre-DA Adequacy file for tomorrow is out, ideally after the NYISO DAM (about 07:35 MT). The IESO DAM closes
+08:00 MT (10:00 EPT) all year. Clock notes (Nov 1 2026): IESO publishes on EST all year, so its pre-DA Adequacy (~07:50 EST) lands
+about 05:50 MT in winter and 06:50 MT in summer. The Warehouse loads vendor load at 04:28 MT and wind at 07:18 MT year-round.
+Bid-time cutoffs on IESO timestamps are D-1 09:00 EST: that is the 08:00 MT deadline in summer and 07:00 MT in winter (one hour
+early, never after the bid). Load forecasts are keyed from their UTC stamp, so the fall-back day keeps all 24 hours."""
 import subprocess, sys, time, os
 from pathlib import Path
 HERE = Path(__file__).resolve().parent
@@ -14,9 +17,17 @@ PULLS = [['pull_history.py', '--since', '2025-04-01'],
          ['pull_history.py', '--only', 'outages', '--since', '2025-05-01'],
          ['ieso_backfill.py']]
 OPTIONAL_PULLS = [['ieso_fwd35.py']]              # 35-day outlook (Outages tab only): a failure does not stop the run
-OPTIONAL = [['model/checklist_xlsx.py'], ['model/congestion/cong_read.py', '--json']]   # congestion read for tomorrow (read-only, Oct 13 2026)          # failures here do not stop the morning run
+OPTIONAL = [['model/checklist_xlsx.py'], ['model/congestion/cong_read.py', '--json'],
+            ['model/research/physics_history.py', 'EAST'], ['model/research/physics_history.py', 'OTTAWA'], ['model/practice_data.py']]   # Nov 1 2026: practice page (site/practice.html) with the newest settled days   # congestion read for tomorrow (read-only, Oct 13 2026)          # failures here do not stop the morning run
 MODEL = [['model/parse_archive.py'], ['model/update_intertie_actual.py'], ['model/adq_fallback.py'], ['model/load_edge.py'], ['model/outage_timeline.py'],
+         ['model/supply_fc.py'], ['model/blocks.py'], ['model/zone_backtest.py', 'EAST', 'OTTAWA'],
          ['model/da_virtual_bt.py', 'EAST', 'OTTAWA'], ['model/da_cleared_ties.py'], ['model/run_model.py'], ['model/build_page.py']]
+# Oct 31 2026 pipeline audit: these used to be one-off runs and had gone stale (hydro history Sep 27, block model + accuracy files Sep 24-28,
+# East-Ottawa & Quebec tab Sep 27-28). blocks.py / zone_backtest.py are now in MODEL above (they feed the DA forecast); the tab extras below
+# run every morning just before run_model, a failure there does not stop the ladders. pipeline_health.py flags any input that stops updating.
+EXTRA = [['model/quebec.py'], ['model/quebec2.py'], ['model/qc_adq2x.py'], ['model/pipeline_health.py']]
+WEEKLY = [['model/outage_priced.py'], ['model/fund_read.py', '--track'], ['model/research/physics_history_stats.py']]   # Nov 1 2026: refresh the tier record on the physics panel                              # Mondays (or with --weekly)
+WEEKLY_PULLS = [['pull_history.py', '--only', 'horizon', '--since', '2025-05-01']]                    # outage lead history (Outages tab), Mondays
 
 def run(cmd, optional=False):
     t = time.time(); print(f'\n>>> {" ".join(cmd)}', flush=True)
@@ -29,16 +40,23 @@ if __name__ == '__main__':
     t0 = time.time()
     if '--wind' in sys.argv:
         run(['pull_history.py', '--only', 'windtopup'])
+        run(['ieso_backfill.py', '--quick', '--nyiso'], optional=True)   # Nov 1 2026: NYISO DAM + newest IESO prices/Adequacy, so a late refresh has them
     elif '--model' not in sys.argv:
         for c in PULLS: run(c)
         for c in OPTIONAL_PULLS: run(c, optional=True)
+        if time.localtime().tm_wday == 0 or '--weekly' in sys.argv:
+            for c in WEEKLY_PULLS: run(c, optional=True)
     try:                                                # Meteologica wind for tomorrow lands in the Warehouse ~07:18 MT
         import pandas as pd, datetime as dt
         tom = (dt.date.today() + dt.timedelta(days=1)).isoformat(); w = pd.read_csv(HERE / 'cache' / 'ieso_wind_fc.csv', usecols=['DataSourceName', 'EffectiveDateTime'])
         if not ((w.DataSourceName == 'Meteologica') & w.EffectiveDateTime.astype(str).str.startswith(tom)).any():
             print(f'\nNOTE: Meteologica wind for {tom} is not in yet (the Warehouse loads it ~07:18 MT). After 07:20 MT run:  python morning.py --wind')
     except Exception as ex: print('Meteologica check skipped:', ex)
-    for c in MODEL: run(c)
+    for c in MODEL[:-2]: run(c)
+    if time.localtime().tm_wday == 0 or '--weekly' in sys.argv:
+        for c in WEEKLY: run(c, optional=True)
+    for c in EXTRA: run(c, optional=True)
+    for c in MODEL[-2:]: run(c)
     try:                                                # GitHub Pages serves /docs: keep a copy of the desk page there
         import shutil; d = HERE / 'docs'; d.mkdir(exist_ok=True); (d / '.nojekyll').touch()
         shutil.copyfile(HERE / 'site' / 'index.html', d / 'index.html')

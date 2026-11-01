@@ -74,6 +74,7 @@ dl.cols dt{font-weight:600} dl.cols dd{margin:0;max-width:78ch}
 .ck .r span:first-child{color:var(--ink2)}
 .ck .v{margin-top:4px;font-size:12.5px;font-weight:600}
 .fu td,.fu th{white-space:nowrap} .fu .fu-he{position:sticky;left:0;background:var(--surface);z-index:1} .fu-b1{background:var(--buy-soft);color:var(--buy)} .fu-b2{background:var(--buy);color:var(--surface);font-weight:600} .fu-r1{background:var(--sell-soft);color:var(--sell)} .fu-r2{background:var(--sell);color:var(--surface);font-weight:600} .fu tr.sig td:first-child{font-weight:700}
+.fcstar{color:#c99a00;font-size:12px;margin-right:2px}
 .hiseg{display:flex;flex-wrap:wrap;gap:4px}.hiseg button{font:600 13px var(--f-body);padding:4px 10px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink2);cursor:pointer}
 .hiseg button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--surface)}
 table.higrid td,table.higrid th{padding:4px 5px;font-size:12px;text-align:right}
@@ -167,6 +168,28 @@ table.prt td.lbear{box-shadow:inset 5px 0 0 var(--pd3)}
 .prgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px}
 textarea.prnote{font:inherit;font-size:13px;width:100%;min-height:150px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);padding:10px;box-sizing:border-box}
 .prbtn{font:inherit;font-weight:500;border:1px solid var(--accent);color:var(--accent);background:transparent;border-radius:6px;padding:6px 12px;cursor:pointer}
+/* Nov 1 2026: physics read + scorecard (Fundamentals tab) */
+:root{--pc-load:#C2643C;--pc-wind:#2E8A8A;--pc-spare:#3F7FC1;--pc-da:#6B4FA0;--pc-ramp:#C9921A;--pc-ny:#6F7F2A;--pc-hr:#9AA5A1}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--pc-load:#E8936C;--pc-wind:#5FC4C4;--pc-spare:#7FB2EA;--pc-da:#B7A0E6;--pc-ramp:#EBC45A;--pc-ny:#B5C76A;--pc-hr:#6E7A76}}
+:root[data-theme="dark"]{--pc-load:#E8936C;--pc-wind:#5FC4C4;--pc-spare:#7FB2EA;--pc-da:#B7A0E6;--pc-ramp:#EBC45A;--pc-ny:#B5C76A;--pc-hr:#6E7A76}
+.phcard{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.phhead{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:10px}
+.phban{background:var(--warn-soft);border-left:3px solid var(--warn);padding:6px 10px;border-radius:4px;font-size:13px}
+table.pht{border-collapse:collapse;width:100%} table.pht th{font-family:var(--f-disp);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink3);text-align:right;padding:5px 7px;border-bottom:1px solid var(--line);white-space:nowrap}
+table.pht td{font-family:var(--f-mono);font-variant-numeric:tabular-nums;font-size:12.5px;text-align:right;padding:3px 7px;border-bottom:1px solid var(--grid);white-space:nowrap}
+table.pht .l{text-align:left} table.pht tr.r{cursor:pointer} table.pht tr.r:hover td{background:var(--sunk)}
+table.pht tr.vl td:first-child{box-shadow:inset 3px 0 0 var(--accent)} table.pht tr.dt td{background:var(--sunk);text-align:left;font-family:var(--f-body);white-space:normal;padding:7px 10px}
+.phc{display:inline-block;font:600 11.5px var(--f-body);padding:1px 8px;border-radius:10px;text-align:center;white-space:nowrap}
+.t-A{background:var(--buy);color:var(--surface)} .t-As{background:var(--sell);color:var(--surface)} .t-B{background:var(--buy-soft);color:var(--buy)} .t-Bs{background:var(--sell-soft);color:var(--sell)}
+.t-C{background:var(--warn-soft);color:var(--warn)} .t-N{background:var(--accent-soft);color:var(--accent)}
+.phsw{width:10px;height:10px;border-radius:2px;display:inline-block;vertical-align:-1px;margin-right:4px}
+.phleg{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12.5px;color:var(--ink2)}
+.phseg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden;background:var(--surface)} .phseg button{font:600 13px var(--f-disp);padding:6px 14px;border:0;background:transparent;color:var(--ink2);cursor:pointer} .phseg button[aria-pressed="true"]{background:var(--accent);color:var(--surface)}
+.phsum{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px} .phbox{background:var(--sunk);border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:4px} .phbig{font-family:var(--f-mono);font-size:18px;font-weight:600}
+table.pht td.none{text-align:center;color:var(--ink3);font-family:var(--f-body);font-style:italic} table.pht td.phlose{background:var(--sell-soft)} table.pht th.phga{background:var(--buy-soft);color:var(--buy)} table.pht th.phgb{background:var(--accent-soft);color:var(--accent)} table.pht .sep{border-left:1px solid var(--line)}
+.phgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px}
+.phpos{color:var(--buy)} .phneg{color:var(--sell)}
+.phsteps{margin:0;padding-left:18px;font-size:13px;color:var(--ink2);display:flex;flex-direction:column;gap:3px;max-width:80ch}
 </style>
 
 <div class="wrap">
@@ -185,7 +208,8 @@ textarea.prnote{font:inherit;font-size:13px;width:100%;min-height:150px;border:1
     </div>
   </header>
 
-  <nav class="tabs" role="tablist" aria-label="Views"><button id="t-next" role="tab" aria-selected="true">Next day</button><button id="t-fu" role="tab" aria-selected="false">Fundamentals</button><button id="t-dv" role="tab" aria-selected="false">DA Virtual</button><button id="t-eo" role="tab" aria-selected="false">East–Ottawa &amp; Quebec</button><button id="t-out" role="tab" aria-selected="false">Outages</button><button id="t-gt" role="tab" aria-selected="false">Gates</button><button id="t-hi" role="tab" aria-selected="false">History</button><button id="t-co" role="tab" aria-selected="false">Correlation</button></nav>
+  <div id="healthbanner" hidden class="note" style="border-left-color:var(--sell);background:var(--sell-soft)"></div>
+  <nav class="tabs" role="tablist" aria-label="Views"><button id="t-next" role="tab" aria-selected="true">Next day</button><button id="t-fu" role="tab" aria-selected="false">Fundamentals</button><button id="t-dv" role="tab" aria-selected="false">DA Virtual</button><button id="t-eo" role="tab" aria-selected="false">East–Ottawa &amp; Quebec</button><button id="t-out" role="tab" aria-selected="false">Outages</button><button id="t-gt" role="tab" aria-selected="false">Gates</button><button id="t-mr" role="tab" aria-selected="false">Market read</button><button id="t-hi" role="tab" aria-selected="false">History</button><button id="t-co" role="tab" aria-selected="false">Correlation</button></nav>
 
   <div id="tab-next" style="display:flex;flex-direction:column;gap:26px">
   <div class="stats" id="stats"></div>
@@ -247,6 +271,26 @@ textarea.prnote{font:inherit;font-size:13px;width:100%;min-height:150px;border:1
     <p class="small muted" style="margin:0">Each cell is ranked against the same hour on up to 60 earlier days that had settled before the bid. Green always means pointing to RT above DA (bullish RT), red means pointing to RT below DA (bearish RT). Signed columns (Tesla − IESO, wind 3 h change, net load 3 h change, gas ramps, DA vs usual) are coloured by their sign first, then by size against past values on the same side; near zero is blue. Hover a cell for its percentile.</p>
     <div class="prtw prcc" id="prtw"><table class="prt" id="prtable"></table></div>
     <div class="small muted" id="rtnote"></div>
+    <div class="small muted" id="fsnote"></div>
+    <div class="phcard" id="phsec">
+      <div class="phhead"><div><div class="eyebrow">Systematic read · tested on 2026 · display only, no ladder effect</div><h2 style="margin:0">Physics read and scorecard</h2><div class="small muted" id="phmeta"></div></div>
+        <div class="phseg" role="group" aria-label="Hub for the physics read"><button data-phz="EAST" aria-pressed="true">East</button><button data-phz="OTTAWA" aria-pressed="false">Ottawa</button></div></div>
+      <div class="phban" id="phmiss" hidden></div>
+      <div class="tablewrap"><svg id="phchart" viewBox="0 0 1100 230" width="100%" style="min-width:640px" role="img" aria-label="Expected RT minus DA by hour"></svg></div>
+      <div class="phleg"><span><span class="phsw" style="background:var(--buy)"></span>read leans long</span><span><span class="phsw" style="background:var(--sell)"></span>leans short</span><span><span class="phsw" style="background:var(--accent)"></span>under ±1.5</span><span>· bar outline = tier A (card and read agree)</span></div>
+      <div class="phleg" id="phpleg"></div>
+      <div class="tablewrap"><table class="pht" id="phtable"></table></div>
+      <div class="phgrid">
+        <div><h3 style="margin:0 0 4px;font-size:15px">How each tier did (Sep 2025 – Oct 2026, 1 MW per hour)</h3><div class="tablewrap"><table class="pht" id="phtiers"></table></div><div class="small muted" id="phplan"></div></div>
+      </div>
+      <div><h3 style="margin:0 0 6px;font-size:15px">Daily log, split by tier (1 MW per hour)</h3><div class="phsum" id="phsum"></div><div class="tablewrap" style="margin-top:8px"><table class="pht" id="phlog"></table></div><div class="small muted" id="phlive"></div></div>
+      <div><h3 style="margin:0 0 4px;font-size:15px">Morning routine</h3><ol class="phsteps">
+        <li><b>Score each hour by eye</b> (Card column). Load gap (Meteologica load − IESO, Tesla when Meteologica is missing; using whichever forecast has the star tested worse): +250 or more = +2, +100 to +250 = +1, same on the minus side. Wind gap (IESO wind − Meteologica): +200 = +1, −200 = −1. <b>If public spare is under 2,500, double the load and wind points.</b> Wind ramp into the hour: −300 or more = +1 (wind leaving), +300 = −1 (wind arriving). DA vs usual: +18 = −2, +8 = −1, −8 = +1. NY − Ontario: +$10 = +1, −$10 = −1.</li>
+        <li><b>Soft system check</b>: public spare over 5,500 and wind over 2,000 → any long gets an amber flag. Longs there had RT above DA in about 1 in 3 hours (other longs about 47%), median about −$6, with rare spikes paying for them. It is a flag, not a rule, until the live record says otherwise.</li>
+        <li><b>Check the physics read</b> (Read column) and what drives it (bar). It is the same physics with weights relearned on the last 90 days.</li>
+        <li><b>Tier A</b>: card ±3 or more and the read on the same side → full size. <b>Tier C</b>: card ±3 but the read disagrees → stand aside. <b>Tier B</b>: card under ±3 and read ±5 or more → follow the read. <b>Neutral</b>: no tested edge.</li>
+        <li><b>Season check</b> (strong-card hours, Jun 2025 – Oct 2026): shorts won in fall both years (about +$9/MWh in 2025 and 2026), in summer both years (+$2 in 2025, +$11–14 in 2026) and in winter 25/26 (+$5–6); they lost in spring 2026 (−$1.5 to −$2.4). Spring before 2026 can't be tested: the DA market only started May 2025. Longs won in every season except fall 2026 (−$3.5). Most hours settle RT under DA in every month, so the season sets which side the spikes favour, not the usual hour.</li>
+    </div>
     <div class="prgrid">
       <div><label for="prnote" class="eyebrow">My read for this day (saved in this browser)</label><textarea id="prnote" class="prnote"></textarea></div>
       <div class="prcard"><h2 style="margin:0 0 6px;font-size:15px">Reading order</h2><ol style="margin:0;padding-left:18px;font-size:13px;color:var(--ink2)">
@@ -390,6 +434,22 @@ textarea.prnote{font:inherit;font-size:13px;width:100%;min-height:150px;border:1
     </section>
   </div>
 
+  <div id="tab-mr" hidden style="display:flex;flex-direction:column;gap:22px">
+    <div class="sechead"><h2>Market read: where is the market likely wrong?</h2><span class="muted small" id="mrsub"></span></div>
+    <p class="small muted" style="margin:0;max-width:980px">The market prices each hour off the <b>public</b> picture: IESO's load and wind, so IESO's gas spare. Our <b>private</b> picture uses the forecasts that have been most accurate (Meteologica load and wind, else the vendor and weather-model consensus). When the market sees an hour as <b>tight but our picture is looser</b> (something will save it), DA tends to clear rich and RT collapses: that is the short. When the market sees it as <b>calm but our picture is tighter</b> (something can go wrong), DA is cheap and the spike is unpriced: that is the long. When both pictures are tight, or the wind models disagree, the answer depends on how much fear DA has already priced: our DA forecast well above the usual level for the hour means it is over-paid (short); near usual means the danger is unpriced (stand aside or small long). Rules and statistics use 2026 only; they were learned on Jan–Sep 2026 and checked blind on October. Display only: nothing here changes the ladders.</p>
+    <div class="tablewrap"><table class="dv" id="mrhours"></table></div>
+    <div class="grid2">
+      <div class="panel"><h3>How each read has settled</h3><div class="tablewrap" style="border:0"><table class="dv" id="mrcells"></table></div><div class="small muted" id="mrcellnote"></div></div>
+      <div class="panel"><h3>Market scared + danger: is the danger already in the price?</h3><div class="tablewrap" style="border:0"><table class="dv" id="mrcrowd"></table></div><div class="small muted">2026 only. When the market is scared and we also see danger, the question is whether DA has already paid for it. The best tell known at the bid is our DA forecast versus the usual level for that hour: well above usual, the danger was over-paid and shorts won; near usual, it was not priced and shorts lost. The crowd's position (IESO posts each day's virtual trades at 12:33 EST the day before delivery, so at the bid we see the positions for today, not tomorrow) points the same way but more weakly.</div></div>
+    </div>
+    <section style="display:flex;flex-direction:column;gap:10px">
+      <div class="sechead"><h2>Is it truly tight? Priced scarcity vs the physics</h2><span class="muted small" id="ttsub"></span></div>
+      <p class="small muted" style="margin:0;max-width:980px"><b>Fair RT</b> is what the physical picture alone says RT should be: gas spare (public and ours), gas expected online, the gas ramp into the hour, the wind level and its 3-hour change, the net-load ramp, how far apart the wind models are, load and wind versus IESO, valves, outages and the hour. No prices go into it. <b>Gap = our DA forecast − fair RT</b>: positive means the market is paying for scarcity the physics doesn't support; negative means the physics is tighter than the price. Calls use the gap against its own last 6 weeks. Gas need and spare here are on the backtest basis (14-day median of actual flows), so they differ a little from the Fundamentals tab.</p>
+      <div class="tablewrap"><table class="dv" id="tthours"></table></div>
+      <div class="tablewrap"><table class="dv" id="tttest"></table></div>
+    </section>
+    <div class="panel"><h3>What is mattering lately</h3><div class="tablewrap" style="border:0"><table class="dv" id="mrmatters"></table></div><div class="small muted">Rank correlation of each piece of information with RT − DA (negative = more of it means RT came in under DA, shorts win; positive = RT above DA, longs win). Compare the last 60 days with all history to see which signals the market has learned to price and which it is still missing.</div></div>
+  </div>
   <div id="tab-hi" hidden style="display:flex;flex-direction:column;gap:22px">
     <div class="sechead"><h2>Last 7 days</h2><span class="muted small" id="hisub"></span></div>
     <div class="tablewrap"><table class="dv" id="hisum"></table></div>
@@ -435,6 +495,10 @@ textarea.prnote{font:inherit;font-size:13px;width:100%;min-height:150px;border:1
       <div class="sechead"><h2>What each gate has meant (East RT − DA)</h2><span class="muted small" id="gthsub"></span></div>
       <div class="gthist" id="gthist"></div>
     </section>
+    <section style="display:flex;flex-direction:column;gap:10px">
+      <div class="sechead"><h2>Data health</h2><span class="muted small" id="hlsub"></span></div>
+      <div class="tablewrap"><table class="dv" id="hltable"></table></div>
+    </section>
   </div>
 
 </div>
@@ -459,9 +523,11 @@ function ladderFor(h, cap){
   return [];
 }
 
+// Nov 1 2026: Ontario on-peak (XDE) = 07:00-23:00 Eastern prevailing = IESO HE7-22 in daylight time, HE8-23 in standard time
+function onpk(d){ try{ const s=new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',timeZoneName:'short'}).format(new Date(d+'T17:00:00Z')); return /EDT/.test(s)?[7,22]:[8,23]; }catch(e){ return [7,22]; } }
 function stats(){
   const H = B.hubs[HUB], hrs = H.hours, act = (B.actual||{})[HUB] || {};
-  const on = hrs.filter(h => h.he >= 7 && h.he <= 22), off = hrs.filter(h => h.he < 7 || h.he > 22);
+  const OP=onpk(B.target), on = hrs.filter(h => h.he >= OP[0] && h.he <= OP[1]), off = hrs.filter(h => h.he < OP[0] || h.he > OP[1]);
   const avg = (a, f) => a.reduce((s, h) => s + f(h), 0) / a.length;
   const sells = hrs.filter(h => h.signal==='SELL').length, buys = hrs.filter(h => h.signal==='SELL-L').length; const th = H.thr || {};
   const lx = Math.max(...hrs.map(h => h.p_lennox));
@@ -470,7 +536,7 @@ function stats(){
   if (pub.length === 24){ const mae = avg(pub, h => Math.abs(h.da[2] - act[h.he].da)); const ins = pub.filter(h => act[h.he].da >= h.da[0] && act[h.he].da <= h.da[4]).length;
     check = `<div class="stat"><span class="eyebrow">Published DA check</span><span class="v">$${fmt(mae)}</span><span class="s">MAE vs published DA · ${ins}/24 inside P10–P90</span></div>`; }
   $('#stats').innerHTML = `
-   <div class="stat"><span class="eyebrow">On-peak DA HE7–22</span><span class="v">$${fmt(avg(on,h=>h.da[2]))}</span><span class="s">P10–P90 $${fmt(avg(on,h=>h.da[0]),0)}–${fmt(avg(on,h=>h.da[4]),0)}</span></div>
+   <div class="stat"><span class="eyebrow">On-peak DA HE${OP[0]}–${OP[1]}</span><span class="v">$${fmt(avg(on,h=>h.da[2]))}</span><span class="s">P10–P90 $${fmt(avg(on,h=>h.da[0]),0)}–${fmt(avg(on,h=>h.da[4]),0)}</span></div>
    <div class="stat"><span class="eyebrow">Off-peak DA</span><span class="v">$${fmt(avg(off,h=>h.da[2]))}</span><span class="s">P10–P90 $${fmt(avg(off,h=>h.da[0]),0)}–${fmt(avg(off,h=>h.da[4]),0)}</span></div>
    <div class="stat"><span class="eyebrow">On-peak RT P50</span><span class="v">$${fmt(avg(on,h=>h.rt[2]))}</span><span class="s">RT P10–P90 $${fmt(avg(on,h=>h.rt[0]),0)}–${fmt(avg(on,h=>h.rt[4]),0)}</span></div>
    <div class="stat"><span class="eyebrow">Signal hours</span><span class="v"><span class="neg">${sells}</span> + <span class="neg" style="opacity:.7">${buys}</span></span><span class="s">SELL + SELL-L · thresholds ${fmt0(th.head)} MW spare / ${fmt0(th.gas)}–${fmt0(th.gas_ext)} MW gas</span></div>
@@ -672,11 +738,11 @@ function dvStats(){
   const n = s => hrs.filter(h => eff(h)===s).length;
   const zr = (((B.eo||{}).results||{})[HUB]||{}).live || {};
   const mwB = hrs.reduce((a,h)=>a+dvLadder(h).buy.reduce((x,t)=>x+t[0],0),0), mwS = hrs.reduce((a,h)=>a+dvLadder(h).sell.reduce((x,t)=>x+t[0],0),0);
-  const on = hrs.filter(h => h.he>=7 && h.he<=22), avg = f => on.reduce((a,h)=>a+f(h),0)/on.length;
+  const OP=onpk(B.target), on = hrs.filter(h => h.he>=OP[0] && h.he<=OP[1]), avg = f => on.reduce((a,h)=>a+f(h),0)/on.length;
   const pk0 = avg(h => h.p_da), pk1 = avg(h => S(h).p_da);
   $('#dvstats').innerHTML = `
    <div class="stat"><span class="eyebrow">Scores tomorrow</span><span class="v"><span class="pos">${n(1)+n(2)}</span> · ${n(3)} · <span class="neg">${n(4)+n(5)}</span></span><span class="s">buy · neutral · sell hours (as set)</span></div>
-   <div class="stat"><span class="eyebrow">On-peak DA forecast</span><span class="v">${money(pk1)}${wiActive()?` <span class="muted small">was ${money(pk0)}</span>`:''}</span><span class="s">HE7–22 average${wiActive()?' under the what-if':''}</span></div>
+   <div class="stat"><span class="eyebrow">On-peak DA forecast</span><span class="v">${money(pk1)}${wiActive()?` <span class="muted small">was ${money(pk0)}</span>`:''}</span><span class="s">HE${OP[0]}–${OP[1]} average${wiActive()?' under the what-if':''}</span></div>
    <div class="stat"><span class="eyebrow">Buy band (learned)</span><span class="v">${bb?`${fmt0(bb.lo)}–${fmt0(bb.hi)}`:'none'}</span><span class="s">${bb?`headroom MW · last 120 d mean DA−RT ${fmt(bb.mean)} over ${bb.hours} h`:'no band met the test in the last 120 days'}</span></div>
    <div class="stat"><span class="eyebrow">Ladder MW tomorrow</span><span class="v"><span class="pos">${fmt0(mwB)}</span> / <span class="neg">${fmt0(mwS)}</span></span><span class="s">bid / offer MWh across 24 h, if all clear</span></div>
    <div class="stat"><span class="eyebrow">17-month re-test, this hub</span><span class="v">${money(zr.usd_day)}<span class="muted small">/day</span></span><span class="s">${zr.usd_mwh==null?'run zone_bt17.py':`live rules, ladders capped at ${H.cap_mw} MW · ${fmt(zr.usd_mwh)} $/MWh · worst day ${money(zr.worst_day)} · Jul 2025 – Sep 2026`}</span></div>`;
@@ -779,9 +845,9 @@ $('#copysell').addEventListener('click', () => dvCopy((dvLadders.rows||{}).sell.
 let TAB = 'next';
 try { const t = localStorage.getItem('ovd-tab'); if (t) TAB = t; } catch(e){}
 if (location.hash === '#dv') TAB = 'dv'; if (location.hash === '#next') TAB = 'next';
-function showTab(){ for (const k of ['next','fu','dv','eo','out','gt','hi','co']){ $('#tab-'+k).hidden = TAB !== k; $('#t-'+k).setAttribute('aria-selected', TAB===k); } }
-if (location.hash === '#outages') TAB = 'out'; if (location.hash === '#fundamentals') TAB = 'fu'; if (location.hash === '#eo') TAB = 'eo'; if (location.hash === '#gates') TAB = 'gt'; if (location.hash === '#history') TAB = 'hi'; if (location.hash === '#correlation') TAB = 'co';
-for (const [id, k] of [['#t-next','next'],['#t-fu','fu'],['#t-dv','dv'],['#t-eo','eo'],['#t-out','out'],['#t-gt','gt'],['#t-hi','hi'],['#t-co','co']]) $(id).addEventListener('click', () => { TAB = k; try{localStorage.setItem('ovd-tab', k)}catch(e){} showTab(); });
+function showTab(){ for (const k of ['next','fu','dv','eo','out','gt','mr','hi','co']){ $('#tab-'+k).hidden = TAB !== k; $('#t-'+k).setAttribute('aria-selected', TAB===k); } }
+if (location.hash === '#outages') TAB = 'out'; if (location.hash === '#fundamentals') TAB = 'fu'; if (location.hash === '#eo') TAB = 'eo'; if (location.hash === '#gates') TAB = 'gt'; if (location.hash === '#history') TAB = 'hi'; if (location.hash === '#read') TAB = 'mr'; if (location.hash === '#correlation') TAB = 'co';
+for (const [id, k] of [['#t-next','next'],['#t-fu','fu'],['#t-dv','dv'],['#t-eo','eo'],['#t-out','out'],['#t-gt','gt'],['#t-mr','mr'],['#t-hi','hi'],['#t-co','co']]) $(id).addEventListener('click', () => { TAB = k; try{localStorage.setItem('ovd-tab', k)}catch(e){} showTab(); });
 
 // ================= East-Ottawa & Quebec tab =================
 function eoRender(){
@@ -832,6 +898,52 @@ $('#eo-std').addEventListener('click', () => { PAIR = {mw: PAIR.mw > 0 ? PAIR.mw
 $('#eo-off').addEventListener('click', () => { PAIR.mw = 0; $('#eomw').value = 0; pairSave(); eoRender(); dvRender(); });
 $('#eomw').value = PAIR.mw || 0;
 
+function ttRender(){
+  const T = B.tight && B.tight.hubs && B.tight.hubs[HUB]; if (!T) return;
+  const f0 = v => v==null ? '–' : Math.round(v).toLocaleString('en-US'), sg = v => v==null ? '–' : (v>0?'+':'') + Math.round(v).toLocaleString('en-US'), d1 = v => v==null ? '–' : Number(v).toFixed(1), s1 = v => v==null ? '–' : (v>0?'+':'') + Number(v).toFixed(1);
+  const th = T.thr || {}; $('#ttsub').textContent = `${ZN[HUB]} · fitted on ${T.train} · gap cut-offs (last 6 weeks): short ≥ ${s1(th['0.9'])}, long ≤ ${s1(th['0.1'])}, truly tight ≤ ${s1(th['0.25'])} with DA rich (heat rate ≥ ${d1(T.rich_hr)})`;
+  const cl = c => c.includes('short') && !c.includes('do not') ? 'dn' : c.includes('long') ? 'up' : c.startsWith('TRULY') ? 'wn' : 'nt';
+  $('#tthours').innerHTML = '<tr><th>HE</th><th>DA fc $</th><th>Fair RT $</th><th>Gap</th><th class="l">Read</th><th>DA fc heat rate</th><th>Gas need</th><th>Public spare</th><th>Our spare</th><th>Gas ramp 3 h</th><th>IESO wind 3 h</th><th>Net-load ramp 3 h</th></tr>' +
+    T.rows.map(r => `<tr><td>${r.he}</td><td>${d1(r.da_fc)}</td><td>${d1(r.fair)}</td><td class="${r.gap>=(th['0.9']??99)?'neg':r.gap<=(th['0.1']??-99)?'pos':''}"><b>${s1(r.gap)}</b></td><td class="l"><span class="gtst ${cl(r.call)}">${r.call}</span></td><td>${d1(r.hr_fc)}</td><td>${f0(r.need)}</td><td>${f0(r.pub_sp)}</td><td>${f0(r.priv_sp)}</td><td>${sg(r.g3)}</td><td>${sg(r.w3)}</td><td>${sg(r.res3)}</td></tr>`).join('');
+  const X = (B.tight.test||{})[HUB] || {};
+  $('#tttest').innerHTML = '<tr><th class="l">Walk-forward test, Mar 16 – Oct 29 2026 (refit weekly, cut-offs from the trailing 6 weeks)</th><th>Result</th></tr>' +
+    `<tr><td class="l">Short when gap ≥ its p90 (priced tight, physics loose)</td><td>${s1(X.short)} $/MWh, ${X.short_win}% of hours won</td></tr>` +
+    `<tr><td class="l">Long when gap ≤ its p10 (physics tight, priced cheap)</td><td>${s1(X.long)} $/MWh, ${X.long_win}% won (wins are large)</td></tr>` +
+    `<tr><td class="l">Current v2 sells that fell in truly-tight hours</td><td>${s1(X.tt_sells)} $/MWh (losers)</td></tr>` +
+    `<tr><td class="l">Ladder now → with these three changes (not wired in)</td><td>$${f0(X.ladder_now)}k → $${f0(X.ladder_with)}k</td></tr>` +
+    `<tr><td class="l">The gap alone (p90 short / p10 long), about half the MWh</td><td>$${f0(X.gap_only)}k</td></tr>`;
+}
+// ================= Market read tab (display only, Oct 31 2026) =================
+function mrRender(){
+  const M = B.mread && B.mread.hubs && B.mread.hubs[HUB]; if (!M){ $('#tab-mr').innerHTML = '<div class="note">Market read not in this bundle (run morning.py).</div>'; return; }
+  const f0 = v => v==null ? '–' : Math.round(v).toLocaleString('en-US'), sg = v => v==null ? '–' : (v>0?'+':'') + Math.round(v).toLocaleString('en-US');
+  const s1 = v => v==null ? '–' : (v>0?'+':'') + Number(v).toFixed(1);
+  const cls = a => a.startsWith('short') || a.startsWith('small short') ? 'dn' : a.startsWith('long') || a.startsWith('small long') ? 'up' : a.startsWith('stand') || a.startsWith('depends') ? 'wn' : 'nt';
+  $('#mrsub').textContent = `${ZN[HUB]} hub · delivery ${B.mread.date} · history ${M.hist_from} to ${M.hist_to}`;
+  const C = M.cells;
+  $('#mrhours').innerHTML = '<tr><th>HE</th><th>Public spare</th><th>Private spare</th><th>Rescue (+) / danger (−)</th><th>Load: best − IESO</th><th>Wind: best − IESO</th><th>Wind models spread</th><th>Valves (exports + hydro)</th><th>Crowd yday (+ short)</th><th>DA fc vs usual</th><th>IESO wind 3 h</th><th class="l">Read</th><th class="l">What it has done (all · last 90 d)</th></tr>' +
+    M.rows.map(r => { const c = C[r.cell] || {}, a = c.all || {}, l = c.last90 || {};
+      return `<tr><td>${r.he}</td><td>${f0(r.pub_sp)}</td><td>${f0(r.priv_sp)}</td><td class="${r.rescue>=300?'neg':r.rescue<=-300?'pos':''}"><b>${sg(r.rescue)}</b></td><td>${sg(r.d_load)}</td><td>${sg(r.d_wind)}</td><td class="${r.w_spread>1200?'neg':''}">${f0(r.w_spread)}</td><td>${f0(r.valve)}</td><td>${sg(r.crowd)}</td><td>${r.vs==null?'–':s1(r.vs)}</td><td>${sg(r.w3)}</td>
+      <td class="l"><span class="gtst ${cls(r.act.toLowerCase())}">${r.cell}</span> <span class="small"><b>${r.act}</b></span></td><td class="l small">${a.hours?`shorts ${s1(a.sell)} $/MWh, RT>DA ${a.rt_gt_da}%, spike ${a.spike}% · ${s1(l.sell)}, ${l.rt_gt_da}%, ${l.spike}%`:'–'}</td></tr>`; }).join('');
+  $('#mrcells').innerHTML = '<tr><th class="l">Read</th><th class="l">Action</th><th>Hours</th><th>Shorts $/MWh</th><th>RT &gt; DA</th><th>Spike +$25</th><th>Collapse −$20</th><th>Last 90 d shorts</th></tr>' +
+    Object.entries(C).map(([k, c]) => `<tr><td class="l"><span class="gtst ${cls(c.action)}">${k}</span></td><td class="l">${c.action}</td><td>${f0(c.all.hours)}</td><td class="${c.all.sell>0?'pos':'neg'}">${s1(c.all.sell)}</td><td>${c.all.rt_gt_da}%</td><td>${c.all.spike}%</td><td>${c.all.collapse}%</td><td class="${c.last90.sell>0?'pos':'neg'}">${s1(c.last90.sell)} (${c.last90.hours} h)</td></tr>`).join('');
+  $('#mrcellnote').textContent = 'Shorts $/MWh = DA − RT averaged over every hour that had this read at the bid (+ = shorts won, − = longs won). Thresholds: public spare 1,500 MW, rescue/danger 300 MW, wind models spread 1,200 MW.';
+  const cr = (t, o) => Object.entries(o).map(([k, s]) => `<tr><td class="l">${t}</td><td class="l">${k}</td><td>${f0(s.hours)}</td><td class="${s.sell>0?'pos':'neg'}">${s1(s.sell)}</td><td>${s.rt_gt_da}%</td><td>${s.spike}%</td></tr>`).join('');
+  $('#mrcrowd').innerHTML = '<tr><th class="l">Read</th><th class="l">Split</th><th>Hours</th><th>Shorts $/MWh</th><th>RT &gt; DA</th><th>Spike</th></tr>' + cr('FEAR + DANGER', M.crowd_fd);
+  $('#mrmatters').innerHTML = '<tr><th class="l">Information</th><th>All history</th><th>Last 60 days</th><th class="l">Reading</th></tr>' +
+    M.matters.map(r => { const ch = r.last60==null||r.all==null ? '' : Math.abs(r.last60) >= Math.abs(r.all) + 5 ? 'mattering MORE lately' : Math.abs(r.last60) + 5 <= Math.abs(r.all) ? 'mattering less lately (market pricing it?)' : 'steady';
+      return `<tr><td class="l">${r.factor}</td><td>${r.all==null?'–':r.all+'%'}</td><td><b>${r.last60==null?'–':r.last60+'%'}</b></td><td class="l small">${ch}</td></tr>`; }).join('');
+}
+// ================= Data health (Oct 31 2026) =================
+function hlRender(){
+  const H = B.health; if (!H) return;
+  const bad = H.rows.filter(r => !r.ok), crit = bad.filter(r => r.critical);
+  $('#healthbanner').hidden = !crit.length;
+  if (crit.length) $('#healthbanner').innerHTML = `<b>Stale input${crit.length>1?'s':''}:</b> ${crit.map(r => `${r.label} (newest ${r.newest||'none'})`).join(' · ')}. Numbers that use ${crit.length>1?'them':'it'} are out of date: see Gates → Data health.`;
+  $('#hlsub').textContent = `checked ${H.checked} for delivery ${H.date} · ${bad.length ? bad.length + ' stale' : 'everything current'}`;
+  $('#hltable').innerHTML = '<tr><th class="l">Input</th><th>Newest</th><th>Needs at least</th><th class="l">Status</th><th class="l">Feeds</th></tr>' +
+    H.rows.map(r => `<tr><td class="l">${r.label}</td><td>${r.newest||'–'}</td><td>${r.need}</td><td class="l ${r.ok?'pos':'neg'}">${r.ok?'current':(r.critical?'<b>STALE</b>':'stale')}</td><td class="l">${r.feeds}</td></tr>`).join('');
+}
 // ================= History tab (display only) =================
 let HIV = 'x', HID = null;
 function hiRender(){
@@ -843,7 +955,7 @@ function hiRender(){
   const dayPx = d => { const m = {}; (P[d.date]||[]).forEach(([he,da,rt]) => m[he] = {da, rt}); return m; };
   let sum = '<tr><th class="l">Day</th><th>DA on-peak</th><th>RT on-peak</th><th>RT − DA</th><th>DA off-peak</th><th>RT off-peak</th><th>Highest RT</th><th class="grp">Load miss (actual − IESO)</th><th>Wind IESO / Meteo / actual</th><th>Gas expected / ran</th><th>Tightest spare</th><th class="l">Bid-time read</th></tr>';
   for (const d of H.days){
-    const m = dayPx(d), on = [], off = []; for (let h=1; h<=24; h++){ (h>=7 && h<=22 ? on : off).push(m[h]||{}); }
+    const m = dayPx(d), on = [], off = [], OP = onpk(d); for (let h=1; h<=24; h++){ (h>=OP[0] && h<=OP[1] ? on : off).push(m[h]||{}); }
     const dON = avg(on.map(x=>x.da)), rON = avg(on.map(x=>x.rt)), dOF = avg(off.map(x=>x.da)), rOF = avg(off.map(x=>x.rt));
     let mx = null; for (let h=1; h<=24; h++){ const r = (m[h]||{}).rt; if (r!=null && (!mx || r > mx[1])) mx = [h, r]; }
     const R = d.rows, lm = avg(R.map(r => r.act==null||r.dem==null ? null : r.act - r.dem));
@@ -1169,6 +1281,49 @@ function ckRender(){
     N.peak_head < 7000 ? 'Tight: DA tends to over-price risk.' : N.peak_head < 9500 ? 'Middle band: DA tends to under-price risk.' : 'Loose: little edge either way.'));
   $('#ckgrid').innerHTML = c.join('');
 }
+// Nov 1 2026: physics read + scorecard (Fundamentals tab)
+let PHZ='EAST';
+function phRender(){
+  const X=B.physics; if(!X||!X.hubs||!X.hubs[PHZ]){ const s=$('#phsec'); if(s) s.hidden=true; return; }
+  const H=X.hubs[PHZ], R=H.rows, PC={"Load gap":"--pc-load","Wind gap":"--pc-wind","Spare":"--pc-spare","DA priced":"--pc-da","Ramps":"--pc-ramp","NY pull":"--pc-ny","Hour/weekend":"--pc-hr"};
+  const f=(v,d=0)=>v==null?'—':(v>0?'+':'')+Number(v).toFixed(d), g=(v,d=0)=>v==null?'—':Number(v).toLocaleString('en-US',{maximumFractionDigits:d,minimumFractionDigits:d});
+  const col=v=>v>=1.5?'var(--buy)':v<=-1.5?'var(--sell)':'var(--accent)';
+  const TSz=((B.physics||{}).test||{})[PHZ]||{}, SOFTUP=(TSz.soft||{}).up||33, SOFTOTH=(TSz.soft||{}).other_long_up||47;
+  const tcl=r=>r.tier==='A'?(r.side>0?'t-A':'t-As'):r.tier==='B'?(r.side>0?'t-B':'t-Bs'):r.tier==='C'?'t-C':'t-N';
+  $('#phmeta').textContent=`${PHZ==='EAST'?'East':'Ottawa'} · delivery ${X.date} · read uses only what is known by 8 MT the day before · weights learned on the last 90 days (${g(H.train_hours)} hours, through D−2) · read = expected RT − DA, $/MWh`;
+  const mb=$('#phmiss'); mb.hidden=!(H.missing&&H.missing.length); if(H.missing&&H.missing.length) mb.textContent='Not loaded this morning, counted as typical (adds nothing): '+H.missing.map(m=>({ny_pull:'NY Zone A DA',gL:'vendor load',gW:'Meteologica wind',vs:'DA forecast'}[m]||m)).join(', ')+'.';
+  $('#phpleg').innerHTML=Object.entries(PC).map(([k,c])=>`<span><span class="phsw" style="background:var(${c})"></span>${k}</span>`).join('');
+  // chart
+  const W=1100,Ht=230,L=46,Rm=10,T=12,Bm=26, vals=R.map(r=>r.read).concat(R.filter(r=>r.rd!=null).map(r=>r.rd));
+  let hi=Math.max(10,...vals), lo=Math.min(-10,...vals); const st=hi-lo>60?20:10; hi=Math.ceil(hi/st)*st; lo=Math.floor(lo/st)*st;
+  const y=v=>T+(hi-v)/(hi-lo)*(Ht-T-Bm), bw=(W-L-Rm)/24, x=h=>L+(h-.5)*bw; let s='';
+  for(let v=lo;v<=hi;v+=st) s+=`<line x1="${L}" x2="${W-Rm}" y1="${y(v)}" y2="${y(v)}" stroke="${v===0?'var(--ink3)':'var(--grid)'}"/><text x="${L-6}" y="${y(v)+4}" text-anchor="end" font-size="11" fill="var(--ink3)" font-family="JetBrains Mono,monospace">${v>0?'+':''}${v}</text>`;
+  R.forEach(r=>{const y0=y(0),y1=y(r.read); s+=`<rect x="${x(r.he)-bw*.32}" y="${Math.min(y0,y1)}" width="${bw*.64}" height="${Math.max(1,Math.abs(y1-y0))}" fill="${col(r.read)}" rx="2" ${r.tier==='A'?'stroke="var(--ink)" stroke-width="1.5"':''}><title>HE${r.he}: read ${f(r.read,1)}, card ${f(r.card)}, tier ${r.tier}</title></rect><text x="${x(r.he)}" y="${Ht-8}" text-anchor="middle" font-size="11" fill="var(--ink3)" font-family="JetBrains Mono,monospace">${r.he}</text>`;
+    if(r.rd!=null) s+=`<circle cx="${x(r.he)}" cy="${y(r.rd)}" r="4" fill="var(--rt)" stroke="var(--surface)" stroke-width="1.5"><title>actual RT−DA ${f(r.rd,1)}</title></circle>`;});
+  $('#phchart').innerHTML=s;
+  // table
+  const bar=p=>{const w=200,h=14,m=w/2,sc=m/14;let o=`<svg width="${w}" height="${h}"><line x1="${m}" x2="${m}" y1="0" y2="${h}" stroke="var(--ink3)"/>`,ps=m,ng=m;Object.entries(p).forEach(([k,v])=>{if(Math.abs(v)<.05)return;const ww=Math.min(Math.abs(v)*sc,m);if(v>0){o+=`<rect x="${ps}" y="2" width="${Math.max(0,Math.min(ww,w-ps))}" height="${h-4}" fill="var(${PC[k]})"><title>${k} ${f(v,1)}</title></rect>`;ps+=ww}else{ng-=ww;o+=`<rect x="${Math.max(0,ng)}" y="2" width="${ww}" height="${h-4}" fill="var(${PC[k]})"><title>${k} ${f(v,1)}</title></rect>`}});return o+'</svg>'};
+  let t=`<thead><tr><th class="l">HE</th><th>DA fc</th><th>Read</th><th class="l">Why (− short · + long)</th><th>Card</th><th class="l">Tier / action</th><th title="Vendor load − IESO">Load gap</th><th title="IESO wind − Meteologica">Wind gap</th><th>Public spare</th><th>DA vs usual</th><th>Wind ramp 3h</th><th>NY − Ont</th><th>RT − DA</th></tr></thead><tbody>`;
+  R.forEach(r=>{const i=r.inputs; t+=`<tr class="r${r.he>=9&&r.he<=15?' vl':''}" data-he="${r.he}"><td class="l">${r.he}</td><td>${g(r.da_fc,1)}</td><td style="color:${col(r.read)};font-weight:600">${f(r.read,1)}</td><td class="l">${bar(r.pieces)}</td><td style="font-weight:600">${f(r.card)}${r.thin?' <span title="spare under 2,500: load and wind points doubled">×2</span>':''}</td><td class="l"><span class="phc ${tcl(r)}">${r.tier}</span> <span class="small">${r.action}</span>${r.soft?` <span class="phc t-C" title="Public spare over 5,500 and wind over 2,000: in Sep 2025 – Oct 2026 longs here had RT above DA in about ${SOFTUP}% of hours (other longs ${SOFTOTH}%); median RT − DA about −$6. Flag only, not a rule.">soft system: longs win ~1 in 3</span>`:''}</td>
+    <td>${f(i.load_gap)}</td><td>${f(i.wind_gap)}</td><td>${g(i.pub_sp)}</td><td>${f(i.vs,1)}</td><td>${f(i.w3)}</td><td>${i.ny==null?'n/a':f(i.ny,1)}</td><td class="${r.rd==null?'':r.rd>0?'phpos':'phneg'}">${r.rd==null?'—':f(r.rd,1)}</td></tr>
+    <tr class="dt" data-for="${r.he}" hidden><td colspan="13"><b>Read pieces:</b> ${Object.entries(r.pieces).map(([k,v])=>`<span style="margin-right:12px"><span class="phsw" style="background:var(${PC[k]})"></span>${k} <b class="num">${f(v,1)}</b></span>`).join('')} recent average <b class="num">${f(r.base,1)}</b> = <b class="num">${f(r.read,1)}</b><br><b>Card points:</b> ${Object.entries(r.card_pts).map(([k,v])=>`${k} <b class="num">${f(v)}</b>`).join(' · ')} = <b class="num">${f(r.card)}</b></td></tr>`;});
+  $('#phtable').innerHTML=t+'</tbody>';
+  document.querySelectorAll('#phtable tr.r').forEach(tr=>tr.onclick=()=>{const d=document.querySelector(`#phtable tr[data-for="${tr.dataset.he}"]`);d.hidden=!d.hidden;});
+  // tiers + log
+  const TS=(X.test||{})[PHZ]; if(TS){ const nm={A:'A · card and read agree',B:'B · follow the read',C:'C · they disagree (stand aside)',N:'Neutral'};
+    $('#phtiers').innerHTML='<thead><tr><th class="l">Tier</th><th>Share of hours</th><th>$/MWh if traded</th><th>Hours right</th></tr></thead><tbody>'+['A','B','C','N'].map(k=>{const v=TS.tiers[k];return v?`<tr><td class="l">${nm[k]}</td><td>${Math.round(v.share*100)}%</td><td class="${v.avg>0?'phpos':'phneg'}">${f(v.avg,1)}</td><td>${Math.round(v.hit*100)}%</td></tr>`:''}).join('')+'</tbody>';
+    const P=TS.plan, PR=TS.periods||{}; $('#phplan').innerHTML=`Trading A + B, ${TS.period||''}: ${Math.round(P.share*100)}% of hours, ${f(P.avg,2)}/MWh, ${Math.round(P.hit*100)}% of hours right, $${g(P.total)}/MW, ${P.months} months up, worst day $${g(P.worst)}. `+Object.entries(PR).map(([k,v])=>`${k}: $${g(v.total)} (${f(v.per,2)}/MWh, ${v.months} months up)`).join(' · ')+`. July 2026 alone: $${g(P.july)}. Tiers C and N show what trading them would have made. Read refit every morning on the prior 90 days through D−2; bid-time inputs only; fees not included.`; }
+  const TK=(X.track||{})[PHZ]; if(TK&&TK.days){ const S=TK.summ||{};
+    const bx=(t,n)=>{const v=S[t+n]||{};return v.h?`<div class="phbox"><div><span class="phc ${t==='A'?'t-A':'t-B'}">${t}</span> <b>last ${n} days</b></div><div class="phbig ${v.pnl>0?'phpos':'phneg'}">${f(v.pnl)} $/MW</div><div class="small muted num">${v.h} h · ${f(v.per,2)}/MWh · ${v.hit}% right · ${v.days_up}/${v.days} days up</div></div>`:`<div class="phbox"><span class="phc ${t==='A'?'t-A':'t-B'}">${t}</span> <b>last ${n} days</b><div class="small muted">no ${t}-tier hours</div></div>`};
+    const sf=S.soft_all||{}, s30=S.soft30||{};
+    $('#phsum').innerHTML=bx('A',14)+bx('B',14)+bx('A',30)+bx('B',30)+`<div class="phbox"><div><span class="phc t-C">soft system</span> <b>flagged longs</b></div><div class="phbig ${sf.pnl>0?'phpos':'phneg'}">${sf.h?f(sf.pnl)+' $/MW':'none yet'}</div><div class="small muted num">${sf.h?`all logged days: ${sf.h} h · ${f(sf.per,2)}/MWh · RT > DA ${sf.up}%`:''}${s30.h?` · last 30 days ${f(s30.pnl)} on ${s30.h} h`:''}</div></div>`;
+    const cell=(x,t)=>!x?`<td class="none sep" colspan="4">No ${t}-tier hours</td>`:`<td class="sep${x.pnl<0?' phlose':''}" title="HE ${x.hrs.join(', ')}">${x.h}</td><td class="l${x.pnl<0?' phlose':''}">${x.side}${x.soft?` <span class="phc t-C" title="${x.soft} soft-system long hour(s)">${x.soft} soft</span>`:''}</td><td class="${x.pnl<0?'phlose ':''}${x.pnl>0?'phpos':x.pnl<0?'phneg':''}">${f(x.pnl)}</td><td class="${x.pnl<0?'phlose':''}">${x.right}/${x.h}</td>`;
+    $('#phlog').innerHTML='<thead><tr><th class="l" rowspan="2">Day</th><th class="l" rowspan="2">Source</th><th class="sep phga" colspan="4" style="text-align:center">Tier A · card and read agree</th><th class="sep phgb" colspan="4" style="text-align:center">Tier B · follow the read</th><th class="sep" rowspan="2">Day total</th></tr><tr><th class="sep">Hours</th><th class="l">Side</th><th>$ / MW</th><th>Right</th><th class="sep">Hours</th><th class="l">Side</th><th>$ / MW</th><th>Right</th></tr></thead><tbody>'+
+      [...TK.days].reverse().map(d=>{const tot=(d.A?d.A.pnl:0)+(d.B?d.B.pnl:0);return `<tr><td class="l">${d.date}</td><td class="l">${d.src}</td>${cell(d.A,'A')}${cell(d.B,'B')}<td class="sep ${tot>0?'phpos':tot<0?'phneg':''}"><b>${f(tot)}</b></td></tr>`}).join('')+'</tbody>';
+    $('#phlive').textContent=(TK.live?`Live since wiring: ${TK.live.days} settled days, $${g(TK.live.pnl)}/MW on tiers A + B. `:'')+'1 MW per hour in the tier\'s direction, settled at RT − DA. Hover a tier cell for the hours. Shaded = losing day for that tier. Rows marked backtest are the walk-forward test (same daily refit and bid-time inputs as live).'; }
+}
+document.querySelectorAll('[data-phz]').forEach(b=>b.addEventListener('click',()=>{PHZ=b.dataset.phz;document.querySelectorAll('[data-phz]').forEach(x=>x.setAttribute('aria-pressed',x===b));phRender();}));
+
 function fuRender(){
   const F = B.fund, P = F && F.prac; if (!P){ $('#t-fu').hidden = true; return; }
   const n=v=>v==null?'–':Math.round(v).toLocaleString('en-US'), d=(v,k=1)=>v==null?'–':Number(v).toFixed(k), sg=v=>v==null?'–':(v>0?'+':'')+Math.round(v).toLocaleString('en-US');
@@ -1177,6 +1332,9 @@ function fuRender(){
   const RR=(B.rtread&&B.rtread.hubs&&B.rtread.hubs.EAST)||[], RH={}; RR.forEach(x=>RH[x.he]=x); const SA=(B.rtread&&B.rtread.spare_adj)||{};
   const rtCell=r=>{const x=RH[r.he]; if(!x) return '<td>–</td><td>–</td>'; const g=x.rt_minus_da, c=g>=3?'u2':g<=-15?'d3':g<=-8?'d2':g<=-3?'d1':'n0';
     return `<td class="${c}" title="RT − DA fc ${g>0?'+':''}${d(g)}">${d(x.rt_p50)}</td><td>${d(x.rt_p10,0)}–${d(x.rt_p90,0)}</td>`;};
+  const FS=B.fcscores||{}, ST=(k,v)=>{const q=FS[k]; if(!q||!q.scores||!q.scores[v]) return ''; const sc=q.scores[v], best=q.best===v;
+    return `<span class="fcstar ${best?'on':''}" title="${v}: avg miss ${sc.mae==null?'–':sc.mae+' MW'} per hour over the last ${FS.window} settled days (${q.frm} to ${q.to})${q.mae30&&q.mae30[v]!=null?'; 30 days '+q.mae30[v]+' MW':''}">${best?'★':''}</span>`;};
+  const gapCell=(a,b)=>{ if(a==null||b==null) return '<td>–</td>'; const g=a-b, c=g>=300?'u2':g>=150?'u1':g<=-300?'d2':g<=-150?'d1':'n0'; return `<td class="${c}">${sg(g)}</td>`; };
   const R=P.rows, X=P.facts, hm=R.reduce((a,r)=>r.head<a.head?r:a,R[0]), sp=R.reduce((a,r)=>r.sp<a.sp?r:a,R[0]);
   $('#prfacts').innerHTML=`<span><b>${dow(X.date)} ${X.date}</b>${X.hol?` · <span class="prwarn">${X.hol}</span>`:''}</span>${X.sunset?`<span>Sunset <b>${X.sunset}</b></span>`:''}<span>Nuclear <b>${n(X.nuc)}</b> MW</span><span>Gas available <b>${n(Math.min(...R.map(r=>r.gav)))}–${n(Math.max(...R.map(r=>r.gav)))}</b> MW</span><span>Evening ramp HE15→19 <b>${sg(X.pm)}</b> (${X.pmp??'–'}th pct)</span><span>Morning ramp HE5→8 <b>${sg(X.am)}</b> (${X.amp??'–'}th pct)</span><span>Tightest headroom <b>${n(hm.head)}</b> HE${hm.he}</span><span>Lowest gas spare <b>${n(sp.sp)}</b> HE${sp.he}</span>${X.meteo_missing?'<span class="prwarn">Meteologica wind missing — run morning.py --wind</span>':''}${X.models_missing?'<span class="prwarn">Weather-model wind missing</span>':''}`;
   const DIR={xy:1,nuc:-1,dem:1,tes:1,dyn:1,met:1,tg:1,w:-1,wm:-1,wlo:-1,whi:-1,w3:-1,sol:-1,res:1,n3:1,nlW:1,head:-1,hT:-1,hW:-1,hX:-1,need:1,sp:-1,r1:1,r3:1,hyd:-1,exp:1,cahr:-1,daf:-1,vs:-1};
@@ -1185,12 +1343,12 @@ function fuRender(){
   const T=(r,k)=>r.ps&&r.ps[k]?(r.ps[k][1]==null?' title="near zero: neutral"':` title="${r.ps[k][0][0]==='u'?'bullish':'bearish'} side: bigger than ${r.ps[k][1]}% of past values on that side"`):r.pc&&r.pc[k]!=null?` title="${r.pc[k]}th percentile for HE${r.he}"`:'';
   const td=(r,k,txt,extra='')=>`<td class="${extra} ${C(r,k)}"${T(r,k)}>${txt}</td>`;
   const f=b=>b&&b[1]?`<span title="average RT − DA ${b[2]>0?'+':''}${b[2]} $/MWh"><b>${b[0]}/${b[1]}</b></span>`:'–';
-  const H=`<thead><tr class="g"><th class="he"></th><th colspan="5" class="bl">Load (MW)</th><th colspan="5" class="bl">Wind (MW)</th><th class="bl">Solar</th><th colspan="3" class="bl nl">Net load (MW)</th><th colspan="4" class="bl cu">Cushion: headroom (MW)</th><th colspan="5" class="bl">Gas (MW)</th><th colspan="3" class="bl">Hydro / ties</th><th colspan="5" class="bl">Price (East)</th><th colspan="2" class="bl" title="Days RT settled above DA at this hour, East, last 7 / 14 settled days known at the bid. Hover for the average RT − DA.">RT beat DA</th></tr>
-  <tr><th class="he">HE</th><th class="bl">IESO</th><th>Tesla</th><th>Dyna&shy;sty</th><th>Meteo</th><th>Tesla − IESO</th><th class="bl">IESO</th><th>Meteo</th><th>Models low</th><th>Models high</th><th>3 h change</th><th class="bl">MW</th>
+  const H=`<thead><tr class="g"><th class="he"></th><th colspan="7" class="bl">Load (MW)</th><th colspan="5" class="bl">Wind (MW)</th><th class="bl">Solar</th><th colspan="3" class="bl nl">Net load (MW)</th><th colspan="4" class="bl cu">Cushion: headroom (MW)</th><th colspan="5" class="bl">Gas (MW)</th><th colspan="3" class="bl">Hydro / ties</th><th colspan="5" class="bl">Price (East)</th><th colspan="2" class="bl" title="Days RT settled above DA at this hour, East, last 7 / 14 settled days known at the bid. Hover for the average RT − DA.">RT beat DA</th></tr>
+  <tr><th class="he">HE</th><th class="bl">${ST("load","IESO")}IESO</th><th>${ST("load","Tesla")}Tesla</th><th>${ST("load","Dynasty")}Dyna&shy;sty</th><th>${ST("load","Meteo")}Meteo</th><th>Tesla − IESO</th><th title="Dynasty − IESO">Dyn − IESO</th><th title="Meteologica − IESO">Meteo − IESO</th><th class="bl">${ST("wind","IESO")}IESO</th><th>${ST("wind","Meteo")}Meteo</th><th>Models low</th><th>Models high</th><th>3 h change</th><th class="bl">MW</th>
   <th class="bl nl" title="IESO demand − nuclear − IESO wind − solar">IESO basis</th><th class="nl">3 h change</th><th class="nl" title="Highest load forecast − nuclear − lowest wind forecast − solar">Worst case</th>
   <th class="bl cu" title="Gas available + hydro available − net load">IESO basis</th><th class="cu">If Tesla load</th><th class="cu">If wind at models low</th><th class="cu">Worst case</th>
   <th class="bl" title="Gas expected online (gas need)">Online (exp)</th><th title="Change in gas expected online from the previous hour">Online ramp 1 h</th><th title="Change from 3 hours earlier">Ramp 3 h</th><th>Spare</th><th title="Spare corrected by the last 30 days' average miss of gas expected vs gas that actually ran (same hour, through 2 days ago). Gas need has been running high this fall, so real spare has been larger.">Spare adj.</th><th class="bl">Hydro exp</th><th title="Our forecast of net exports at the bid">Exp fc</th><th title="Net exports that cleared in day-ahead for YESTERDAY, same hour (known at the bid)">Cleared yday</th><th class="bl">CAHR</th><th>DA fc $</th><th>vs usual</th><th title="RT P50 read: DA forecast + what all bid-time fundamentals expect RT − DA to be (typical hour, not spikes)">RT P50 $</th><th title="80% of hours landed inside this range in the walk-forward test">RT P10–P90</th><th class="bl">7 d</th><th>14 d</th></tr></thead>`;
-  const Bd=R.map(r=>`<tr class="${r.he>=16&&r.he<=21?'eve':''}"><td class="he ${r.lb?'lbear':''}"${r.lb?' title="Load bearish: Tesla and Dynasty 300+ MW under IESO"':''}>${r.he}</td>${td(r,'dem',n(r.dem),'bl')}${td(r,'tes',n(r.tes))}${td(r,'dyn',n(r.dyn))}${td(r,'met',n(r.met))}${td(r,'tg',sg(r.tg))}
+  const Bd=R.map(r=>`<tr class="${r.he>=16&&r.he<=21?'eve':''}"><td class="he ${r.lb?'lbear':''}"${r.lb?' title="Load bearish: Tesla and Dynasty 300+ MW under IESO"':''}>${r.he}</td>${td(r,'dem',n(r.dem),'bl')}${td(r,'tes',n(r.tes))}${td(r,'dyn',n(r.dyn))}${td(r,'met',n(r.met))}${td(r,'tg',sg(r.tg))}${gapCell(r.dyn,r.dem)}${gapCell(r.met,r.dem)}
   ${td(r,'w',n(r.w),'bl')}${td(r,'wm',n(r.wm))}${td(r,'wlo',n(r.wlo))}${td(r,'whi',n(r.whi))}${td(r,'w3',sg(r.w3))}${td(r,'sol',n(r.sol),'bl')}
   ${td(r,'res','<b>'+n(r.res)+'</b>','bl nl')}${td(r,'n3',sg(r.n3),'nl')}${td(r,'nlW',n(r.nlW),'nl')}
   ${td(r,'head','<b>'+n(r.head)+'</b>','bl cu')}${td(r,'hT',n(r.hT),'cu')}${td(r,'hW',n(r.hW),'cu')}${td(r,'hX',n(r.hX),'cu')}
@@ -1198,6 +1356,8 @@ function fuRender(){
   ${td(r,'hyd',n(r.hyd),'bl')}${td(r,'exp',sg(r.exp))}${td(r,'xy',n(r.xy))}${td(r,'cahr',d(r.cahr),'bl')}${td(r,'daf',d(r.daf))}${td(r,'vs',r.vs==null?'–':(r.vs>0?'+':'')+d(r.vs))}${rtCell(r)}
   ${td(r,'f7',f(r.b7),'bl')}${td(r,'f14',f(r.b14))}</tr>`).join('');
   $('#prtable').innerHTML=H+'<tbody>'+Bd+'</tbody>';
+  if (FS.load){ const f=(k)=>{const q=FS[k]; return Object.entries(q.scores).map(([v,s])=>`${q.best===v?'<b>★ '+v+'</b>':v} ${s.mae==null?'–':s.mae}`).join(' · ');};
+    $('#fsnote').innerHTML = `<b>★ = most accurate over the last ${FS.window} settled days</b> (avg miss per hour, MW, forecasts as they stood at the bid). Load: ${f('load')}. Wind: ${f('wind')}. Tested 7 vs 14 days: 7 picked the day's best forecast more often (load 50% vs 45% of days, wind 64% vs 61%).` + (FS.dynasty_live ? '' : ` <b>Dynasty</b> shows – because its forecast (issued ~06:40–07:50 MT) only reaches the Warehouse at 04:28 the next day, after the bid; its score uses the issued forecasts.`); }
   const TK=(B.rtread&&B.rtread.track)||{}, te=TK.test||{}, lv=TK.live;
   $('#rtnote').innerHTML = RR.length ? `<b>RT P50 read</b> (East): typical-hour RT from all bid-time fundamentals. Walk-forward test ${te.period||''}: off by $${te.mae} on average (DA forecast alone: $${te.mae_da_only}), within $10 in ${te.within10}% of hours, P10–P90 held the actual RT ${te.cover}% of hours. Its RT − DA gap ranks hours well: read ≤ −$15 → RT averaged $20 under DA (RT above DA 24%); −$3 to +$3 → +$3.5 (47%); ≥ +$3 → +$11 (72%). Most hours read negative because most hours settle under DA, so read the size of the gap, not just the sign.` + (lv ? ` Live so far: ${lv.days} days, off by $${lv.mae}, within $10 ${lv.within10}%, direction ${lv.direction}%, range held ${lv.cover}%.` : ' Live record starts with today\'s read.') + (B.rtread.spare_days ? ` <b>Spare adj.</b> uses the last ${B.rtread.spare_days} saved days.` : '') : '';
   const TPL='HE1–4:\nHE5–8:\nHE9–15:\nHE16–19:\nHE20–24:\nSize / confidence:', key='desk-note-'+X.date;
@@ -1212,7 +1372,7 @@ function fuRender(){
 function render(){
   document.querySelectorAll('.seg button').forEach(b => b.setAttribute('aria-pressed', b.id === 'hub-'+HUB ? 'true' : 'false'));
   $('#asof').textContent = `${ZN[HUB]} hub · DA for ${dlabel(B.target)} ${B.target.slice(0,4)} · inputs as of ${dlabel(B.origin)} 08:00 MT · hub limit ${B.hubs[HUB].cap_mw} MW`;
-  stats(); ckRender(); fan(); table(); stack(); dvInit(); eoRender(); otRender(); nyRender(); fuRender(); try{ gtRender(); }catch(e){ console.error(e); } try{ hiRender(); }catch(e){ console.error(e); } try{ coRender(); }catch(e){ console.error(e); } showTab();
+  stats(); ckRender(); fan(); table(); stack(); dvInit(); eoRender(); otRender(); nyRender(); fuRender(); try{ gtRender(); }catch(e){ console.error(e); } try{ hiRender(); }catch(e){ console.error(e); } try{ hlRender(); }catch(e){ console.error(e); } try{ mrRender(); }catch(e){ console.error(e); } try{ ttRender(); }catch(e){ console.error(e); } try{ phRender(); }catch(e){ console.error(e); } try{ coRender(); }catch(e){ console.error(e); } showTab();
 }
 for (const z of ['EAST','OTTAWA']) $('#hub-'+z).addEventListener('click', () => { HUB = z; try{localStorage.setItem('ovd-hub', z)}catch(e){} render(); });
 $('#basemw').addEventListener('input', table);

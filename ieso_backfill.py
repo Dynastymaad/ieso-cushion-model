@@ -194,13 +194,54 @@ def nyiso():
         print(f'  NYISO {sub:<10} monthly zips refreshed/new: {new}')
 
 
+def repair_rt(days=10):
+    """Nov 1 2026: an hourly RT price file is sometimes archived before IESO finished it (e.g. Oct 17 HE9 has 7 of 12 intervals,
+    Oct 23 HE11 has 2). Re-download recent files with fewer than 12 intervals for any zone; a complete copy goes into
+    <report>_repair.zip, which parse_archive reads after the monthly zips (an incomplete hour is never used)."""
+    import re
+    now = est_now()
+    for report in ('RealtimeZonalEnergyPrices', 'RealtimeOntarioZonalPrice'):
+        tag = '<ZonalPrice>' if report == 'RealtimeZonalEnergyPrices' else '<LmpCap>'
+        rz = ARCH / report / f'{report}_repair.zip'; have = set()
+        if rz.exists():
+            with zipfile.ZipFile(rz) as zf: have = set(zf.namelist())
+        bad = []
+        for z in sorted((ARCH / report).glob(f'{report}_2*.zip'))[-2:]:
+            with zipfile.ZipFile(z) as zf:
+                for n in zf.namelist():
+                    d, hh, v = target_date(n)
+                    if v is not None or d is None or (now - d).days > days or n in have: continue
+                    txt = zf.read(n).decode(errors='ignore')
+                    if report == 'RealtimeZonalEnergyPrices':
+                        segs = re.split(r'<TransactionZone>', txt)[1:]; ok = bool(segs) and all(seg.count(tag) >= 12 for seg in segs)
+                    else:
+                        ok = txt.count(tag) >= 12
+                    if not ok: bad.append(n)
+        fixed = 0
+        for n in bad:
+            try:
+                b = get(BASE + report + '/' + n); txt = b.decode(errors='ignore') if isinstance(b, bytes) else str(b)
+                segs = re.split(r'<TransactionZone>', txt)[1:]
+                ok = (bool(segs) and all(seg.count(tag) >= 12 for seg in segs)) if report == 'RealtimeZonalEnergyPrices' else txt.count(tag) >= 12
+                if ok:
+                    with LOCK:
+                        with zipfile.ZipFile(rz, 'a', compression=zipfile.ZIP_DEFLATED) as zf: zf.writestr(n, b)
+                    fixed += 1
+            except Exception as ex: print(f'    repair {n} failed: {str(ex)[:60]}')
+        print(f'  {report:<32} incomplete hours found {len(bad)}, repaired {fixed}' + (f' (still incomplete at IESO: {[x[-14:-4] for x in bad][:6]})' if len(bad) > fixed else ''))
+
+
 if __name__ == '__main__':
-    ap = argparse.ArgumentParser(); ap.add_argument('--quick', action='store_true'); a = ap.parse_args()
+    ap = argparse.ArgumentParser(); ap.add_argument('--quick', action='store_true'); ap.add_argument('--nyiso', action='store_true', help='with --quick: also refresh the NYISO DAM files'); a = ap.parse_args()
     print(f'IESO backfill -> {ARCH}')
     for rep, mode in REPORTS:
         if a.quick and rep not in QUICK: continue
         try: backfill(rep, mode)
         except Exception as ex: print(f'  {rep:<32} FAILED: {str(ex)[:120]}')
+    try: repair_rt()
+    except Exception as ex: print('  RT repair skipped:', str(ex)[:120])
     if not a.quick:
         yearly(); nyiso()
+    elif a.nyiso:
+        nyiso()
     print('done.')

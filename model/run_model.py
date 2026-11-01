@@ -285,6 +285,26 @@ def main():
         import rt_read as RR
         out['rtread'] = RR.build(out['target'], out)
     except Exception as ex: print('rt read skipped:', ex)
+    try:                                                # Oct 31 2026: Market read tab (fear vs rescue), display only
+        import market_read as MR
+        out['mread'] = MR.build(out['target'], out)
+    except Exception as ex: print('market read skipped:', ex)
+    try:                                                # Nov 1 2026: physics read + scorecard + tiers (Fundamentals tab), display only - no ladder effect
+        import physics_read_live as PRL
+        out['physics'] = PRL.build_bundle(out['target'], out)
+    except Exception as ex: print('physics read skipped:', ex)
+    try:                                                # Nov 1 2026: truly tight? priced vs physics (Market read tab), display only
+        import true_tight as TT
+        out['tight'] = TT.build(out['target'], out)
+    except Exception as ex: print('true-tight read skipped:', ex)
+    try:                                                # Oct 31 2026: input freshness (red banner on the page if a feed stops)
+        import pipeline_health as PH
+        out['health'] = PH.build(out['target'])
+    except Exception as ex: print('pipeline health skipped:', ex)
+    try:                                                # Oct 31 2026: most-accurate-forecast stars (Fundamentals tab), display only
+        import fc_scores as FSC
+        out['fcscores'] = FSC.build(out['target'])
+    except Exception as ex: print('forecast scores skipped:', ex)
     try:                                                # Oct 28 2026: History + Correlation tabs, display only
         import history_tab as HT
         out['history'] = HT.build(out['target']); out['corr'] = HT.corr_data()
