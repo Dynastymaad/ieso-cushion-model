@@ -65,7 +65,8 @@ if __name__ == '__main__':
     if '--push' in sys.argv:                      # save the refreshed code/page to GitHub (credentials blocked by .gitignore + check)
         if not (HERE / '.git').exists(): print('\n--push: this folder is not linked to GitHub yet (see GITHUB_SETUP.md)')
         else:
-            g = lambda *a: subprocess.run(['git'] + list(a), cwd=HERE)
+            # Nov 2 2026: no automatic 'git gc' (OneDrive locks .git/objects folders -> endless 'Deletion of directory ... failed' prompts)
+            g = lambda *a: subprocess.run(['git', '-c', 'gc.auto=0', '-c', 'maintenance.auto=false'] + list(a), cwd=HERE, env=dict(os.environ, GIT_ASK_YESNO='false'))
             lk = HERE / '.git' / 'index.lock'                 # stale lock left by a crashed git / OneDrive sync
             if lk.exists() and time.time() - lk.stat().st_mtime > 600:
                 try: lk.unlink(); print('--push: removed a stale .git/index.lock')

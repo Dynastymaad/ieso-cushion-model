@@ -1,6 +1,8 @@
 @echo off
 REM Daily/whenever: save your latest changes to GitHub.
 cd /d "%~dp0"
+set GIT_ASK_YESNO=false
+git config gc.auto 0
 git add -A
 python tools\check_secrets.py || (pause & exit /b 1)
 set /p MSG=Describe the change (Enter = "update"): 

@@ -53,7 +53,7 @@ REPORTS = [
     ('TxLimitsAllInService0to34Days', 'final'),   # all-in-service interface limits (baseline for the outage limits)
 ]
 QUICK = {'DAHourlyZonal','DAHourlyOntarioZonalPrice','RealtimeZonalEnergyPrices',
-         'RealtimeOntarioZonalPrice','Adequacy3'}
+         'RealtimeOntarioZonalPrice','Adequacy3','PreDAIntertieSchedLimits','DASecurityConstraints2'}   # Nov 2 2026: late refresh also picks up the pre-DA intertie limits
 YEARLY = [('Demand', 'PUB_Demand_{y}.csv'),
           ('GenOutputbyFuelHourly', 'PUB_GenOutputbyFuelHourly_{y}.xml'),
           ('IntertieScheduleFlowYear', 'PUB_IntertieScheduleFlowYear_{y}.csv')]
