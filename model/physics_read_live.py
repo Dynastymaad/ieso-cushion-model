@@ -167,6 +167,13 @@ def track():
         if S['soft_all'].get('h'): S['soft_all']['up'] = round(float((sl.rd > 0).mean()) * 100)
         live = k[k.src == 'live']
         out[z] = dict(days=rows, summ=S, live=None if live.empty else dict(days=int(live.date.nunique()), pnl=round(float(live.pnl[live.tier.isin(['A', 'B'])].sum()))))
+        # Nov 2 2026: the card on its own (display only) -- 1 MW per hour in the card's direction, strong |card| >= 3 and lean |card| 1-2, whatever the read says
+        c = k.assign(side=np.sign(k.score), pnl=np.sign(k.score) * k.rd); c = c[c.side != 0]
+        cs, cl = c[c.score.abs() >= 3], c[c.score.abs() < 3]
+        crow = [dict(date=d, src=k[k.date == d].src.iloc[-1], S=tier_day(cs[cs.date == d]), L=tier_day(cl[cl.date == d])) for d in dates[-14:]]
+        CS = {f'{t}{n}': summ(x, dates[-n:]) for t, x in (('S', cs), ('L', cl)) for n in (14, 30)}
+        CS['Sall'] = summ(cs, dates); CS['Lall'] = summ(cl, dates); CS['from'] = dates[0]
+        out[z]['card'] = dict(days=crow, summ=CS)
     return out
 
 def topup_log(D):
