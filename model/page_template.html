@@ -1369,10 +1369,19 @@ function fuRender(){
     const fb=()=>{$('#prcopymsg').textContent='Clipboard blocked: select the text in the box instead.'};
     try{navigator.clipboard.writeText(t).then(()=>{$('#prcopymsg').textContent='Copied your reads.'}).catch(fb)}catch(e){fb()}};
 }
+// Nov 2 2026: every panel draws on its own; one failure shows a red note in its own tab instead of blanking every tab after it
+function safeRun(name, tab){
+  const el = document.getElementById('tab-'+tab), old = el && el.querySelector('.render-err[data-n="'+name+'"]'); if (old) old.remove();
+  try { const f = window[name] || eval(name); f(); }
+  catch(e){ console.error(name, e); if (!el) return; const d = document.createElement('div'); d.className = 'note render-err'; d.dataset.n = name;
+    d.style.cssText = 'border-left:4px solid #b3261e;padding:8px 12px;color:#b3261e;background:rgba(179,38,30,.06)';
+    d.textContent = 'This panel failed to draw (' + name + ': ' + ((e && e.message) || e) + '). The other tabs are not affected. Send Claude a screenshot of this line.'; el.prepend(d); }
+}
 function render(){
   document.querySelectorAll('.seg button').forEach(b => b.setAttribute('aria-pressed', b.id === 'hub-'+HUB ? 'true' : 'false'));
   $('#asof').textContent = `${ZN[HUB]} hub · DA for ${dlabel(B.target)} ${B.target.slice(0,4)} · inputs as of ${dlabel(B.origin)} 08:00 MT · hub limit ${B.hubs[HUB].cap_mw} MW`;
-  stats(); ckRender(); fan(); table(); stack(); dvInit(); eoRender(); otRender(); nyRender(); fuRender(); try{ gtRender(); }catch(e){ console.error(e); } try{ hiRender(); }catch(e){ console.error(e); } try{ hlRender(); }catch(e){ console.error(e); } try{ mrRender(); }catch(e){ console.error(e); } try{ ttRender(); }catch(e){ console.error(e); } try{ phRender(); }catch(e){ console.error(e); } try{ coRender(); }catch(e){ console.error(e); } showTab();
+  [['stats','next'],['ckRender','next'],['fan','next'],['table','next'],['stack','next'],['dvInit','dv'],['eoRender','eo'],['otRender','out'],['nyRender','next'],['fuRender','fu'],['gtRender','gt'],['hiRender','hi'],['hlRender','next'],['mrRender','mr'],['ttRender','mr'],['phRender','fu'],['coRender','co']].forEach(([n,t]) => safeRun(n, t));
+  showTab();
 }
 for (const z of ['EAST','OTTAWA']) $('#hub-'+z).addEventListener('click', () => { HUB = z; try{localStorage.setItem('ovd-hub', z)}catch(e){} render(); });
 $('#basemw').addEventListener('input', table);
@@ -1382,5 +1391,5 @@ $('#copybtn').addEventListener('click', () => {
   try { navigator.clipboard.writeText(t).then(() => { $('#copymsg').textContent = 'Copied.'; }).catch(fb); } catch(e){ fb(); }
 });
 try{ coInit(); }catch(e){ console.error(e); }
-render();
+try{ render(); }catch(e){ console.error(e); showTab(); }
 </script>

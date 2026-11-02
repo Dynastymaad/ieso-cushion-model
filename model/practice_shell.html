@@ -61,7 +61,7 @@ svg text{font-family:var(--m)}
 </style>
 <div class="wrap">
 <header>
- <div class="eyebrow">Ontario virtuals · practice · Sep 2025 – Oct 2026</div>
+ <div class="eyebrow">Ontario virtuals · practice · <span id="rng">Sep 2025 – Oct 2026</span></div>
  <h1>Read the fundamentals, then compare</h1>
  <p class="sub">Four separate pages for the same day. <b>1 Fundamentals</b> and <b>2 Physics read</b> use only what was known before the 8 MT bid the day before. <b>3 DA vs RT</b> and <b>4 What happened</b> are after the fact. Make your read on page 1 first, then switch. The day you pick stays the same across pages.</p>
 </header>
@@ -124,6 +124,7 @@ svg text{font-family:var(--m)}
 const P=__DATA__;
 const FI={},HI={},AI={}; P.FUND.forEach((k,i)=>FI[k]=i); P.HUB.forEach((k,i)=>HI[k]=i); P.ACT.forEach((k,i)=>AI[k]=i);
 const DAYS=P.days, IDX={}; DAYS.forEach((d,i)=>IDX[d.d]=i);
+{const ml=x=>new Date(x+'T12:00').toLocaleDateString('en-US',{month:'short',year:'numeric'}).replace(/(\w+) (\d+)/,'$1 $2'); const r=document.getElementById('rng'); if(r&&DAYS.length) r.textContent=ml(DAYS[0].d)+' – '+ml(DAYS[DAYS.length-1].d);}
 const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
 let V=(location.hash||'').replace('#','')||'f'; if(!['f','p','r','w'].includes(V)) V='f';
 let Z='E', cur=DAYS.length-1; { const s=store.get('pr_day'); if(s&&IDX[s]!=null) cur=IDX[s]; }
