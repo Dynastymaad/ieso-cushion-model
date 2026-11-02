@@ -13,19 +13,25 @@ import numpy as np, pandas as pd, common as C, supply_fc as S
 pd.set_option('display.width', 230); pd.set_option('display.max_columns', 30)
 NWP = ['wf_frontier', 'wf_gem_cmc', 'wf_gfs', 'wf_nam', 'wf_nam_nest', 'wf_stormvista_ecmwf', 'wf_stormvista_ecmwf_eps', 'wf_stormvista_gfs', 'wf_stormvista_gfs_ens']
 
-def frame(z, keep=None):
+def frame(z, keep=None, all_rows=False):
     """keep = a delivery date to keep even without prices (the live target); its gas_hat is filled the same way as history:
     load - nuclear - wind - solar - hydro carry + 14-day median of actual net flows through D-2."""
     e = pd.read_csv(C.DATA / f'dv_frame_{z}.csv')
-    if keep is not None and (e.date == keep).any() and e.loc[e.date == keep, 'gas_hat'].isna().all():
-        ia = pd.read_csv(C.DATA / 'intertie_actual.csv'); c2 = (pd.Timestamp(keep) - pd.Timedelta(days=2)).date().isoformat()
-        lo = (pd.Timestamp(keep) - pd.Timedelta(days=16)).date().isoformat(); ex = ia[(ia.date <= c2) & (ia.date > lo)].groupby('he').tot_flow.median()
-        k = e.date == keep; e.loc[k, 'exp_exp'] = e.loc[k, 'he'].map(ex)
-        e.loc[k, 'hyd_exp'] = e.loc[k, 'hyd_exp'].fillna(e.loc[k, 'he'].map(e[e.date < keep].groupby('he').hyd_exp.median()))
+    fill = [keep] if keep is not None else []
+    if all_rows and keep is not None:          # Nov 1 2026: every recent day the frame left without gas need (no flows row yet), same method
+        fill = sorted(e[(e.date <= keep) & e.gas_hat.isna() & (e.date >= (pd.Timestamp(keep) - pd.Timedelta(days=10)).date().isoformat())].date.unique())
+    if fill: ia = pd.read_csv(C.DATA / 'intertie_actual.csv')
+    for kd in fill:
+        if not ((e.date == kd).any() and e.loc[e.date == kd, 'gas_hat'].isna().all()): continue
+        c2 = (pd.Timestamp(kd) - pd.Timedelta(days=2)).date().isoformat()
+        lo = (pd.Timestamp(kd) - pd.Timedelta(days=16)).date().isoformat(); ex = ia[(ia.date <= c2) & (ia.date > lo)].groupby('he').tot_flow.median()
+        k = e.date == kd; e.loc[k, 'exp_exp'] = e.loc[k, 'he'].map(ex)
+        e.loc[k, 'hyd_exp'] = e.loc[k, 'hyd_exp'].fillna(e.loc[k, 'he'].map(e[e.date < kd].groupby('he').hyd_exp.median()))
         e.loc[k, 'gas_hat'] = e.loc[k, 'resid_fc'] - e.loc[k, 'hyd_exp'] + e.loc[k, 'exp_exp']
     L = C.load_forecasts_at_bid()[['date', 'he', 'lf_meteologica']]; W = S.wind_at_bid(); lim = S.limits_at_bid()[['date', 'he', 'exp_cap', 'imp_cap']]
     e = e.merge(L, on=['date', 'he'], how='left').merge(W[['date', 'he', 'wf_meteologica'] + [c for c in NWP if c in W]], on=['date', 'he'], how='left').merge(lim, on=['date', 'he'], how='left')
-    e = e[(e.rt.notna() & e.da.notna() & e.gas_hat.notna()) | ((e.date == keep) & e.gas_hat.notna())].copy()
+    if all_rows: e = e[e.gas_hat.notna() & ((e.date <= keep) if keep is not None else True)].copy()   # Nov 1 2026: practice/history: keep hours without RT yet
+    else: e = e[(e.rt.notna() & e.da.notna() & e.gas_hat.notna()) | ((e.date == keep) & e.gas_hat.notna())].copy()
     nw = [c for c in NWP if c in e]
     e['w_models'] = e[nw].median(axis=1); e['w_spread'] = e[nw].max(axis=1) - e[nw].min(axis=1)
     e['priv_wind'] = e.wf_meteologica.fillna(e.w_models)

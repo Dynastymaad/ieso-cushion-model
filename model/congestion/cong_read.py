@@ -33,7 +33,7 @@ ST = {'LO': 'Longwood (W)', 'NA': 'Nanticoke (SW)', 'MD': 'Middleport (SW)', 'BU
 def bid_cut(D):                                   # IESO time (EST): D-1 09:00
     return pd.Timestamp(D) - pd.Timedelta(days=1) + pd.Timedelta(hours=9)
 def now_est():
-    return pd.Timestamp.utcnow().tz_localize(None) - pd.Timedelta(hours=5)
+    return pd.Timestamp.now('UTC').tz_localize(None) - pd.Timedelta(hours=5)
 
 # ---------- archive helpers ----------
 def members(report, d0, d1):

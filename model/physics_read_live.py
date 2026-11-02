@@ -45,6 +45,7 @@ def prep(e, bias):
     e['gL'] = pd.Series(lval, index=e.index).fillna(gL0); e['gW'] = pd.Series(wval, index=e.index).fillna(gW0)
     if not USE_STAR: e['gL'], e['gW'] = gL0, gW0   # gap vs IESO from the starred forecast
     e['gap_low_W'] = e.wind_fc - e[nw].min(axis=1)
+    e['w_up'] = e[nw].max(axis=1) - e.wind_fc                     # Nov 1 2026: highest of 9 weather models above IESO wind = wind that could still show up
     e['inv_sp'] = 1000 / e.pub_sp.clip(lower=500); e['rich'] = (e.vs - 18).clip(lower=0); e['cheap'] = (-5 - e.vs).clip(lower=0)
     e['ny_pull'] = e.nyA_da - e.p_da; e['wk'] = e.wkend.astype(float); e['blk'] = pd.cut(e.he, [0, 6, 8, 15, 19, 22, 24], labels=False).astype(float)
     for c in ['bias_L', 'bias_W', 'w3', 'g3', 'res3', 'gap_low_W', 'w_spread']: e[c] = e[c].fillna(0)   # ny_pull left blank when NY DA not loaded
@@ -63,7 +64,7 @@ def read(e, D):
     for i, (_, r) in enumerate(t.iterrows()):
         pieces = {g: round(float(sum(C[i][F.index(f)] for f in fs)), 1) for g, fs in GROUPS.items()}
         out.append(dict(he=int(r.he), read=round(float(m.intercept_ + C[i].sum()), 1), base=round(float(m.intercept_), 1), pieces=pieces,
-                        inputs=dict(load_gap=round(r.gL), wind_gap=round(r.gW), load_src=r.load_src if isinstance(r.load_src, str) else None, wind_src=r.wind_src if isinstance(r.wind_src, str) else None, wind_fc=None if pd.isna(r.wind_fc) else round(r.wind_fc), pub_sp=round(r.pub_sp), vs=round(r.vs, 1), w3=round(r.w3), g3=round(r.g3), ny=None if pd.isna(r.ny_pull) else round(r.ny_pull, 1)),
+                        inputs=dict(load_gap=round(r.gL), wind_gap=round(r.gW), load_src=r.load_src if isinstance(r.load_src, str) else None, w_up=None if pd.isna(r.w_up) else round(r.w_up), wind_src=r.wind_src if isinstance(r.wind_src, str) else None, wind_fc=None if pd.isna(r.wind_fc) else round(r.wind_fc), pub_sp=round(r.pub_sp), vs=round(r.vs, 1), w3=round(r.w3), g3=round(r.g3), ny=None if pd.isna(r.ny_pull) else round(r.ny_pull, 1)),
                         da_fc=round(r.p_da, 1), rd=None if pd.isna(r.rd) else round(r.rd, 1)))
     return out, len(tr), missing
 
@@ -106,7 +107,8 @@ def card_points(i):
     R = -1 if w3 >= 300 else 1 if w3 <= -300 else 0
     P = -2 if vs is not None and vs >= 18 else -1 if vs is not None and vs >= 8 else 1 if vs is not None and vs <= -8 else 0
     N = 0 if ny is None else 1 if ny >= 10 else -1 if ny <= -10 else 0
-    pts = {'Load gap': L * m, 'Wind gap': W * m, 'Wind ramp': R, 'DA priced': P, 'NY pull': N}
+    wu = i.get('w_up'); U = -1 if wu is not None and wu >= 800 else 0      # Nov 1 2026, tested Sep 2025-Oct 2026: E +$1.8k, O +$0.2k/MW, 12/14 and 9/14 months better
+    pts = {'Load gap': L * m, 'Wind gap': W * m, 'Wind ramp': R, 'Wind upside': U, 'DA priced': P, 'NY pull': N}
     return sum(pts.values()), pts, m == 2
 
 def tier_of(score, read):
@@ -167,9 +169,22 @@ def track():
         out[z] = dict(days=rows, summ=S, live=None if live.empty else dict(days=int(live.date.nunique()), pnl=round(float(live.pnl[live.tier.isin(['A', 'B'])].sum()))))
     return out
 
+def topup_log(D):
+    """Nov 1 2026: past days missing from the log (no live run that day, or added late to the history) come in from the walk-forward history as 'backtest'."""
+    import os
+    if not os.path.exists(LOG): return
+    l = pd.read_csv(LOG); add = []
+    for z in ('EAST', 'OTTAWA'):
+        f = f'data/research/physics_history_{z}.csv'
+        if not os.path.exists(f): continue
+        h = pd.read_csv(f, low_memory=False); have = set(l[l.zone == z].date)
+        h = h[(h.date < D) & ~h.date.isin(have)]
+        if len(h): h = h.assign(zone=z, src='backtest'); add.append(h[['date', 'zone', 'he', 'read', 'score', 'tier', 'side', 'soft', 'src']])
+    if add: pd.concat([l] + add).sort_values(['zone', 'date', 'he']).to_csv(LOG, index=False)
+
 def build_bundle(D, bundle):
     import os
-    seed_log(); r = build(D, bundle); new = []
+    seed_log(); topup_log(D); r = build(D, bundle); new = []
     for z, h in r['hubs'].items():
         for x in h['rows']:
             annotate(x)

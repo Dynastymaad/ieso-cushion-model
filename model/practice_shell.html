@@ -86,7 +86,7 @@ svg text{font-family:var(--m)}
   <div class="card"><h2 style="margin-bottom:6px">Scoring an hour by eye (the card)</h2><ol class="steps">
    <li><b>Load gap</b> (Meteologica − IESO, Tesla when Meteologica is missing): +250 → +2, +100 → +1, −100 → −1, −250 → −2.</li>
    <li><b>Wind gap</b> (IESO − Meteologica): +200 → +1, −200 → −1. <b>Public spare under 2,500: double the load and wind points.</b></li>
-   <li><b>Wind 3 h change</b>: −300 or more (wind leaving) → +1, +300 (arriving) → −1.</li>
+   <li><b>Wind 3 h change</b>: −300 or more (wind leaving) → +1, +300 (arriving) → −1. <b>Wind upside</b>: highest weather model 800+ MW above IESO wind → −1.</li>
    <li><b>DA vs usual</b>: +18 → −2, +8 → −1, −8 → +1. <b>NY − Ontario DA</b>: ±$10 → ±1 (page 2).</li>
    <li>Card ±3 or more → strong. Then check page 2: same side as the read = tier A; read ±5 with a weaker card = tier B; card and read disagree = stand aside.</li>
    <li><b>Soft system</b>: spare over 5,500 and wind over 2,000 → longs win about 1 hour in 3.</li></ol>
@@ -173,8 +173,8 @@ function rP(){const D=DAYS[cur],R=rowsH(D); if(!R[0].h.length){$('#tp').innerHTM
  const miss=(D.miss||'').split('|').filter(Boolean); $('#pmiss').hidden=!miss.length; if(miss.length) $('#pmiss').textContent='Not loaded that morning, counted as typical (adds nothing): '+miss.map(m=>({ny_pull:'NY Zone A DA'}[m]||m)).join(', ');
  $('#pleg').innerHTML=PK.map(k=>`<span><span class="sw" style="background:var(${PC[k]})"></span>${k}</span>`).join('')+'<span>· outlined bar = tier A</span>';
  bars('#pchart',R,r=>r.h[HI.read],'p');
- let t=`<thead><tr><th class="he">HE</th><th>DA fc $</th><th>Read</th><th class="l">Why (− short · + long)</th><th class="l">Card points (load · wind · ramp · DA · NY)</th><th>Card</th><th class="l">Tier / action</th><th>Load gap</th><th>Wind gap</th><th>Public spare</th><th>DA vs usual</th></tr></thead><tbody>`;
- R.forEach(r=>{const h=r.h,tr=h[HI.tier],sd=h[HI.side];const pts=['c_Load gap','c_Wind gap','c_Wind ramp','c_DA priced','c_NY pull'].map(k=>sg(h[HI[k]])).join(' · ');
+ let t=`<thead><tr><th class="he">HE</th><th>DA fc $</th><th>Read</th><th class="l">Why (− short · + long)</th><th class="l">Card points (load · wind · ramp · upside · DA · NY)</th><th>Card</th><th class="l">Tier / action</th><th>Load gap</th><th>Wind gap</th><th>Public spare</th><th>DA vs usual</th></tr></thead><tbody>`;
+ R.forEach(r=>{const h=r.h,tr=h[HI.tier],sd=h[HI.side];const pts=['c_Load gap','c_Wind gap','c_Wind ramp','c_Wind upside','c_DA priced','c_NY pull'].map(k=>sg(h[HI[k]])).join(' · ');
   t+=`<tr class="${r.he>=9&&r.he<=15?'vl':''}"><td class="he">${r.he}</td><td>${f1(h[HI.da_fc])}</td><td style="color:${rcol(h[HI.read])};font-weight:600">${sg(h[HI.read],1)}</td><td class="l">${pieceBar(h)}</td><td class="l">${pts}${h[HI.thin]?' <span class="mut">(×2 thin spare)</span>':''}</td><td style="font-weight:600">${sg(h[HI.score])}</td>
   <td class="l"><span class="chip ${tcl(tr,sd)}">${tr}</span> ${act(tr,sd)}${h[HI.soft]?' <span class="chip t-C">soft system</span>':''}</td><td>${sg(h[HI.load_gap])}</td><td>${sg(h[HI.wind_gap])}</td><td>${f0(r.f[FI.pub_sp])}</td><td>${sg(h[HI.vs],1)}</td></tr>`;});
  $('#tp').innerHTML=t+'</tbody>';}

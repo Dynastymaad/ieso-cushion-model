@@ -8,9 +8,9 @@ def r0(v):
 def r1(v):
     try: return None if v is None or (isinstance(v, float) and np.isnan(v)) else round(float(v), 1)
     except Exception: return None
-E_ = pd.read_csv('data/research/physics_history_EAST.csv'); O_ = pd.read_csv('data/research/physics_history_OTTAWA.csv')
+E_ = pd.read_csv('data/research/physics_history_EAST.csv', low_memory=False); O_ = pd.read_csv('data/research/physics_history_OTTAWA.csv', low_memory=False)
 FUND = ['dem_fc', 'lf_tesla', 'lf_meteologica', 'wind_fc', 'wf_meteologica', 'w_models', 'w_lo', 'w_hi', 'w3', 'solar_fc', 'resid_fc', 'res3', 'gas_av', 'gas_hat', 'pub_sp', 'g3', 'hyd_exp', 'exp_exp', 'head', 'nuc_av']
-HUB = ['da_fc', 'vs', 'read', 'base', 'p_Load gap', 'p_Wind gap', 'p_Spare', 'p_DA priced', 'p_Ramps', 'p_NY pull', 'p_Hour/weekend', 'score', 'c_Load gap', 'c_Wind gap', 'c_Wind ramp', 'c_DA priced', 'c_NY pull', 'thin', 'tier', 'side', 'soft', 'da', 'rt', 'load_gap', 'wind_gap', 'ny']
+HUB = ['da_fc', 'vs', 'read', 'base', 'p_Load gap', 'p_Wind gap', 'p_Spare', 'p_DA priced', 'p_Ramps', 'p_NY pull', 'p_Hour/weekend', 'score', 'c_Load gap', 'c_Wind gap', 'c_Wind ramp', 'c_Wind upside', 'c_DA priced', 'c_NY pull', 'thin', 'tier', 'side', 'soft', 'da', 'rt', 'load_gap', 'wind_gap', 'ny']
 ACT = ['ont_dem', 'g_wind', 'g_solar', 'g_nuclear', 'g_hydro', 'g_gas', 'tot_flow']
 days = []
 for D, g in E_.groupby('date'):
