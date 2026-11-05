@@ -2,6 +2,7 @@
 
     python morning.py            # pulls + model + page  (then open site\\index.html, or ask Claude to publish)
     python morning.py --model    # skip the pulls, just rebuild the model and page from what is already in cache\\
+    python morning.py --full     # same, but re-pull all history from the databases (automatic on Mondays)
     python morning.py --wind     # after ~07:40 MT: top up Meteologica wind, the NYISO DAM (~07:35 MT) and the latest IESO files, rebuild (about 2-3 min)
 
 Run it after IESO's pre-DA Adequacy file for tomorrow is out, ideally after the NYISO DAM (about 07:35 MT). The IESO DAM closes
@@ -13,8 +14,10 @@ import subprocess, sys, time, os
 from pathlib import Path
 HERE = Path(__file__).resolve().parent
 PY = sys.executable
-PULLS = [['pull_history.py', '--since', '2025-04-01'],
-         ['pull_history.py', '--only', 'outages', '--since', '2025-05-01'],
+FULL = time.localtime().tm_wday == 0 or '--full' in sys.argv   # Nov 5 2026: Mondays (or --full) re-pull all history; other days only the last 45 days
+REC = [] if FULL else ['--recent', '45']
+PULLS = [['pull_history.py', '--since', '2025-04-01'] + REC,
+         ['pull_history.py', '--only', 'outages', '--since', '2025-05-01'] + REC,
          ['ieso_backfill.py']]
 OPTIONAL_PULLS = [['ieso_fwd35.py']]              # 35-day outlook (Outages tab only): a failure does not stop the run
 OPTIONAL = [['model/checklist_xlsx.py'], ['model/congestion/cong_read.py', '--json'],
@@ -67,7 +70,8 @@ if __name__ == '__main__':
         run(['pull_history.py', '--only', 'windtopup'])
         run(['ieso_backfill.py', '--quick', '--nyiso'], optional=True)   # Nov 1 2026: NYISO DAM + newest IESO prices/Adequacy, so a late refresh has them
     elif '--model' not in sys.argv:
-        for c in PULLS: run(c)
+        run_par([PULLS[0], PULLS[2]])            # Warehouse/sandbox pull and the IESO public files at the same time (different folders)
+        run(PULLS[1])
         for c in OPTIONAL_PULLS: run(c, optional=True)
         if time.localtime().tm_wday == 0 or '--weekly' in sys.argv:
             for c in WEEKLY_PULLS: run(c, optional=True)

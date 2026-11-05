@@ -27,6 +27,23 @@ CACHE = P.HERE / 'cache'; CACHE.mkdir(exist_ok=True)
 
 def say(s): print(s, flush=True)
 
+# Nov 5 2026: --recent N re-pulls only the last N days (from the start of that month) and keeps the older rows already in cache.
+# A query that ignores --since (comes back with old rows anyway) is kept whole, so nothing gets truncated. Mondays run the full pull.
+RECENT = None
+DATECOLS = ('EffectiveDateTime', 'EffectiveDate', 'date', 'delivery_date', 'deliverydate', 'Date')
+def keep_old(name, df):
+    f = CACHE / f'{name}.csv'
+    if RECENT is None or not f.exists() or df is None or not len(df): return df
+    col = next((c for c in DATECOLS if c in df.columns), None)
+    if col is None: return df
+    newmin = str(pd.to_datetime(df[col]).min())[:10]
+    if newmin < (date.fromisoformat(RECENT) - timedelta(days=35)).isoformat(): return df      # full pull already
+    old = pd.read_csv(f, low_memory=False)
+    if col not in old.columns: return df
+    old = old[old[col].astype(str).str[:10] < newmin]
+    say(f'    {name}: kept {len(old):,} cached rows before {newmin}, refreshed {len(df):,}')
+    return pd.concat([old, df], ignore_index=True)
+
 
 def months(since):
     d = date.fromisoformat(since).replace(day=1); end = date.today() + timedelta(days=40)
@@ -39,12 +56,12 @@ def chunked(cn, name, sql, since):
     for a, b in months(since):
         df = pd.read_sql(sql.format(a=a.isoformat(), b=b.isoformat()), cn); parts.append(df)
         say(f'    {name} {a:%Y-%m}: {len(df):>8,} rows  ({time.time()-t0:4.0f}s)')
-    df = pd.concat(parts, ignore_index=True); df.to_csv(CACHE / f'{name}.csv', index=False)
+    df = keep_old(name, pd.concat(parts, ignore_index=True)); df.to_csv(CACHE / f'{name}.csv', index=False)
     say(f'  -> cache\\{name}.csv  {len(df):,} rows'); return df
 
 
 def one(cn, name, sql):
-    t0 = time.time(); df = pd.read_sql(sql, cn); df.to_csv(CACHE / f'{name}.csv', index=False)
+    t0 = time.time(); df = keep_old(name, pd.read_sql(sql, cn)); df.to_csv(CACHE / f'{name}.csv', index=False)
     say(f'  -> cache\\{name}.csv  {len(df):,} rows  ({time.time()-t0:.0f}s)'); return df
 
 
@@ -241,7 +258,9 @@ def horizon(cfg, since):
 
 if __name__ == '__main__':
     ap = argparse.ArgumentParser(); ap.add_argument('--since', default='2024-06-01'); ap.add_argument('--only')
-    a = ap.parse_args()
+    ap.add_argument('--recent', type=int, help='only re-pull the last N days and keep older cached rows'); a = ap.parse_args()
+    if a.recent:
+        RECENT = (date.today() - timedelta(days=a.recent)).isoformat(); a.since = max(a.since, RECENT)
     cfg, where = P.find_cfg(); say(f'credentials: {where.parent.name}\\db.json   cache -> {CACHE}')
     t0 = time.time()
     if a.only == 'horizon':
