@@ -2,7 +2,7 @@
 
     python morning.py            # pulls + model + page  (then open site\\index.html, or ask Claude to publish)
     python morning.py --model    # skip the pulls, just rebuild the model and page from what is already in cache\\
-    python morning.py --wind     # after ~07:40 MT: top up Meteologica wind, the NYISO DAM (~07:35 MT) and the latest IESO files, rebuild (about 3 min)
+    python morning.py --wind     # after ~07:40 MT: top up Meteologica wind, the NYISO DAM (~07:35 MT) and the latest IESO files, rebuild (about 2-3 min)
 
 Run it after IESO's pre-DA Adequacy file for tomorrow is out, ideally after the NYISO DAM (about 07:35 MT). The IESO DAM closes
 08:00 MT (10:00 EPT) all year. Clock notes (Nov 1 2026): IESO publishes on EST all year, so its pre-DA Adequacy (~07:50 EST) lands
@@ -36,6 +36,31 @@ def run(cmd, optional=False):
     if r.returncode != 0 and optional: print(f'WARNING: {cmd[0]} failed; the ladders are fine, only this extra output is missing.'); return
     if r.returncode != 0: sys.exit(f'STOPPED: {cmd[0]} failed -- fix that step and re-run (use --model to skip the pulls).')
 
+SOFT = {'model/quebec.py'}   # extras inside a required group: a failure only warns
+def run_par(cmds, optional=False):
+    """Nov 5 2026: run independent steps at the same time (each step's output is printed in full when it finishes, in order)."""
+    if '--serial' in sys.argv or len(cmds) == 1:
+        for c in cmds: run(c, optional)
+        return
+    from concurrent.futures import ThreadPoolExecutor
+    env = dict(os.environ, PYTHONUTF8='1', PYTHONIOENCODING='utf-8'); t0 = time.time()
+    def one(c):
+        t = time.time(); r = subprocess.run([PY, '-X', 'utf8'] + c, cwd=HERE, env=env, capture_output=True, text=True, encoding='utf-8', errors='replace')
+        return c, r, time.time() - t
+    print(f'\n=== in parallel: {" | ".join(c[0].split("/")[-1] for c in cmds)}', flush=True)
+    with ThreadPoolExecutor(max_workers=min(4, len(cmds))) as ex: res = list(ex.map(one, cmds))
+    bad = []
+    for c, r, dt_ in res:
+        print(f'\n>>> {" ".join(c)}'); print((r.stdout or '').rstrip()); err = (r.stderr or '').rstrip()
+        if err: print(err)
+        print(f'<<< {c[0]} finished in {dt_:.0f}s (exit {r.returncode})', flush=True)
+        if r.returncode != 0: bad.append(c[0])
+    print(f'=== parallel group done in {time.time()-t0:.0f}s', flush=True)
+    soft = [b_ for b_ in bad if b_ in SOFT]; bad = [b_ for b_ in bad if b_ not in SOFT]
+    if soft: print(f'WARNING: {", ".join(soft)} failed; the ladders are fine, only that extra output is missing.')
+    if bad and optional: print(f'WARNING: {", ".join(bad)} failed; the ladders are fine, only that extra output is missing.'); return
+    if bad: sys.exit(f'STOPPED: {", ".join(bad)} failed -- fix that step and re-run (use --model to skip the pulls).')
+
 if __name__ == '__main__':
     t0 = time.time()
     if '--wind' in sys.argv:
@@ -52,16 +77,21 @@ if __name__ == '__main__':
         if not ((w.DataSourceName == 'Meteologica') & w.EffectiveDateTime.astype(str).str.startswith(tom)).any():
             print(f'\nNOTE: Meteologica wind for {tom} is not in yet (the Warehouse loads it ~07:18 MT). After 07:20 MT run:  python morning.py --wind')
     except Exception as ex: print('Meteologica check skipped:', ex)
-    for c in MODEL[:-2]: run(c)
+    # Nov 5 2026: same steps as before, independent ones run side by side (python morning.py --serial = the old one-at-a-time order)
+    run(['model/parse_archive.py'])                                                    # everything below reads its outputs
+    run_par([['model/update_intertie_actual.py'], ['model/adq_fallback.py'], ['model/load_edge.py'], ['model/outage_timeline.py'],
+             ['model/supply_fc.py'], ['model/blocks.py'], ['model/da_cleared_ties.py']])
+    run_par([['model/zone_backtest.py', 'EAST', 'OTTAWA'], ['model/da_virtual_bt.py', 'EAST', 'OTTAWA'], ['model/quebec.py']])   # needs blocks/load_edge | supply_fc/interties
     if time.localtime().tm_wday == 0 or '--weekly' in sys.argv:
         for c in WEEKLY: run(c, optional=True)
-    for c in EXTRA: run(c, optional=True)
+    run_par([['model/quebec2.py'], ['model/qc_adq2x.py'], ['model/pipeline_health.py'], ['model/congestion/cong_read.py', '--json']], optional=True)   # cong_read first so the Market changes box has today's outages
     for c in MODEL[-2:]: run(c)
     try:                                                # GitHub Pages serves /docs: keep a copy of the desk page there
         import shutil; d = HERE / 'docs'; d.mkdir(exist_ok=True); (d / '.nojekyll').touch()
         shutil.copyfile(HERE / 'site' / 'index.html', d / 'index.html')
     except Exception as ex: print('docs copy skipped:', ex)
-    for c in OPTIONAL: run(c, optional=True)
+    run_par([['model/checklist_xlsx.py'], ['model/research/physics_history.py', 'EAST'], ['model/research/physics_history.py', 'OTTAWA']], optional=True)
+    run(['model/practice_data.py'], optional=True)                                      # needs both physics histories
     if '--push' in sys.argv:                      # save the refreshed code/page to GitHub (credentials blocked by .gitignore + check)
         if not (HERE / '.git').exists(): print('\n--push: this folder is not linked to GitHub yet (see GITHUB_SETUP.md)')
         else:

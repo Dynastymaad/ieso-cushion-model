@@ -1382,8 +1382,8 @@ function fuRender(){
 // Nov 2 2026: every panel draws on its own; one failure shows a red note in its own tab instead of blanking every tab after it
 // Nov 5 2026: market changes banner (display only): structural shifts the read does not see
 function mcRender(){ const M=B.changes, el=$('#mcsec'); if(!el) return; if(!M||!M.items||!M.items.length){ el.hidden=true; return; } el.hidden=false;
-  el.innerHTML=`<div class="mchead"><b>Market changes for ${M.date} (${M.items.length})</b> <span class="small muted">structural shifts the physics read does not see · bid-time data only · display only · ask Claude about any of these</span></div>`+
-    M.items.map(i=>`<div class="mci ${i.push}"><div><b>${i.level==='major'?'MAJOR · ':''}${i.title}</b> <span class="mcp">${i.push==='bearish'?'→ points to RT below DA':'→ points to RT above DA'}</span></div><div class="small">${i.detail}</div></div>`).join(''); }
+  el.innerHTML=`<div class="mchead"><b>Market changes for ${M.date} (${M.items.length})</b> <span class="small muted">built ${M.asof||''} on IESO pre-DA ${M.adq||''} · structural shifts the physics read does not see · bid-time data only · display only · ask Claude about any of these</span></div>`+
+    M.items.map(i=>`<div class="mci ${i.push}"><div><b>${i.level==='major'?'MAJOR · ':''}${i.title}</b> <span class="mcp">${i.push==='bearish'?'→ points to RT below DA':i.push==='bullish'?'→ points to RT above DA':'→ zone splits / congestion'}</span></div><div class="small">${i.detail}</div></div>`).join(''); }
 function safeRun(name, tab){
   const el = document.getElementById('tab-'+tab), old = el && el.querySelector('.render-err[data-n="'+name+'"]'); if (old) old.remove();
   try { const f = window[name] || eval(name); f(); }

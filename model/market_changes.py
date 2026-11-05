@@ -7,7 +7,7 @@ Flags structural shifts that the read does not see, using only what is known at 
                                 trailing-30-day gas miss (tested Jul-Nov 2026: bias +661 -> -23 MW, miss 928 -> 712 MW)
   wind regime                   IESO wind forecast for D vs the last 14 days
 Each item says which way it pushes RT vs DA. Thresholds are fixed rules of thumb, not fitted."""
-import sys, json; sys.path.insert(0, str(__import__('pathlib').Path(__file__).parent))
+import sys, json, time; sys.path.insert(0, str(__import__('pathlib').Path(__file__).parent))
 import numpy as np, pandas as pd, common as C
 
 def _days(D, n, lag=1):
@@ -103,8 +103,28 @@ def build(D):
         elif w14 - w >= 1000:
             add('watch', 'bullish', f'Wind {w14 - w:,.0f} MW below the last 2 weeks', f'IESO wind for {D} averages {w:,.0f} MW vs {w14:,.0f}.', mw=round(float(w - w14)))
     except Exception as ex: print('market changes: wind skipped', ex)
+    # 6. transmission: 500 kV equipment starting or ending around D, and internal limits cut hard (congestion read for D, if built first)
+    try:
+        f = C.DATA / 'congestion' / f'read_{D}.json'
+        if f.exists():
+            r = json.loads(f.read_text()); seen = set(); new = []; ends = []
+            for o in r.get('outages', []):
+                k = o['equip']
+                if k in seen: continue
+                seen.add(k)
+                if 'new' in o['tag'].lower(): new.append(f"{o['equip']} ({o['where']}, to {o['end'][:10]})")
+                elif 'ENDS' in o['tag']: ends.append(f"{o['equip']} ({o['where']})")
+            cuts = [f"{x['iface']} {x['limit']:,.0f} vs {x['ais']:,.0f} MW ({x['why']})" for x in r.get('limits', []) if x.get('pct') is not None and x['pct'] <= 70]
+            if new or cuts:
+                add('watch', 'info', f'Transmission: {len(new)} new 500 kV outage(s), {len(cuts)} limit(s) cut below 70%',
+                    ('New since yesterday: ' + '; '.join(new) + '. ' if new else '') + ('Limits: ' + '; '.join(cuts) + '. ' if cuts else '') +
+                    ('Returning on D: ' + '; '.join(ends) + '. ' if ends else '') + 'Mostly moves zone splits (West/South vs East), see the congestion read.', mw=0)
+    except Exception as ex: print('market changes: transmission skipped', ex)
     items.sort(key=lambda x: (x['level'] != 'major', -abs(x.get('mw', 0))))
-    return dict(date=D, items=items)
+    asof = time.strftime('%b %d %H:%M')
+    try: adqv = str(C.adq2('preDA').pipe(lambda a: a[a.date.astype(str) == D]).shape[0] and pd.read_csv(C.CACHE / 'ieso_adq2_preDA.csv', usecols=['date', 'ieso_createtime']).query('date == @D').ieso_createtime.max())[5:16] + ' EST'
+    except Exception: adqv = '?'
+    return dict(date=D, asof=asof, adq=adqv, items=items)
 
 if __name__ == '__main__':
     D = sys.argv[1] if len(sys.argv) > 1 else json.loads((C.ROOT / 'site' / 'data' / 'bundle.json').read_text())['target']
