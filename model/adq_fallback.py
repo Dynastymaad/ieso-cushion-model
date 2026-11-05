@@ -15,7 +15,9 @@ MAP = {'dem_fc': ('Ontario Demand', 'Forecast'), 'nuclear_cap': ('Internal Resou
 def run(D=None):
     est = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(hours=5)
     D = D or (est.date() + timedelta(days=1)).isoformat(); d1 = (pd.Timestamp(D) - pd.Timedelta(days=1))
-    cut = d1 + pd.Timedelta(hours=9)
+    # Nov 5 2026: cutoff = the DA bid deadline, 10:00 Eastern prevailing time = 10:00 EST in winter, 09:00 EST in summer (15:00 / 14:00 UTC)
+    est = pd.Timestamp(d1.date().isoformat() + ' 12:00').tz_localize('America/Toronto').utcoffset() == pd.Timedelta(hours=-5)
+    cut = d1 + pd.Timedelta(hours=10 if est else 9)
     f = C.CACHE / 'ieso_adq2_preDA.csv'; a = pd.read_csv(f)
     have = a[a.date == D].ieso_createtime.max() if (a.date == D).any() else None
     best = None
@@ -28,7 +30,7 @@ def run(D=None):
     if have is not None and pd.Timestamp(have).date() == d1.date() and (best is None or pd.Timestamp(have) >= best[0]):
         print(f'adq fallback: database already has the newest vintage for {D} ({have}); nothing to do'); return
     if best is None:
-        print(f'adq fallback: no Adequacy3 version for {D} issued {d1.date()} before 09:00 EST in the archive -- run python ieso_backfill.py --quick first'); return
+        print(f'adq fallback: no Adequacy3 version for {D} issued {d1.date()} before {cut:%H:%M} EST in the archive -- run python ieso_backfill.py --quick first'); return
     t, rows = best; out = []
     for r in rows:
         for k, (rt, st) in MAP.items():
