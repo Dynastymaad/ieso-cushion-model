@@ -13,6 +13,38 @@ import numpy as np, pandas as pd, common as C
 def _days(D, n, lag=1):
     end = pd.Timestamp(D) - pd.Timedelta(days=lag); return [(end - pd.Timedelta(days=i)).date().isoformat() for i in range(n)]
 
+
+TIE_LINES = {'New York': r'^(PA27|PA301|PA302|BP76|L33P|L34P)\b|^NY NIAGARA', 'Michigan': r'^(J5D|L4D|L51D|B3N)\b',
+             'Quebec': r'^(D4Z|D5A|H4Z|H9A|P33C|Q4C|X2Y|B5D|B31L|A41T|A42T)\b|OUTAOUAIS'}
+def tie_outages(D, ahead=21):
+    """Nov 5 2026: planned / in-progress outages on intertie lines from IESO's TxOutagesTodayAll + TxOutages1to30DaysPlanned
+    (newest file of each, both published before 07:00 your time). Returns {intertie: [(code, start, end, status)]}."""
+    import zipfile, re, glob
+    recs = {}
+    for rep in ('TxOutages1to30DaysPlanned', 'TxOutagesTodayAll'):          # TodayAll last: its end times are the most current
+        zs = sorted(glob.glob(str(C.ARCH / rep / f'{rep}_*.zip')))[-2:]
+        names = []
+        for zp in zs:
+            with zipfile.ZipFile(zp) as zf: names += [(n, zp) for n in zf.namelist()]
+        if not names: continue
+        n, zp = sorted(names)[-1]
+        with zipfile.ZipFile(zp) as zf: t = zf.read(n).decode('utf8', 'replace')
+        for r in re.findall(r'<OutageRequest>(.*?)</OutageRequest>', t, re.S):
+            g = lambda tag: (re.search(f'<{tag}>([^<]*)</{tag}>', r) or [None, ''])[1]
+            st = g('OutageRequestStatus')
+            if st not in ('IMPL', 'AA', 'FA', 'SUB', 'STDY'): continue   # SUB / STDY = requested, not yet approved
+            eq = [(e, c) for e, c in re.findall(r'<EquipmentName>([^<]*)</EquipmentName>.*?<ConstraintType>([^<]*)</ConstraintType>', r, re.S) if c == 'OOS']
+            recs[g('OutageID')] = (g('PlannedStart'), g('PlannedEnd'), st, [e for e, _ in eq])
+    end_win = (pd.Timestamp(D) + pd.Timedelta(days=ahead)).isoformat()
+    out = {}
+    for oid, (a, b, st, eqs) in recs.items():
+        if not a or not b or b < D or a > end_win: continue
+        for tie, pat in TIE_LINES.items():
+            codes = sorted({re.split(r'[ .:]', e)[0] if not e.startswith('NY NIAGARA') else 'NY Niagara breakers' for e in eqs if re.search(pat, e)})
+            if codes: out.setdefault(tie, []).append((', '.join(codes), a, b, st))
+    for k in out: out[k] = sorted(set(out[k]), key=lambda x: (x[2], x[1]))
+    return out
+
 def build(D):
     items = []
     add = lambda lvl, push, title, detail, **k: items.append(dict(level=lvl, push=push, title=title, detail=detail, **k))
@@ -67,6 +99,39 @@ def build(D):
             add('major', 'bullish', f'Wind {w14 - w:,.0f} MW below the last 2 weeks',
                 f'IESO wind for {D} averages {w:,.0f} MW vs {w14:,.0f}. Tested Jun 2025-Nov 2026: on days like this RT spiked $50+ over DA in 15% of hours, about double normal (7%). The median hour is still short: size longs for the spike, not the average.', mw=round(float(w - w14)), tested='spikes x2')
     except Exception as ex: print('market changes: wind skipped', ex)
+    # 1b. pre-DA limits for D post ~09:08 EST (08:08 your time): before that, use IESO's transmission limits report (0-2 days, refreshed through the night)
+    try:
+        if not any(i['title'].startswith('Export capability') for i in items):
+            f = C.DATA / 'congestion' / f'read_{D}.json'
+            L = pd.read_csv(C.DATA / 'ieso_preda_intertie_limits.csv'); have_D = (L.date == D).any()
+            if f.exists() and not have_D:
+                r = json.loads(f.read_text()); lim = {}
+                for x in r.get('limits', []):
+                    if x.get('fac') == 'Intertie' and 'Export' in x['iface'] and x['iface'].startswith('Ontario-'):
+                        k = x['iface']; lim[k] = min(lim.get(k, (9e9, ''))[0], x['limit']), x['why']
+                L['mw'] = L.mw.abs(); base = L[(L.zone == 'NYSIN') & (L.date < D)].groupby('date').mw.mean().tail(30).median()
+                ny = lim.get('Ontario-New York Export'); pq = {k: v for k, v in lim.items() if 'Quebec' in k}
+                if (ny and ny[0] <= base - 400) or pq:
+                    parts = ([f"New York export {ny[0]:,.0f} MW vs normal {base:,.0f} ({ny[1]})"] if ny else []) + [f"{k.replace('Ontario-Quebec ', 'Quebec ')} {v[0]:,.0f} MW ({v[1]})" for k, v in pq.items()]
+                    add('major', 'bearish', 'Export capability cut (early read)', '; '.join(parts) + '. From IESO\'s transmission limits report: the pre-DA intertie limits for D post about 08:08 your time and replace this on the late run. '
+                        'Surplus cannot leave Ontario: overnight and valley RT sinks toward the floor, more so with wind 2,000+.', mw=-500)
+    except Exception as ex: print('market changes: early limits skipped', ex)
+    # 7. what is coming on the interties (planned outage start / end dates, next 21 days)
+    try:
+        T = tie_outages(D)
+        if T:
+            fmt = lambda x: pd.Timestamp(x).strftime('%b %d %H:%M').replace(' 00:00', '')
+            lines = []
+            for tie in ('New York', 'Quebec', 'Michigan'):
+                now_, later = {}, []
+                for code, a_, b_, st in T.get(tie, []):
+                    if pd.Timestamp(b_) - pd.Timestamp(a_) < pd.Timedelta(hours=6): continue          # short switching jobs are noise
+                    if a_ <= D: now_[code] = max(now_.get(code, ''), b_)
+                    else: later.append(f"{code} {fmt(a_)} → {fmt(b_)}" + (' (requested, not yet approved)' if st in ('SUB', 'STDY') else ''))
+                bits = [f"{c} out until {fmt(e)}" for c, e in sorted(now_.items(), key=lambda kv: kv[1])] + [f"then {x}" for x in later]
+                if bits: lines.append(f"<b>{tie}</b>: " + ' · '.join(bits))
+            add('watch', 'info', 'Intertie outages: when they start and end', '<br>'.join(lines) + '<br>IESO planned dates (can move); the export-capability line above shows what is actually in force each morning.', mw=0)
+    except Exception as ex: print('market changes: tie outages skipped', ex)
     items.sort(key=lambda x: (x['level'] != 'major', -abs(x.get('mw', 0))))
     asof = time.strftime('%b %d %H:%M')
     try: adqv = str(C.adq2('preDA').pipe(lambda a: a[a.date.astype(str) == D]).shape[0] and pd.read_csv(C.CACHE / 'ieso_adq2_preDA.csv', usecols=['date', 'ieso_createtime']).query('date == @D').ieso_createtime.max())[5:16] + ' EST'
