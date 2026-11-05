@@ -301,6 +301,10 @@ def main():
         import physics_read_live as PRL
         out['physics'] = PRL.build_bundle(out['target'], out)
     except Exception as ex: print('physics read skipped:', ex)
+    try:                                                # Nov 5 2026: temperature -> load conversion + tomorrow's hours (Fundamentals tab), display; the card point itself is in physics_read_live
+        import temp_conv as TC
+        out['temp'] = TC.bundle(out['target'])
+    except Exception as ex: print('temperature conversion skipped:', ex)
     try:                                                # Nov 5 2026: market changes banner (Fundamentals tab), display only (after the physics read: it uses the export model output)
         import market_changes as MC
         out['changes'] = MC.build(out['target'])

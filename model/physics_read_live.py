@@ -55,14 +55,10 @@ def prep(e, bias):
         xh = pd.read_csv(C.DATA / 'export_hat.csv', usecols=['date', 'he', 'exp_hat']).drop_duplicates(['date', 'he'], keep='last')
         e = e.drop(columns=[c for c in ('exp_hat',) if c in e.columns]).merge(xh, on=['date', 'he'], how='left'); e['xshort'] = e.exp_exp - e.exp_hat
     except Exception as ex: print('export shortfall skipped:', ex); e['xshort'] = np.nan
-    try:   # Nov 5 2026: temperature swing for the card. Bid-safe Open-Meteo 2-day-old run (load-weighted) vs the actual two days earlier, in MW with the season slope
-        import common as C
-        wx = pd.read_csv(C.DATA / 'wx' / 'wx_hourly.csv', usecols=['date', 'he', 't_fc', 't_act'])
-        wx['t_fc'] = (wx.t_fc - 32) * 5 / 9; wx['t_act'] = (wx.t_act - 32) * 5 / 9
-        a2 = wx[['date', 'he', 't_act']].copy(); a2['date'] = (pd.to_datetime(a2.date) + pd.Timedelta(days=2)).dt.strftime('%Y-%m-%d')
-        wx = wx[['date', 'he', 't_fc']].merge(a2.rename(columns={'t_act': 't_d2'}), on=['date', 'he'], how='left')
-        e = e.drop(columns=[c for c in ('t_fc', 't_d2', 'tswing') if c in e.columns]).merge(wx, on=['date', 'he'], how='left')
-        e['tswing'] = np.where(e.t_fc < 12, -150, np.where(e.t_fc > 18, 300, 0)) * (e.t_fc - e.t_d2)
+    try:   # Nov 5 2026: temperature swing for the card, MW from the tested season x time-of-day conversion (temp_conv.py; heating below 15 C, cooling on feels-like above 20 C)
+        import temp_conv as TC
+        tm = TC.mw_table()[['date', 'he', 'tmw', 't_fc']]
+        e = e.drop(columns=[c for c in ('t_fc', 'tmw', 'tswing') if c in e.columns]).merge(tm, on=['date', 'he'], how='left'); e['tswing'] = e.tmw
     except Exception as ex: print('temperature swing skipped:', ex); e['tswing'] = np.nan; e['t_fc'] = np.nan
     if EXP_FEAT:
         import common as C
@@ -161,7 +157,7 @@ def card_points(i):
     N = 0 if ny is None else 1 if ny >= 10 else -1 if ny <= -10 else 0
     wu = i.get('w_up'); U = -1 if wu is not None and wu >= 800 else 0      # Nov 1 2026, tested Sep 2025-Oct 2026: E +$1.8k, O +$0.2k/MW, 12/14 and 9/14 months better
     xs = i.get('xs'); X = 0 if xs is None else -1 if xs >= 500 else 1 if xs <= -500 else 0   # Nov 5 2026: exports 500+ MW short of usual -> surplus stays home (tested Dec25-Nov26: E +$1.3k, O +$3.1k/MW, 9/12 months better both)
-    ts = i.get('ts'); T = 0 if ts is None else 1 if ts >= 250 else -1 if ts <= -250 else 0   # Nov 5 2026: temperature swing vs 2 days ago (tested Sep25-Sep26: E +$2.6k, O +$2.0k/MW, beat 60/60 read-matched shuffles)
+    ts = i.get('ts'); T = 0 if ts is None else 1 if ts >= 250 else -1 if ts <= -250 else 0   # Nov 5 2026: temperature swing vs 2 days ago in MW (temp_conv; tested Sep25-Sep26 vs no point: E +$3.1k, O +$3.0k/MW)
     pts = {'Load gap': L * m, 'Wind gap': W * m, 'Wind ramp': R, 'Wind upside': U, 'DA priced': P, 'NY pull': N, 'Exports': X, 'Temp swing': T}
     return sum(pts.values()), pts, m == 2
 
