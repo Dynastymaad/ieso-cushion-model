@@ -9,7 +9,7 @@ Temps: Open-Meteo, Ontario load-weighted (data/wx/wx_hourly.csv via wx_live.py);
 import sys; sys.path.insert(0, str(__import__('pathlib').Path(__file__).parent))
 import numpy as np, pandas as pd, common as C
 BLK = [(1, 6, 'HE1-6'), (7, 10, 'HE7-10'), (11, 15, 'HE11-15'), (16, 21, 'HE16-21'), (22, 24, 'HE22-24')]
-SEAS = {12: 'Winter', 1: 'Winter', 2: 'Winter', 3: 'Spring', 4: 'Spring', 5: 'Spring', 6: 'Summer', 7: 'Summer', 8: 'Summer', 9: 'Fall', 10: 'Fall', 11: 'Fall'}
+SEAS = {11: 'Winter', 12: 'Winter', 1: 'Winter', 2: 'Winter', 3: 'Winter', 4: 'Spring', 5: 'Spring', 6: 'Summer', 7: 'Summer', 8: 'Summer', 9: 'Fall', 10: 'Fall'}   # Nov 5 2026: Nov + Mar = Winter (heating season; research/temp_seasons2.py: Nov load miss 405 -> 322 MW, Mar 688 -> 606, card E +$90 O +$112)
 MIN = 150
 H = lambda t: np.clip(15 - t, 0, None); K = lambda t: np.clip(t - 20, 0, None)
 def blk(he): return pd.cut(he, [0, 6, 10, 15, 21, 24], labels=[b[2] for b in BLK]).astype(str)
