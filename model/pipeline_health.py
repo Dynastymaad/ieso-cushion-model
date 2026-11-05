@@ -67,7 +67,8 @@ def build(D=None):
         rows.append(dict(label=lab, newest=(f'{n}/24 h' + (f' · {ver}' if ver else '')), need='24/24 h', age=None, ok=bool(n >= 23), feeds=feeds, critical=crit))
     def _adq():
         a = pd.read_csv(R / 'cache' / 'ieso_adq2_preDA.csv', usecols=['date', 'hour', 'ieso_createtime']); a = a[a.date == D]
-        return a.hour.nunique(), (str(a.ieso_createtime.max())[5:16] + ' EST') if len(a) else None
+        d1 = (pd.Timestamp(D) - pd.Timedelta(days=1)).date().isoformat(); ok = a[a.ieso_createtime.astype(str).str[:10] == d1]   # Nov 5 2026: only a D-1 vintage counts
+        return ok.hour.nunique(), ((str(a.ieso_createtime.max())[5:16] + ' EST') + ('' if len(ok) else ' (older than D-1: IESO late)')) if len(a) else None
     def _lf(c):
         L = C.load_forecasts_at_bid(); x = L[L.date == D]; return int(x[c].notna().sum()) if c in x else 0, None
     def _wf():

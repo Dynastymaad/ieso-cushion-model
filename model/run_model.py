@@ -251,7 +251,15 @@ def eo_bundle(target):
 
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument('--origin'); a = ap.parse_args()
-    O = a.origin or pd.read_csv(C.CACHE / 'ieso_adq2_preDA.csv', usecols=['ieso_createtime']).ieso_createtime.max()[:10]
+    O = a.origin
+    if not O:   # Nov 5 2026: target the next delivery day even when IESO is late with its D-1 morning pre-DA vintage (uses the latest older vintage, flagged)
+        pre = pd.read_csv(C.CACHE / 'ieso_adq2_preDA.csv', usecols=['date', 'ieso_createtime'])
+        o_ct = pre.ieso_createtime.max()[:10]; today = (pd.Timestamp.now('UTC') - pd.Timedelta(hours=5)).date().isoformat()
+        o_dt = (pd.Timestamp(pre.date.max()) - pd.Timedelta(days=1)).date().isoformat()
+        O = max(o_ct, min(o_dt, today))
+        if O != o_ct:
+            v = pre[pre.date == (pd.Timestamp(O) + pd.Timedelta(days=1)).date().isoformat()].ieso_createtime.max()
+            print(f'WARNING: IESO has not issued its D-1 morning pre-DA Adequacy yet; building {O} -> next day on the older vintage issued {v}. Rerun after it posts.')
     bf = block_forecast(O)
     out = dict(origin=O, target=(pd.Timestamp(O) + pd.Timedelta(days=1)).date().isoformat(), hubs={})
     for z in HUBS: out['hubs'][z] = hub_next_day(z, O, bf)
