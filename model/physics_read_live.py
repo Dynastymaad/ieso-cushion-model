@@ -8,7 +8,9 @@ F = ['gL', 'gW', 'inv_sp', 'xL', 'xW', 'vs', 'rich', 'cheap', 'bias_L', 'bias_W'
 GROUPS = {'Load gap': ['gL', 'xL', 'bias_L'], 'Wind gap': ['gW', 'xW', 'bias_W', 'gap_low_W', 'w_spread'], 'Spare': ['inv_sp', 'pub_sp'],
           'DA priced': ['vs', 'rich', 'cheap'], 'Ramps': ['w3', 'g3', 'res3'], 'NY pull': ['ny_pull'], 'Hour/weekend': ['wk', 'blk']}
 
-USE_STAR = False  # Nov 1 2026: starred-forecast gaps tested worse with the live daily refit (E -$5.3k, O -$4.4k/MW Sep25-Oct26), so Meteo first, then Tesla / models median
+USE_STAR = False   # Nov 1 2026: starred-forecast gaps tested worse with the live daily refit (E -$5.3k, O -$4.4k/MW Sep25-Oct26), so Meteo first, then Tesla / models median
+REAL_SP = False   # Nov 5 2026 test: spare from yesterday's DA export schedule + each hour's trailing-30-day gas miss (through D-2)
+NY_FX = True    # Nov 5 2026: NY DA converted to CAD (USD/CAD known D-1). Tested Sep25-Nov26: plan E +$1.1k, O +$4.2k/MW, better in all three periods, 14/15 months up
 def star_sources(e):
     """Nov 1 2026: the forecast with the star (lowest mean abs miss over the 7 calendar days ending D-2, needs 3+ days),
     among those available for that day at the bid. Load: IESO / Tesla / Meteologica (Dynasty never reaches the Warehouse before
@@ -46,7 +48,26 @@ def prep(e, bias):
     if not USE_STAR: e['gL'], e['gW'] = gL0, gW0   # gap vs IESO from the starred forecast
     e['gap_low_W'] = e.wind_fc - e[nw].min(axis=1)
     e['w_up'] = e[nw].max(axis=1) - e.wind_fc                     # Nov 1 2026: highest of 9 weather models above IESO wind = wind that could still show up
+    if REAL_SP:
+        import signals_v2 as SV
+        sc = SV.schedules()[['date', 'he', 'da_net_exp']].copy(); sc['date'] = (pd.to_datetime(sc.date) + pd.Timedelta(days=1)).dt.strftime('%Y-%m-%d')
+        e = e.merge(sc.rename(columns={'da_net_exp': 'exp_d1'}), on=['date', 'he'], how='left')
+        gh = e.gas_hat - e.exp_exp.fillna(0) + e.exp_d1.fillna(e.exp_exp.fillna(0))
+        import common as C
+        fa = C.fuel_actual()[['date', 'he', 'g_gas']]; fa['date'] = fa.date.astype(str)
+        ga = e[['date', 'he']].merge(fa, on=['date', 'he'], how='left').g_gas.values   # actual gas output; only days through D-2 enter the correction (shift 2 below)
+        m = pd.DataFrame({'date': e.date, 'he': e.he, 'miss': ga - gh.values}).pivot_table(index='date', columns='he', values='miss').sort_index()
+        m = m.reindex(pd.date_range(m.index.min(), m.index.max()).strftime('%Y-%m-%d'))
+        corr = m.shift(2).rolling(30, min_periods=10).mean().stack().rename('corr').reset_index().rename(columns={'level_0': 'date'})
+        e = e.merge(corr, on=['date', 'he'], how='left')
+        e['pub_sp'] = e.pub_sp + (e.gas_hat - gh) - e['corr'].fillna(0)
     e['inv_sp'] = 1000 / e.pub_sp.clip(lower=500); e['rich'] = (e.vs - 18).clip(lower=0); e['cheap'] = (-5 - e.vs).clip(lower=0)
+    if NY_FX:   # Nov 5 2026 test: NYISO clears in USD, Ontario in CAD -- put NY in CAD at the last USD/CAD known before the bid (D-1 or earlier)
+        import common as C
+        fx = pd.read_csv(C.CACHE / 'fx_usdcad.csv', parse_dates=['Date']).sort_values('Date')
+        k = pd.DataFrame({'date': pd.to_datetime(e.date.unique())}).sort_values('date'); k['cut'] = k.date - pd.Timedelta(days=1)
+        k = pd.merge_asof(k, fx.rename(columns={'Date': 'cut'}), on='cut', direction='backward'); rate = dict(zip(k.date.dt.strftime('%Y-%m-%d'), k.Rate))
+        e['nyA_da'] = e.nyA_da * e.date.map(rate).astype(float)
     e['ny_pull'] = e.nyA_da - e.p_da; e['wk'] = e.wkend.astype(float); e['blk'] = pd.cut(e.he, [0, 6, 8, 15, 19, 22, 24], labels=False).astype(float)
     for c in ['bias_L', 'bias_W', 'w3', 'g3', 'res3', 'gap_low_W', 'w_spread']: e[c] = e[c].fillna(0)   # ny_pull left blank when NY DA not loaded
     for c in ['pub_sp', 'inv_sp']: e[c] = e[c].fillna(e[c].median())

@@ -190,6 +190,7 @@ table.pht td.none{text-align:center;color:var(--ink3);font-family:var(--f-body);
 .phgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px}
 .phpos{color:var(--buy)} .phneg{color:var(--sell)}
 .phsteps{margin:0;padding-left:18px;font-size:13px;color:var(--ink2);display:flex;flex-direction:column;gap:3px;max-width:80ch}
+.mcsec{border:2px solid var(--warn);background:var(--warn-soft);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:10px} .mcsec .mchead{font-size:15px} .mci{border-left:4px solid var(--ink3);padding:2px 0 2px 10px;display:flex;flex-direction:column;gap:2px} .mci.bearish{border-left-color:var(--sell)} .mci.bullish{border-left-color:var(--buy)} .mci b{font-size:14px} .mcp{font-size:12px;font-weight:600} .mci.bearish .mcp{color:var(--sell)} .mci.bullish .mcp{color:var(--buy)}
 </style>
 
 <div class="wrap">
@@ -264,6 +265,7 @@ table.pht td.none{text-align:center;color:var(--ink3);font-family:var(--f-body);
 
   </div>
   <div id="tab-fu" hidden class="prwide" style="display:flex;flex-direction:column;gap:14px">
+    <div id="mcsec" class="mcsec" hidden></div>
     <div class="sechead"><h2>Fundamentals, hour by hour</h2><span class="muted small">bid-time only (D−1 morning) · same table as the Ontario Read Practice page</span></div>
     <div class="prcard"><div class="prfacts" id="prfacts"></div></div>
     <div class="prctl"><label><input type="checkbox" id="prcc" checked> Colour code</label>
@@ -1378,6 +1380,10 @@ function fuRender(){
     try{navigator.clipboard.writeText(t).then(()=>{$('#prcopymsg').textContent='Copied your reads.'}).catch(fb)}catch(e){fb()}};
 }
 // Nov 2 2026: every panel draws on its own; one failure shows a red note in its own tab instead of blanking every tab after it
+// Nov 5 2026: market changes banner (display only): structural shifts the read does not see
+function mcRender(){ const M=B.changes, el=$('#mcsec'); if(!el) return; if(!M||!M.items||!M.items.length){ el.hidden=true; return; } el.hidden=false;
+  el.innerHTML=`<div class="mchead"><b>Market changes for ${M.date} (${M.items.length})</b> <span class="small muted">structural shifts the physics read does not see · bid-time data only · display only · ask Claude about any of these</span></div>`+
+    M.items.map(i=>`<div class="mci ${i.push}"><div><b>${i.level==='major'?'MAJOR · ':''}${i.title}</b> <span class="mcp">${i.push==='bearish'?'→ points to RT below DA':'→ points to RT above DA'}</span></div><div class="small">${i.detail}</div></div>`).join(''); }
 function safeRun(name, tab){
   const el = document.getElementById('tab-'+tab), old = el && el.querySelector('.render-err[data-n="'+name+'"]'); if (old) old.remove();
   try { const f = window[name] || eval(name); f(); }
@@ -1388,7 +1394,7 @@ function safeRun(name, tab){
 function render(){
   document.querySelectorAll('.seg button').forEach(b => b.setAttribute('aria-pressed', b.id === 'hub-'+HUB ? 'true' : 'false'));
   $('#asof').textContent = `${ZN[HUB]} hub · DA for ${dlabel(B.target)} ${B.target.slice(0,4)} · inputs as of ${dlabel(B.origin)} 08:00 MT · hub limit ${B.hubs[HUB].cap_mw} MW`;
-  [['stats','next'],['ckRender','next'],['fan','next'],['table','next'],['stack','next'],['dvInit','dv'],['eoRender','eo'],['otRender','out'],['nyRender','next'],['fuRender','fu'],['gtRender','gt'],['hiRender','hi'],['hlRender','next'],['mrRender','mr'],['ttRender','mr'],['phRender','fu'],['coRender','co']].forEach(([n,t]) => safeRun(n, t));
+  [['stats','next'],['ckRender','next'],['fan','next'],['table','next'],['stack','next'],['dvInit','dv'],['eoRender','eo'],['otRender','out'],['nyRender','next'],['fuRender','fu'],['gtRender','gt'],['hiRender','hi'],['hlRender','next'],['mrRender','mr'],['ttRender','mr'],['phRender','fu'],['mcRender','fu'],['coRender','co']].forEach(([n,t]) => safeRun(n, t));
   showTab();
 }
 for (const z of ['EAST','OTTAWA']) $('#hub-'+z).addEventListener('click', () => { HUB = z; try{localStorage.setItem('ovd-hub', z)}catch(e){} render(); });
