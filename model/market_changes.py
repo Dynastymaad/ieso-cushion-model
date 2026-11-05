@@ -132,6 +132,26 @@ def build(D):
                 if bits: lines.append(f"<b>{tie}</b>: " + ' · '.join(bits))
             add('watch', 'info', 'Intertie outages: when they start and end', '<br>'.join(lines) + '<br>IESO planned dates (can move); the export-capability line above shows what is actually in force each morning.', mw=0)
     except Exception as ex: print('market changes: tie outages skipped', ex)
+    # 8. generation outages: what goes out / comes back in the next 3 weeks (IESO 35-day schedule, newest snapshot) + nuclear units out now
+    try:
+        F = pd.read_csv(C.DATA / 'fwd35.csv'); F = F[F.snapshot == F.snapshot.max()]
+        g = F.groupby('date')[['nuclear_out', 'gas_out']].max().sort_index()
+        g = g[(g.index >= D) & (g.index <= (pd.Timestamp(D) + pd.Timedelta(days=21)).date().isoformat())]
+        ev = []
+        for col, lab in (('nuclear_out', 'Nuclear'), ('gas_out', 'Gas')):
+            if col not in g: continue
+            v = g[col].round(-1); ch = v.diff()
+            for d_, c_ in ch[ch.abs() >= (300 if col == 'nuclear_out' else 600)].items():   # gas schedules wobble day to day
+                ev.append((d_, f"{lab} {'back' if c_ < 0 else 'out'} {abs(c_):,.0f} MW from {pd.Timestamp(d_).strftime('%b %d')} (out {v.shift(1)[d_]:,.0f} → {v[d_]:,.0f})"))
+        try:
+            import outages_tab as OT
+            uo, asof = OT.units_out(); nu = [f"{u['unit']} {u['out']:,.0f}" for u in uo if u.get('fuel') == 'Nuclear']
+        except Exception: nu = []
+        if ev or nu:
+            add('watch', 'info', 'Generation outages: what is out and what changes next',
+                ('Nuclear units out now: ' + ', '.join(nu) + '.<br>' if nu else '') + ('<br>'.join(e for _, e in sorted(ev)) + '<br>' if ev else 'No nuclear or gas step of 300+ MW in the next 3 weeks.<br>') +
+                'IESO 35-day schedule (peak hour, MW out). Planned dates can move; tomorrow\'s exact numbers are in the nuclear / gas lines above when they change.', mw=0)
+    except Exception as ex: print('market changes: generation outages skipped', ex)
     items.sort(key=lambda x: (x['level'] != 'major', -abs(x.get('mw', 0))))
     asof = time.strftime('%b %d %H:%M')
     try: adqv = str(C.adq2('preDA').pipe(lambda a: a[a.date.astype(str) == D]).shape[0] and pd.read_csv(C.CACHE / 'ieso_adq2_preDA.csv', usecols=['date', 'ieso_createtime']).query('date == @D').ieso_createtime.max())[5:16] + ' EST'
