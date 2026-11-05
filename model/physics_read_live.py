@@ -9,6 +9,8 @@ GROUPS = {'Load gap': ['gL', 'xL', 'bias_L'], 'Wind gap': ['gW', 'xW', 'bias_W',
           'DA priced': ['vs', 'rich', 'cheap'], 'Ramps': ['w3', 'g3', 'res3'], 'NY pull': ['ny_pull'], 'Hour/weekend': ['wk', 'blk']}
 
 USE_STAR = False   # Nov 1 2026: starred-forecast gaps tested worse with the live daily refit (E -$5.3k, O -$4.4k/MW Sep25-Oct26), so Meteo first, then Tesla / models median
+EXP_FEAT = False   # Nov 5 2026 test: export shortfall (14-day-median exports minus modelled exports) as an extra read input
+EXP_DYN = False   # Nov 5 2026 test: net exports from the export model (data/research/export_hat.csv) instead of the 14-day median, in gas need / spare / gas ramp
 REAL_SP = False   # Nov 5 2026 test: spare from yesterday's DA export schedule + each hour's trailing-30-day gas miss (through D-2)
 NY_FX = True    # Nov 5 2026: NY DA converted to CAD (USD/CAD known D-1). Tested Sep25-Nov26: plan E +$1.1k, O +$4.2k/MW, better in all three periods, 14/15 months up
 def star_sources(e):
@@ -48,6 +50,20 @@ def prep(e, bias):
     if not USE_STAR: e['gL'], e['gW'] = gL0, gW0   # gap vs IESO from the starred forecast
     e['gap_low_W'] = e.wind_fc - e[nw].min(axis=1)
     e['w_up'] = e[nw].max(axis=1) - e.wind_fc                     # Nov 1 2026: highest of 9 weather models above IESO wind = wind that could still show up
+    try:   # Nov 5 2026: export shortfall for the card (usual 14-day-median exports minus modelled exports, MW)
+        import common as C
+        xh = pd.read_csv(C.DATA / 'export_hat.csv', usecols=['date', 'he', 'exp_hat']).drop_duplicates(['date', 'he'], keep='last')
+        e = e.drop(columns=[c for c in ('exp_hat',) if c in e.columns]).merge(xh, on=['date', 'he'], how='left'); e['xshort'] = e.exp_exp - e.exp_hat
+    except Exception as ex: print('export shortfall skipped:', ex); e['xshort'] = np.nan
+    if EXP_FEAT:
+        import common as C
+        e['xshort_f'] = e.xshort.fillna(0) / 1000
+        if 'xshort_f' not in F: F.append('xshort_f'); GROUPS['NY pull'] = GROUPS['NY pull'] + ['xshort_f']
+    if EXP_DYN:
+        import common as C
+        adj = (-e.xshort).fillna(0)   # modelled minus usual exports
+        e['gas_hat'] = e.gas_hat + adj; e['pub_sp'] = e.pub_sp - adj
+        e = e.sort_values(['date', 'he']).reset_index(drop=True); e['g3'] = e.groupby('date').gas_hat.diff(3).fillna(0)
     if REAL_SP:
         import signals_v2 as SV
         sc = SV.schedules()[['date', 'he', 'da_net_exp']].copy(); sc['date'] = (pd.to_datetime(sc.date) + pd.Timedelta(days=1)).dt.strftime('%Y-%m-%d')
@@ -85,7 +101,7 @@ def read(e, D):
     for i, (_, r) in enumerate(t.iterrows()):
         pieces = {g: round(float(sum(C[i][F.index(f)] for f in fs)), 1) for g, fs in GROUPS.items()}
         out.append(dict(he=int(r.he), read=round(float(m.intercept_ + C[i].sum()), 1), base=round(float(m.intercept_), 1), pieces=pieces,
-                        inputs=dict(load_gap=round(r.gL), wind_gap=round(r.gW), load_src=r.load_src if isinstance(r.load_src, str) else None, w_up=None if pd.isna(r.w_up) else round(r.w_up), wind_src=r.wind_src if isinstance(r.wind_src, str) else None, wind_fc=None if pd.isna(r.wind_fc) else round(r.wind_fc), pub_sp=round(r.pub_sp), vs=round(r.vs, 1), w3=round(r.w3), g3=round(r.g3), ny=None if pd.isna(r.ny_pull) else round(r.ny_pull, 1)),
+                        inputs=dict(load_gap=round(r.gL), wind_gap=round(r.gW), load_src=r.load_src if isinstance(r.load_src, str) else None, w_up=None if pd.isna(r.w_up) else round(r.w_up), wind_src=r.wind_src if isinstance(r.wind_src, str) else None, wind_fc=None if pd.isna(r.wind_fc) else round(r.wind_fc), pub_sp=round(r.pub_sp), vs=round(r.vs, 1), w3=round(r.w3), g3=round(r.g3), ny=None if pd.isna(r.ny_pull) else round(r.ny_pull, 1), xs=None if pd.isna(getattr(r, 'xshort', np.nan)) else round(r.xshort)),
                         da_fc=round(r.p_da, 1), rd=None if pd.isna(r.rd) else round(r.rd, 1)))
     return out, len(tr), missing
 
@@ -113,6 +129,12 @@ def build(D, bundle=None):
         e['vs'] = e.p_da - e.groupby('he').p_da.transform(lambda s: s.shift(1).rolling(14, min_periods=5).median())
         e['rd'] = e.rt - e.da
         if (e.date == D).sum() == 0: continue
+        if z == 'EAST':
+            try:
+                import export_live as EL
+                t = e[e.date == D][['date', 'he', 'p_da', 'exp_exp', 'wind_fc', 'dem_fc']].rename(columns={'p_da': 'da_fc'})
+                EL.update(D, t)
+            except Exception as ex: print('export model skipped:', ex)
         e = prep(e, ieso_bias(e)); rows, n, miss = read(e, D)
         res['hubs'][z] = dict(rows=rows, train_hours=n, missing=miss)
     return res
@@ -129,7 +151,8 @@ def card_points(i):
     P = -2 if vs is not None and vs >= 18 else -1 if vs is not None and vs >= 8 else 1 if vs is not None and vs <= -8 else 0
     N = 0 if ny is None else 1 if ny >= 10 else -1 if ny <= -10 else 0
     wu = i.get('w_up'); U = -1 if wu is not None and wu >= 800 else 0      # Nov 1 2026, tested Sep 2025-Oct 2026: E +$1.8k, O +$0.2k/MW, 12/14 and 9/14 months better
-    pts = {'Load gap': L * m, 'Wind gap': W * m, 'Wind ramp': R, 'Wind upside': U, 'DA priced': P, 'NY pull': N}
+    xs = i.get('xs'); X = 0 if xs is None else -1 if xs >= 500 else 1 if xs <= -500 else 0   # Nov 5 2026: exports 500+ MW short of usual -> surplus stays home (tested Dec25-Nov26: E +$1.3k, O +$3.1k/MW, 9/12 months better both)
+    pts = {'Load gap': L * m, 'Wind gap': W * m, 'Wind ramp': R, 'Wind upside': U, 'DA priced': P, 'NY pull': N, 'Exports': X}
     return sum(pts.values()), pts, m == 2
 
 def tier_of(score, read):

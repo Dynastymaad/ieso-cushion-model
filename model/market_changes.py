@@ -152,6 +152,23 @@ def build(D):
                 ('Nuclear units out now: ' + ', '.join(nu) + '.<br>' if nu else '') + ('<br>'.join(e for _, e in sorted(ev)) + '<br>' if ev else 'No nuclear or gas step of 300+ MW in the next 3 weeks.<br>') +
                 'IESO 35-day schedule (peak hour, MW out). Planned dates can move; tomorrow\'s exact numbers are in the nuclear / gas lines above when they change.', mw=0)
     except Exception as ex: print('market changes: generation outages skipped', ex)
+    # 9. exports today: the export floor (NY DA in CAD minus the ~$13 exporters need) vs our Ontario DA forecast, modelled exports vs usual, export room
+    try:
+        X = pd.read_csv(C.DATA / 'export_hat.csv'); X = X[X.date == D]
+        if len(X) and X.ny_cad.notna().any():
+            X = X.assign(flr=X.ny_cad - 13, ont=X.ny_cad - X.spr, xsh=X.exp_exp - X.exp_hat)
+            parts = []
+            for lab, a_, b_ in (('Overnight HE1-6', 1, 6), ('Valley HE9-15', 9, 15), ('Evening HE16-21', 16, 21)):
+                g = X[X.he.between(a_, b_)]
+                if not len(g): continue
+                parts.append(f"<b>{lab}</b>: floor ${g.flr.mean():,.0f} vs our DA ${g.ont.mean():,.0f} · exports {g.exp_hat.mean():,.0f} MW modelled vs {g.exp_exp.mean():,.0f} usual"
+                             + (f" ({'short' if g.xsh.mean() > 0 else 'above'} {abs(g.xsh.mean()):,.0f})" if abs(g.xsh.mean()) >= 250 else '') + f" · export limit {g.exp_lim.mean():,.0f}")
+            pts = int((X.xsh >= 500).sum()); ptu = int((X.xsh <= -500).sum())
+            side = 'above' if X.spr.mean() >= 0 else 'below'
+            push = 'bearish' if X.spr.mean() <= -10 else 'bullish' if X.spr.mean() >= 10 else 'info'
+            add('watch', push, f"Exports: NY ${abs(X.spr.mean()):,.0f} {side} our Ontario DA forecast (CAD, day average)" + (f" · card −1 in {pts} h" if pts else '') + (f" · card +1 in {ptu} h" if ptu else ''),
+                '<br>'.join(parts) + '<br>Floor = where exporters start buying Ontario power (NY minus about $13). Our DA well above the floor = exports will not rescue a loose day (price has room to fall). DA at or near the floor = exporters step in and price cannot fall much further.', mw=0)
+    except Exception as ex: print('market changes: exports skipped', ex)
     items.sort(key=lambda x: (x['level'] != 'major', -abs(x.get('mw', 0))))
     asof = time.strftime('%b %d %H:%M')
     try: adqv = str(C.adq2('preDA').pipe(lambda a: a[a.date.astype(str) == D]).shape[0] and pd.read_csv(C.CACHE / 'ieso_adq2_preDA.csv', usecols=['date', 'ieso_createtime']).query('date == @D').ieso_createtime.max())[5:16] + ' EST'

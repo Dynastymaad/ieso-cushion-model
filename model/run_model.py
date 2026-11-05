@@ -297,14 +297,14 @@ def main():
         import market_read as MR
         out['mread'] = MR.build(out['target'], out)
     except Exception as ex: print('market read skipped:', ex)
-    try:                                                # Nov 5 2026: market changes banner (Fundamentals tab), display only
-        import market_changes as MC
-        out['changes'] = MC.build(out['target'])
-    except Exception as ex: print('market changes skipped:', ex)
     try:                                                # Nov 1 2026: physics read + scorecard + tiers (Fundamentals tab), display only - no ladder effect
         import physics_read_live as PRL
         out['physics'] = PRL.build_bundle(out['target'], out)
     except Exception as ex: print('physics read skipped:', ex)
+    try:                                                # Nov 5 2026: market changes banner (Fundamentals tab), display only (after the physics read: it uses the export model output)
+        import market_changes as MC
+        out['changes'] = MC.build(out['target'])
+    except Exception as ex: print('market changes skipped:', ex)
     try:                                                # Nov 1 2026: truly tight? priced vs physics (Market read tab), display only
         import true_tight as TT
         out['tight'] = TT.build(out['target'], out)
