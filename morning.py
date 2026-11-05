@@ -19,7 +19,7 @@ REC = [] if FULL else ['--recent', '45']
 PULLS = [['pull_history.py', '--since', '2025-04-01'] + REC,
          ['pull_history.py', '--only', 'outages', '--since', '2025-05-01'] + REC,
          ['ieso_backfill.py']]
-OPTIONAL_PULLS = [['ieso_fwd35.py']]              # 35-day outlook (Outages tab only): a failure does not stop the run
+OPTIONAL_PULLS = [['ieso_fwd35.py'], ['model/wx_live.py']]   # Nov 5 2026: wx_live = bid-time temperatures for the Temp swing card point              # 35-day outlook (Outages tab only): a failure does not stop the run
 OPTIONAL = [['model/checklist_xlsx.py'], ['model/congestion/cong_read.py', '--json'],
             ['model/research/physics_history.py', 'EAST'], ['model/research/physics_history.py', 'OTTAWA'], ['model/practice_data.py']]   # Nov 1 2026: practice page (site/practice.html) with the newest settled days   # congestion read for tomorrow (read-only, Oct 13 2026)          # failures here do not stop the morning run
 MODEL = [['model/parse_archive.py'], ['model/update_intertie_actual.py'], ['model/adq_fallback.py'], ['model/load_edge.py'], ['model/outage_timeline.py'],

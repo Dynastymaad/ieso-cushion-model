@@ -8,6 +8,10 @@ FX = 'fx' in sys.argv
 if FX: P.NY_FX = True
 RS = 'realsp' in sys.argv
 if RS: P.REAL_SP = True
+XD = 'expdyn' in sys.argv
+if XD: P.EXP_DYN = True
+XF = 'expfeat' in sys.argv
+if XF: P.EXP_FEAT = True
 try: KEEP = json.load(open(C.ROOT / 'site' / 'data' / 'bundle.json'))['target']         # the delivery day the desk was just built for
 except Exception: KEEP = pd.read_csv(C.DATA / f'dv_frame_{z}.csv', usecols=['date']).date.max()
 e = FR.frame(z, keep=KEEP, all_rows=True).sort_values(['date', 'he']).reset_index(drop=True)
@@ -28,10 +32,10 @@ for D in sorted(e.date.unique()):
         P.annotate(x); i = x['inputs']
         out.append(dict(date=D, he=x['he'], read=x['read'], base=x['base'], **{'p_' + k: v for k, v in x['pieces'].items()}, score=x['card'], **{'c_' + k: v for k, v in x['card_pts'].items()},
                         thin=x['thin'], tier=x['tier'], side=x['side'], soft=x['soft'], action=x['action'], load_src=i['load_src'], wind_src=i['wind_src'], load_gap=i['load_gap'], wind_gap=i['wind_gap'],
-                        w3=i['w3'], w_up=i.get('w_up'), vs=i['vs'], ny=i['ny'], missing='|'.join(miss), rd=x['rd'], da_fc=x['da_fc']))
+                        w3=i['w3'], w_up=i.get('w_up'), vs=i['vs'], ny=i['ny'], ts=i.get('ts'), tc=i.get('tc'), missing='|'.join(miss), rd=x['rd'], da_fc=x['da_fc']))
 h = pd.DataFrame(out)
 keep = ['date', 'he', 'dem_fc', 'lf_tesla', 'lf_meteologica', 'lf_dynasty', 'wind_fc', 'wf_meteologica', 'w_models', 'w_lo', 'w_hi', 'solar_fc', 'nuc_av', 'hyd_exp', 'exp_exp', 'resid_fc',
         'gas_hat', 'gas_av', 'pub_sp', 'priv_sp', 'head', 'g3', 'res3', 'da', 'rt', 'wkend']
 h = h.merge(e[keep], on=['date', 'he'], how='left').merge(act, on=['date', 'he'], how='left')
-h.to_csv(f'data/research/physics_history_{z}{"_nostar" if NOSTAR else ""}{"_fx" if FX else ""}{"_realsp" if RS else ""}.csv', index=False)
+h.to_csv(f'data/research/physics_history_{z}{"_nostar" if NOSTAR else ""}{"_fx" if FX else ""}{"_realsp" if RS else ""}{"_expdyn" if XD else ""}{"_expfeat" if XF else ""}.csv', index=False)
 print(z, len(h), h.date.min(), h.date.max(), 'tiers', h.tier.value_counts().to_dict(), 'soft', int(h.soft.sum()))
