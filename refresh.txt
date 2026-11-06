@@ -15,4 +15,4 @@ python -X utf8 morning.py --model --push
 
 
 						
-run morning.py --wind --push
+run python -X morning.py --wind --push

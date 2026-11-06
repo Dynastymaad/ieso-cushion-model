@@ -161,13 +161,13 @@ def build(D):
             for lab, a_, b_ in (('Overnight HE1-6', 1, 6), ('Valley HE9-15', 9, 15), ('Evening HE16-21', 16, 21)):
                 g = X[X.he.between(a_, b_)]
                 if not len(g): continue
-                parts.append(f"<b>{lab}</b>: floor ${g.flr.mean():,.0f} vs our DA ${g.ont.mean():,.0f} · exports {g.exp_hat.mean():,.0f} MW modelled vs {g.exp_exp.mean():,.0f} usual"
+                parts.append(f"<b>{lab}</b>: exports max out at ${g.flr.mean():,.0f} vs our DA ${g.ont.mean():,.0f} · exports {g.exp_hat.mean():,.0f} MW modelled vs {g.exp_exp.mean():,.0f} usual"
                              + (f" ({'short' if g.xsh.mean() > 0 else 'above'} {abs(g.xsh.mean()):,.0f})" if abs(g.xsh.mean()) >= 250 else '') + f" · export limit {g.exp_lim.mean():,.0f}")
             pts = int((X.xsh >= 500).sum()); ptu = int((X.xsh <= -500).sum())
             side = 'above' if X.spr.mean() >= 0 else 'below'
             push = 'bearish' if X.spr.mean() <= -10 else 'bullish' if X.spr.mean() >= 10 else 'info'
             add('watch', push, f"Exports: NY ${abs(X.spr.mean()):,.0f} {side} our Ontario DA forecast (CAD, day average)" + (f" · card −1 in {pts} h" if pts else '') + (f" · card +1 in {ptu} h" if ptu else ''),
-                '<br>'.join(parts) + '<br>Floor = where exporters start buying Ontario power (NY minus about $13). Our DA well above the floor = exports will not rescue a loose day (price has room to fall). DA at or near the floor = exporters step in and price cannot fall much further.', mw=0)
+                '<br>'.join(parts) + '<br>NY - $13 = where exports max out (tested Sep 2025 - Nov 2026: net exports rise from ~1,000 MW when East DA is $15+ above NY to 2,700-2,800 MW once East is ~$13 below NY, then level off). Our DA well above it = export room left; at or below it = lines full, so more surplus has nowhere to go and price can keep falling (East DA cleared below NY - $13 in 27% of hours).', mw=0)
     except Exception as ex: print('market changes: exports skipped', ex)
     items.sort(key=lambda x: (x['level'] != 'major', -abs(x.get('mw', 0))))
     asof = time.strftime('%b %d %H:%M')
