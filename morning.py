@@ -96,7 +96,16 @@ if __name__ == '__main__':
     except Exception as ex: print('docs copy skipped:', ex)
     run_par([['model/checklist_xlsx.py'], ['model/research/physics_history.py', 'EAST'], ['model/research/physics_history.py', 'OTTAWA']], optional=True)
     run(['model/practice_data.py'], optional=True)                                      # needs both physics histories
-    if '--push' in sys.argv:                      # save the refreshed code/page to GitHub (credentials blocked by .gitignore + check)
+    STALE = None
+    try:                                                # Nov 9 2026: the read must be for tomorrow; say so loudly (and do not push) when it is not
+        import json as _j, datetime as _dt
+        _t = _j.loads((HERE / 'site' / 'data' / 'bundle.json').read_text())['target']; _want = (_dt.date.today() + _dt.timedelta(days=1)).isoformat()
+        if _t < _want:
+            STALE = _t; print(f'\n!!! STALE READ: the page is for {_t}, not tomorrow ({_want}). Tomorrow\'s IESO pre-DA Adequacy did not come in.')
+            print('!!! Scroll up for "Warehouse step failed", "FAILED" or "STOP" lines, fix that (network/VPN), and run again. Not pushing.')
+        else: print(f'\nRead is for {_t} (tomorrow): OK')
+    except Exception as ex: print('date check skipped:', ex)
+    if '--push' in sys.argv and not STALE:                      # save the refreshed code/page to GitHub (credentials blocked by .gitignore + check)
         if not (HERE / '.git').exists(): print('\n--push: this folder is not linked to GitHub yet (see GITHUB_SETUP.md)')
         else:
             # Nov 2 2026: no automatic 'git gc' (OneDrive locks .git/objects folders -> endless 'Deletion of directory ... failed' prompts)

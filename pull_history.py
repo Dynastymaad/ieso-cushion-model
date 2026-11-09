@@ -262,14 +262,16 @@ if __name__ == '__main__':
     if a.recent:
         RECENT = (date.today() - timedelta(days=a.recent)).isoformat(); a.since = max(a.since, RECENT)
     cfg, where = P.find_cfg(); say(f'credentials: {where.parent.name}\\db.json   cache -> {CACHE}')
-    t0 = time.time()
+    t0 = time.time(); WH_FAIL = None
     if a.only == 'horizon':
         horizon(cfg, a.since if a.since != '2024-06-01' else '2025-05-01')
         say(f'\ndone in {(time.time()-t0)/60:.1f} min. Tell Claude pull_history finished.'); raise SystemExit
     if a.only not in ('adq2', 'adq2x', 'virt', 'outages', 'fwd35', 'quebec_pg'):
         try: mssql(cfg, a.since, a.only)
-        except (Exception, SystemExit) as ex: say(f'  Warehouse step failed: {str(ex)[:300]}')
+        except (Exception, SystemExit) as ex: say(f'  Warehouse step failed: {str(ex)[:300]}'); WH_FAIL = str(ex)[:300]   # Nov 9 2026: remembered, stops the run below
     if a.only in (None, 'adq2', 'adq2x', 'virt', 'outages', 'fwd35', 'quebec'):
         try: pg(cfg, a.since, a.only)
         except (Exception, SystemExit) as ex: say(f'  sandbox step failed (the model falls back to the IESO public Adequacy archive): {str(ex)[:300]}')   # Nov 8 2026: a sandbox outage no longer stops the morning run
+    if WH_FAIL:   # Nov 9 2026: no Warehouse data = no load/wind forecasts for tomorrow; stop instead of rebuilding yesterday's read
+        say(f'\nSTOP: the Warehouse pull failed ({WH_FAIL}). Tomorrow\'s load and wind forecasts are NOT in. Check the network/VPN connection on this computer and run again.'); raise SystemExit(1)
     say(f'\ndone in {(time.time()-t0)/60:.1f} min. Tell Claude pull_history finished.')

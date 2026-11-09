@@ -234,10 +234,11 @@ def repair_rt(days=10):
 if __name__ == '__main__':
     ap = argparse.ArgumentParser(); ap.add_argument('--quick', action='store_true'); ap.add_argument('--nyiso', action='store_true', help='with --quick: also refresh the NYISO DAM files'); a = ap.parse_args()
     print(f'IESO backfill -> {ARCH}')
+    bad = []
     for rep, mode in REPORTS:
         if a.quick and rep not in QUICK: continue
         try: backfill(rep, mode)
-        except Exception as ex: print(f'  {rep:<32} FAILED: {str(ex)[:120]}')
+        except Exception as ex: print(f'  {rep:<32} FAILED: {str(ex)[:120]}'); bad.append(rep)
     try: repair_rt()
     except Exception as ex: print('  RT repair skipped:', str(ex)[:120])
     if not a.quick:
@@ -245,3 +246,5 @@ if __name__ == '__main__':
     elif a.nyiso:
         nyiso()
     print('done.')
+    if 'Adequacy3' in bad:   # Nov 9 2026: no IESO Adequacy = no read for tomorrow; stop the morning run instead of rebuilding yesterday's
+        print('STOP: could not reach the IESO public reports site (Adequacy3). Check the internet connection on this computer and run again.'); raise SystemExit(1)
