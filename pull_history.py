@@ -36,7 +36,7 @@ def keep_old(name, df):
     if RECENT is None or not f.exists() or df is None or not len(df): return df
     col = next((c for c in DATECOLS if c in df.columns), None)
     if col is None: return df
-    newmin = str(pd.to_datetime(df[col]).min())[:10]
+    newmin = df[col].astype(str).str[:10].min()      # Nov 8 2026: date prefix only (solar times carry -04:00/-05:00 offsets; to_datetime fails on mixed offsets after the DST change)
     if newmin < (date.fromisoformat(RECENT) - timedelta(days=35)).isoformat(): return df      # full pull already
     old = pd.read_csv(f, low_memory=False)
     if col not in old.columns: return df
@@ -268,8 +268,8 @@ if __name__ == '__main__':
         say(f'\ndone in {(time.time()-t0)/60:.1f} min. Tell Claude pull_history finished.'); raise SystemExit
     if a.only not in ('adq2', 'adq2x', 'virt', 'outages', 'fwd35', 'quebec_pg'):
         try: mssql(cfg, a.since, a.only)
-        except Exception as ex: say(f'  Warehouse step failed: {str(ex)[:300]}')
+        except (Exception, SystemExit) as ex: say(f'  Warehouse step failed: {str(ex)[:300]}')
     if a.only in (None, 'adq2', 'adq2x', 'virt', 'outages', 'fwd35', 'quebec'):
         try: pg(cfg, a.since, a.only)
-        except Exception as ex: say(f'  sandbox step failed: {str(ex)[:300]}')
+        except (Exception, SystemExit) as ex: say(f'  sandbox step failed (the model falls back to the IESO public Adequacy archive): {str(ex)[:300]}')   # Nov 8 2026: a sandbox outage no longer stops the morning run
     say(f'\ndone in {(time.time()-t0)/60:.1f} min. Tell Claude pull_history finished.')

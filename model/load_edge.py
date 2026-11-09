@@ -34,7 +34,7 @@ mon = com.groupby('month').apply(lambda g: pd.Series({c: (g[c] - g.ont_dem).abs(
 edge = []
 for c in src:
     if c == 'lf_adq2': continue
-    g = df.dropna(subset=[c]); x = g[c] - g.lf_adq2; y = g.ont_dem - g.lf_adq2
+    g = df.dropna(subset=[c, 'lf_adq2', 'ont_dem']); x = g[c] - g.lf_adq2; y = g.ont_dem - g.lf_adq2   # Nov 8 2026: drop rows with a gap before the fit (Windows numpy stops on missing values)
     big = x.abs() > 300
     edge.append((c, len(g), np.corrcoef(x, y)[0, 1], (np.sign(x[big]) == np.sign(y[big])).mean(), big.sum(),
                  np.polyfit(x, y, 1)[0]))
