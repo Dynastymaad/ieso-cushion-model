@@ -157,6 +157,32 @@ def pg(cfg, since, only):
               AND ieso_createtime >= date - interval '1 day'
               AND ieso_createtime <  date + interval '1 day'
             ORDER BY date, hour, resourcetype, subtype, ieso_createtime DESC""")
+    if only in ('adq2noon',):
+        # Nov 9 2026: noon vintage for the next-day on-peak read (trade cutoff 12:30 Calgary, read run at 12:00 Calgary = 13:00 EST).
+        # Cut at 12:00 EST, not 13:00: in summer IESO posts the DA clear at 13:31 EDT (12:31 EST) and an Adequacy update at ~13:50 EDT
+        # (12:50 EST), so a 13:00 EST cut would let a post-clear version into the history. With 12:00 EST the noon vintage is the ~09:05 EST
+        # update all year, which is what a 12:00 Calgary run sees now (Calgary stays on UTC-6).
+        # Picks up the ~09:05 EST Adequacy update (IESO demand / wind / solar forecasts, outages, intertie schedules). Not used by the virtual-bid model.
+        say('  Adequacy2 noon vintage (last version issued on D-1 before 12:00 EST)')
+        one(cn, 'ieso_adq2_noon', f"""
+            SELECT DISTINCT ON (date, hour, resourcetype, subtype)
+                   date, hour, resourcetype, subtype, value, ieso_createtime
+            FROM canpower.ieso_adequacy2_all_archive
+            WHERE date >= '{since}' AND subtype IN ({ADQ2_SUBTYPES})
+              AND ieso_createtime >= date - interval '2 days'
+              AND ieso_createtime <  date - interval '1 day' + interval '12 hours'
+            ORDER BY date, hour, resourcetype, subtype, ieso_createtime DESC""")
+        X = ("resourcetype IN ('Total Exports','Total Imports','Zonal Export','Zonal Import','Unscheduled','Dispatchable Load','Demand Response')"
+             " OR subtype IN ('Hydro Offer','Gas Offer','Nuclear Offer','Biofuel Offer','Offer Forecast')")
+        say('  Adequacy2 interties + offers, noon vintage')
+        one(cn, 'ieso_adq2x_noon', f"""
+            SELECT DISTINCT ON (date, hour, resourcetype, subtype)
+                   date, hour, resourcetype, subtype, value, ieso_createtime
+            FROM canpower.ieso_adequacy2_all_archive
+            WHERE date >= '{since}' AND ({X})
+              AND ieso_createtime >= date - interval '2 days'
+              AND ieso_createtime <  date - interval '1 day' + interval '12 hours'
+            ORDER BY date, hour, resourcetype, subtype, ieso_createtime DESC""")
     if only in (None, 'adq2x'):
         X = ("resourcetype IN ('Total Exports','Total Imports','Zonal Export','Zonal Import','Unscheduled','Dispatchable Load','Demand Response')"
              " OR subtype IN ('Hydro Offer','Gas Offer','Nuclear Offer','Biofuel Offer','Offer Forecast')")
@@ -266,10 +292,10 @@ if __name__ == '__main__':
     if a.only == 'horizon':
         horizon(cfg, a.since if a.since != '2024-06-01' else '2025-05-01')
         say(f'\ndone in {(time.time()-t0)/60:.1f} min. Tell Claude pull_history finished.'); raise SystemExit
-    if a.only not in ('adq2', 'adq2x', 'virt', 'outages', 'fwd35', 'quebec_pg'):
+    if a.only not in ('adq2', 'adq2x', 'adq2noon', 'virt', 'outages', 'fwd35', 'quebec_pg'):
         try: mssql(cfg, a.since, a.only)
         except (Exception, SystemExit) as ex: say(f'  Warehouse step failed: {str(ex)[:300]}'); WH_FAIL = str(ex)[:300]   # Nov 9 2026: remembered, stops the run below
-    if a.only in (None, 'adq2', 'adq2x', 'virt', 'outages', 'fwd35', 'quebec'):
+    if a.only in (None, 'adq2', 'adq2x', 'adq2noon', 'virt', 'outages', 'fwd35', 'quebec'):
         try: pg(cfg, a.since, a.only)
         except (Exception, SystemExit) as ex: say(f'  sandbox step failed (the model falls back to the IESO public Adequacy archive): {str(ex)[:300]}')   # Nov 8 2026: a sandbox outage no longer stops the morning run
     if WH_FAIL:   # Nov 9 2026: no Warehouse data = no load/wind forecasts for tomorrow; stop instead of rebuilding yesterday's read
