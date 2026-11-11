@@ -35,6 +35,7 @@ edge = []
 for c in src:
     if c == 'lf_adq2': continue
     g = df.dropna(subset=[c, 'lf_adq2', 'ont_dem']); x = g[c] - g.lf_adq2; y = g.ont_dem - g.lf_adq2   # Nov 8 2026: drop rows with a gap before the fit (Windows numpy stops on missing values)
+    if len(g) < 48: print(f'load_edge: {c} skipped in the edge table ({len(g)} usable hours, needs 48)'); continue   # Nov 11 2026: a new or thin source (e.g. Dynasty ML) must not stop the morning run
     big = x.abs() > 300
     edge.append((c, len(g), np.corrcoef(x, y)[0, 1], (np.sign(x[big]) == np.sign(y[big])).mean(), big.sum(),
                  np.polyfit(x, y, 1)[0]))

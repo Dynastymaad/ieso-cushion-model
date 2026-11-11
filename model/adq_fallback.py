@@ -2,7 +2,7 @@
 IESO's public Adequacy3 file (same fundamentals, archived by ieso_backfill.py): the latest version for delivery day D
 issued on D-1 before 09:00 EST. Appends those rows to cache/ieso_adq2_preDA.csv in the database's format.
 Does nothing when the database already has a D-1 vintage. The next pull_history run overwrites the cache anyway."""
-import sys, zipfile, re; sys.path.insert(0, str(__import__('pathlib').Path(__file__).parent))
+import os, sys, zipfile, re; sys.path.insert(0, str(__import__('pathlib').Path(__file__).parent))
 from datetime import datetime, timedelta, timezone
 import pandas as pd, common as C, parse_archive as P
 MAP = {'dem_fc': ('Ontario Demand', 'Forecast'), 'nuclear_cap': ('Internal Resource', 'Nuclear Capacity'), 'nuclear_out': ('Internal Resource', 'Nuclear Outage'),
@@ -35,7 +35,12 @@ def run(D=None):
     for r in rows:
         for k, (rt, st) in MAP.items():
             if r.get(k) is not None: out.append(dict(date=D, hour=r['he'], resourcetype=rt, subtype=st, value=r[k], ieso_createtime=t.strftime('%Y-%m-%d %H:%M:%S')))
-    a = a[a.date != D]; a = pd.concat([a, pd.DataFrame(out)], ignore_index=True); a.to_csv(f, index=False)
+    a = a[a.date != D]; a = pd.concat([a, pd.DataFrame(out)], ignore_index=True)
+    tmp = f.with_name(f.name + '.tmp'); a.to_csv(tmp, index=False)                     # Nov 11 2026: write then swap, so no reader ever sees a half-written file
+    for i in range(20):                                                                 # OneDrive / another program can hold the file for a moment
+        try: os.replace(tmp, f); break
+        except PermissionError: __import__('time').sleep(1)
+    else: raise SystemExit(f'adq fallback: could not replace {f.name} (file locked); close programs using it and re-run')
     print(f'adq fallback: database had {have or "nothing"} for {D}; used IESO Adequacy3 issued {t} ({len(out)} rows)')
 
 if __name__ == '__main__': run(sys.argv[1] if len(sys.argv) > 1 else None)

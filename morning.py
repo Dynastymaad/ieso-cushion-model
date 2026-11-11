@@ -83,7 +83,8 @@ if __name__ == '__main__':
     except Exception as ex: print('Meteologica check skipped:', ex)
     # Nov 5 2026: same steps as before, independent ones run side by side (python morning.py --serial = the old one-at-a-time order)
     run(['model/parse_archive.py'])                                                    # everything below reads its outputs
-    run_par([['model/update_intertie_actual.py'], ['model/adq_fallback.py'], ['model/load_edge.py'], ['model/outage_timeline.py'],
+    run(['model/adq_fallback.py'])     # Nov 11 2026: on its own FIRST -- it rewrites cache/ieso_adq2_preDA.csv, which load_edge / supply_fc / blocks read
+    run_par([['model/update_intertie_actual.py'], ['model/load_edge.py'], ['model/outage_timeline.py'],
              ['model/supply_fc.py'], ['model/blocks.py'], ['model/da_cleared_ties.py']])
     run_par([['model/zone_backtest.py', 'EAST', 'OTTAWA'], ['model/da_virtual_bt.py', 'EAST', 'OTTAWA'], ['model/quebec.py']])   # needs blocks/load_edge | supply_fc/interties
     if time.localtime().tm_wday == 0 or '--weekly' in sys.argv:

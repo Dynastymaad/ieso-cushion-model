@@ -47,7 +47,6 @@ month
 
         source  hours  corr(src-IESO, act-IESO)  sign hit when |gap|>300  n |gap|>300  slope
     lf_dynasty  10106                     0.504                    0.789         4539  0.640
- lf_dynasty ml     39                     0.253                    0.615           13  0.166
        lf_ieso  13139                     0.101                    0.600         2803  0.138
 lf_meteologica   1584                     0.623                    0.882          423  0.761
       lf_tesla  13368                     0.585                    0.809         7234  0.649
