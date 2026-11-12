@@ -1,23 +1,23 @@
 # Load forecasts at the DA bid deadline (D-1 08:00 MT)
 
-Sample 2025-05-03 → 2026-11-11. Actual = IESO Ontario Demand. `lf_adq2` = the demand forecast in IESO Adequacy2 issued D-1 before 09:00 EST — the number the DA clears on.
+Sample 2025-05-03 → 2026-11-12. Actual = IESO Ontario Demand. `lf_adq2` = the demand forecast in IESO Adequacy2 issued D-1 before 09:00 EST — the number the DA clears on.
 
 ## All available hours per source
 
         source  hours   MAE  bias(fc-act)
-       lf_adq2  13369 414.0         225.0
-    lf_dynasty  10106 367.0         -16.0
- lf_dynasty ml     39 306.0         239.0
-       lf_ieso  13139 455.0         195.0
-lf_meteologica   1584 230.0          74.0
-      lf_tesla  13368 353.0         -19.0
+       lf_adq2  13393 414.0         224.0
+    lf_dynasty  10130 366.0         -17.0
+ lf_dynasty ml     41 319.0         253.0
+       lf_ieso  13163 454.0         194.0
+lf_meteologica   1608 228.0          75.0
+      lf_tesla  13392 353.0         -19.0
 
 ## Common sample (hours where IESO, Adequacy2 and Tesla all exist)
 
   source  hours   MAE  bias
- lf_adq2  13138 416.0 229.0
- lf_ieso  13138 455.0 195.0
-lf_tesla  13138 353.0 -18.0
+ lf_adq2  13162 416.0 228.0
+ lf_ieso  13162 454.0 194.0
+lf_tesla  13162 353.0 -18.0
 
 ## Monthly MAE, common sample
 
@@ -41,20 +41,20 @@ month
 2026-08    471.0    523.0     357.0
 2026-09    347.0    334.0     371.0
 2026-10    274.0    268.0     267.0
-2026-11    228.0    228.0     347.0
+2026-11    226.0    225.0     348.0
 
 ## The edge: does a vendor disagreeing with IESO predict IESO's miss?
 
         source  hours  corr(src-IESO, act-IESO)  sign hit when |gap|>300  n |gap|>300  slope
-    lf_dynasty  10106                     0.504                    0.789         4539  0.640
-       lf_ieso  13139                     0.101                    0.600         2803  0.138
-lf_meteologica   1584                     0.623                    0.882          423  0.761
-      lf_tesla  13368                     0.585                    0.809         7234  0.649
+    lf_dynasty  10130                     0.504                    0.789         4545  0.640
+       lf_ieso  13163                     0.101                    0.600         2803  0.139
+lf_meteologica   1608                     0.628                    0.883          429  0.763
+      lf_tesla  13392                     0.584                    0.809         7243  0.649
 
 ## Bias-corrected / blended (trailing 28-day bias per HE, lagged 2 days)
 
        source  hours   MAE  bias
-  lf_tesla_bc  13104 357.0  -1.0
-lf_dynasty_bc   9539 355.0  -6.0
-   lf_ieso_bc  12875 427.0 -23.0
-   lf_tes_dyn  10106 337.0 -18.0
+  lf_tesla_bc  13128 357.0  -2.0
+lf_dynasty_bc   9563 355.0  -6.0
+   lf_ieso_bc  12899 427.0 -24.0
+   lf_tes_dyn  10130 337.0 -18.0
