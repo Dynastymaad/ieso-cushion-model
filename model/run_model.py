@@ -79,7 +79,7 @@ def hub_next_day(zone, O, bf):
     D = (pd.Timestamp(O) + pd.Timedelta(days=1)).date().isoformat()
     d = Hm.frame(zone)
     known = d[(d.date <= O) & d.da.notna()]
-    days = sorted(known.date.unique())[-21:]
+    days = sorted(known.date.unique())[-35:]                       # Nov 15 2026: 35-day window (hourly.py walk uses the same)
     tr = d[d.date.isin(days) & d.da.notna()]
     te = d[d.date == D].copy()
     te['da'] = np.nan; te['rt'] = np.nan                                      # never let the answer in

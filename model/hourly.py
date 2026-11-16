@@ -1,6 +1,6 @@
 """hourly.py -- next-day hourly DA for a hub, walk-forward (bid-time inputs only).
-  hybrid   : per time-block ridge of ln(DA) on headroom, ln(NYISO Zone A DAM), NY-OH scheduled
-             net flow, weekend flag and ln(yesterday's DA same hour); trailing 21 days.
+  hybrid   : per time-block ridge of ln(DA) on headroom, ln(NYISO Zone A DAM), weekend flag and
+             ln(yesterday's DA same hour); trailing 35 days (Nov 15 2026; was 21 days + NY-OH scheduled flow).
   scaled   : hybrid shape rescaled so each block's mean equals the all-season block model
              (50/50 anchored-delta + Ontario Hub forward; see blocks.py).
 Returns predictions plus the residual pool used for quantiles."""
@@ -23,7 +23,11 @@ def frame(zone):
     d['gapT'] = (d.lf_tesla - d.lf_adq2) / 1000
     return d
 
-FEATS = ['h', 'lny', 'dni', 'wkend', 'lda_y']
+# Nov 15 2026: NY-Ontario scheduled flow (dni) removed -- NYISO posts its DAM energy report after the Ontario bid (blank in every pre-bid run
+# since Oct 19), so live it was always filled with the training median while the backtest used the real value. Window 21 -> 35 days.
+# Tested Sep 2025 - Nov 2026 (both hubs, full rebuild): DA miss E $12.49 -> $12.35, O $13.93 -> $13.77; physics A+B E $49.7k -> $54.1k,
+# O $51.2k -> $56.4k per MW; v2 ladder E 2.69M -> 2.75M, O 2.27M -> 2.32M. 21/28/42-day windows all scored below 35 overall.
+FEATS = ['h', 'lny', 'wkend', 'lda_y']
 
 def fit_predict(tr, te, feats=FEATS, lam=0.5):
     out = []
@@ -39,7 +43,7 @@ def fit_predict(tr, te, feats=FEATS, lam=0.5):
         out.append(e)
     return pd.concat(out) if out else te.iloc[:0]
 
-def walk(zone, win=21, block_fc=None):
+def walk(zone, win=35, block_fc=None):
     d = frame(zone); dates = sorted(d.dropna(subset=['da']).date.unique())
     res = []
     for i in range(win, len(dates) + 1):

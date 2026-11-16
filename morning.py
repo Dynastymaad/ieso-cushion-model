@@ -97,6 +97,15 @@ if __name__ == '__main__':
     except Exception as ex: print('docs copy skipped:', ex)
     run_par([['model/checklist_xlsx.py'], ['model/research/physics_history.py', 'EAST'], ['model/research/physics_history.py', 'OTTAWA']], optional=True)
     run(['model/practice_data.py'], optional=True)                                      # needs both physics histories
+    try:                                                # Nov 15 2026: is tomorrow's IESO pre-DA input the MORNING release (07:53 EST summer / ~09:05 EST = 07:05 MST winter)?
+        import pandas as _pd, json as _jj                 # (adq_fallback brings it in from IESO's public file when the database only has the overnight one)
+        _b = _jj.loads((HERE / 'site' / 'data' / 'bundle.json').read_text()); _t = _b['target']
+        _a = _pd.read_csv(HERE / 'cache' / 'ieso_adq2_preDA.csv', usecols=['date', 'ieso_createtime']); _ct = _a[_a.date == _t].ieso_createtime.max()
+        if isinstance(_ct, str) and _pd.Timestamp(_ct) < _pd.Timestamp(_t) - _pd.Timedelta(days=1) + _pd.Timedelta(hours=7):
+            print(f"\n!!! IESO pre-DA input for {_t} is the OVERNIGHT version ({_ct} EST). The morning release comes ~07:05 MT in winter (05:53 MT summer).")
+            print('!!! After it is out run:  python morning.py --wind   (fetches it and rebuilds).')
+        elif isinstance(_ct, str): print(f'IESO pre-DA input for {_t}: issued {_ct} EST (morning release): OK')
+    except Exception as ex: print('IESO vintage check skipped:', ex)
     STALE = None
     try:                                                # Nov 9 2026: the read must be for tomorrow; say so loudly (and do not push) when it is not
         import json as _j, datetime as _dt

@@ -1,7 +1,7 @@
 """da_virtual_bt.py -- re-test of the VA Hub "DA Virtual" tab rules on 17 months (May 2025 - Sep 2026), per hub.
 Everything bid-time (D-1 before 08:00 MT); every threshold either the VA Hub's own or learned on past days only.
 Builds one frame (data/dv_frame_<zone>.csv) with:
-  p_da   our walk-forward DA forecast (hourly.py hybrid, trailing 21 d)      q10..q90 DA range
+  p_da   our walk-forward DA forecast (hourly.py hybrid, trailing 35 d)      q10..q90 DA range
   p_rt   RT forecast = p_da x trailing-28d median RT/DA ratio (same block, same tight/loose)
   VA Hub lean signals (1-10, rain excluded: no weather history), lean total, auto-score proxy,
   spike/collapse flags from total headroom, trailing RT-DA 7d/14d by HE ("hourly bias badges")
@@ -13,7 +13,7 @@ pd.set_option('display.width', 250); pd.set_option('display.max_rows', 200)
 Q = [.1, .25, .5, .75, .9]
 
 def build(zone):
-    e = HR.walk(zone)                                           # p_h, trailing-21d ridge, all bid-time inputs
+    e = HR.walk(zone)                                           # p_h, trailing-35d ridge, all bid-time inputs
     e = e[['date', 'he', 'p_h', 'da', 'rt', 'head', 'dem_fc', 'resid_fc', 'gas_av', 'hyd_av', 'nyA_da', 'lf_tesla', 'lf_dynasty', 'blk', 'dow', 'wkend']].copy()
     e = e.rename(columns={'p_h': 'p_da'}).sort_values(['date', 'he']).reset_index(drop=True)
     a = C.adq2('preDA')[['date', 'he', 'wind_fc', 'solar_fc', 'gas_out', 'nuc_out', 'nuc_av']]
